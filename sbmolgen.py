@@ -11,7 +11,6 @@ from math import *
 import random as pr
 import numpy as np
 import time
-from keras.preprocessing import sequence
 from load_model import loaded_model
 from make_smile import zinc_data_with_bracket_original, zinc_processed_with_bracket
 from add_node_type_zinc import chem_kn_simulation, make_input_smile,predict_smile,check_node_type,node_to_add,expanded_node
@@ -91,10 +90,6 @@ def MCTS(root, verbose = False):
 
     """global variables used for save valid compounds and simulated compounds"""
     valid_compound=[]
-    all_simulated_compound=[]
-    desired_compound=[]
-    max_logp=[]
-    desired_activity=[]
     depth=[]
     min_score=1000
     score_distribution=[]
@@ -225,8 +220,6 @@ def MCTS(root, verbose = False):
 
 
 def UCTchemical():
-    one_search_start_time=time.time()
-    time_out=one_search_start_time+60*10
     state = chemical()
     best = MCTS(root = state,verbose = False)
 
@@ -251,8 +244,7 @@ if __name__ == "__main__":
     score_type = conf.get('score_type', 'SCORE.INTER') #<SCORE> or <SCORE.INTER>
     docking_num = conf.get('docking_num', 10)
     sa_threshold = conf.get('sa_threshold', 3.5) #if SA > sa_threshold, score = 0. Default sa_threshold = 10
-    #RO5: if a compound does not satisfy rule of 5, score = 0.
-    rule5 = conf.get('rule5', 1) #0:none, 1: rule of 5, 2: rule of 3
+    rule5 = conf.get('rule5', 1) #0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
     radical_check = conf.get('radical_check', True)
     simulation_num = conf.get('simulation_num', 3)
     hashimoto_filter = conf.get('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
