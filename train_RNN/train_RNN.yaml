@@ -1,0 +1,11 @@
+dataset: ../data/250k_rndm_zinc_drugs_clean.smi
+output_json: ../RNN-model/model.json
+output_weight: ../RNN-model/model.h5
+
+dropout_rate: 0.2
+rec_dropout_rate: 0.2
+learning_rate: 0.01
+epoch: 100
+batch_size: 512
+validation_split: 0.1
+units: 256
