@@ -7,37 +7,21 @@ if os.getenv('SBMolGen_PATH') == None:
 else:
     SBMolGen_PATH=os.getenv('SBMolGen_PATH')
     sys.path.append(SBMolGen_PATH+'/utils')
-from subprocess import Popen, PIPE
 from math import *
-import random
 import random as pr
 import numpy as np
-from copy import deepcopy
-import itertools
 import time
-import math
-import argparse
-import subprocess
 from keras.preprocessing import sequence
-from rdkit import Chem
-from rdkit.Chem import Draw
-from rdkit.Chem import Descriptors
 from load_model import loaded_model
 from make_smile import zinc_data_with_bracket_original, zinc_processed_with_bracket
 from add_node_type_zinc import chem_kn_simulation, make_input_smile,predict_smile,check_node_type,node_to_add,expanded_node
 import yaml
 
 class chemical:
-
     def __init__(self):
 
         self.position=['&']
         self.num_atom=8
-        #self.vl=['\n', '&', 'C', '(', 'c', '1', 'o', '=', 'O', 'N', 'F', '[C@@H]',
-        #'n', '-', '#', 'S', 'Cl', '[O-]', '[C@H]', '[NH+]', '[C@]', 's', 'Br', '/', '[nH]', '[NH3+]',
-        #'[NH2+]', '[C@@]', '[N+]', '[nH+]', '\\', '[S@]', '[N-]', '[n+]', '[S@@]', '[S-]',
-        #'I', '[n-]', 'P', '[OH+]', '[NH-]', '[P@@H]', '[P@@]', '[PH2]', '[P@]', '[P+]', '[S+]',
-        #'[o+]', '[CH2-]', '[CH-]', '[SH+]', '[O+]', '[s+]', '[PH+]', '[PH]', '[S@@+]']
         self.vl = ['\n', '&', 'C', '1', 'N', '[C@@H]', '2', '[C@H]', '(', '=', 'O', ')', 'S', 'c', '[S@]', '[nH]', '[O-]', '[N+]', 'n', 'F', '#', '[C@]', '[C@@]', '[S@@]', 'P', '/', '\\', 'Cl', 's', 'Br', 'o', '[NH3+]', 'I', '[n+]', '[nH+]', '3', '[N-]', '[S-]', 'B', '4', '5', '[NH+]', '[Si]', '[P@]', '[NH2+]', '[P@@]', '[N@+]', '6', '[N@@+]', '[S@@+]', '7', '8', '[P@@H]', '[n-]', '[C-]', '[P+]', '[Cu]', '[Ni]', '[Zn]', '[Au-]', '[OH+]']
         
     def Clone(self):
@@ -53,7 +37,6 @@ class chemical:
         return [i for i in range(self.num_atom)]
 
 class Node:
-
     def __init__(self, position = None,  parent = None, state = None):
         self.position = position
         self.parentNode = parent
@@ -67,9 +50,6 @@ class Node:
 
 
     def Selectnode(self):
-
-        #s = sorted(self.childNodes, key = lambda c: c.wins/c.visits + 0.8*sqrt(2*log(self.visits)/c.visits))[-1]
-        #s=random.choice(self.childNodes)
         ucb=[]
         print('UCB:')
         for i in range(len(self.childNodes)):
@@ -85,7 +65,6 @@ visits)
         return s
 
     def Addnode(self, m, s):
-
         n = Node(position = m, parent = self, state = s)
         self.childNodes.append(n)
 
@@ -97,15 +76,12 @@ visits)
         return logp,valid_smile,all_smile
 
     def Update(self, result):
-
         self.visits += 1
         self.wins += result
 
 
 def MCTS(root, verbose = False):
-
     """initialization of the chemical trees and grammar trees"""
-    #run_time=time.time()+3600*48
     start_time = time.time()
     run_time = time.time() + 3600*hours # 3600*24
     rootnode = Node(state = root)
@@ -130,7 +106,6 @@ def MCTS(root, verbose = False):
     out_f = open(output_dir, 'a')
 
     while time.time()<=run_time:
-
         node = rootnode # important !    this node is different with state / node is the tree node
         state = root.Clone() # but this state is the state of the initialization .  too important !!!
         """selection step"""
@@ -179,12 +154,9 @@ def MCTS(root, verbose = False):
         score_distribution.extend(rdock_score)
         
         print('node', node_index, 'rdock_score', rdock_score, 'valid', valid_smile)
-        #out_f = open(output_dir, 'a')
-        #out_f.write(str(valid_smile) + ', '+ str(rdock_score)+', '+str(min_score)+', '+str(len(state.position)))
         out_f.write(str(valid_smile) + ', '+ str(rdock_score)+', '+str(min_score)+', '+str(len(state.position))+', '+str(time.time()-start_time))
         out_f.write('\n')
         out_f.flush()
-        #out_f.close()
         dict_id += 1
 
         if len(node_index)==0:
@@ -194,7 +166,6 @@ def MCTS(root, verbose = False):
                 node = node.parentNode
         else:
             re_list = []
-            #atom_list = [nodeadded[m] for m in node_index]
             atom_checked = []
             for i in range(len(node_index)):
                 m=node_index[i]
@@ -208,14 +179,9 @@ def MCTS(root, verbose = False):
                 else:
                     node_pool.append(node.childNodes[atom_checked.index(atom)])
                 
-                #node.Addnode(nodeadded[m],state)
-                #node.Addnode(nodeadded[m],state)
-                #print valid_smile[i], 'node m', m, 'nodeadded[m]', nodeadded[m], 'node.childNodes[i]', node.childNodes[i]
                 for child in node.childNodes:
                     print(child.position)
                 print('\n')
-                #node_pool.append(node.childNodes[i])
-                #depth.append(len(state.position))
                 
                 score_index = 0 if score_type == 'SCORE' else 1
 
@@ -230,14 +196,9 @@ def MCTS(root, verbose = False):
                 if atom == '\n':
                     re = -1
                 else:
-                    #re=(- (rdock_score[i][score_index] + 20)*0.1)/(1+abs(rdock_score[i][score_index] + 20)*0.1)
                     re=(- (rdock_score[i][score_index] - base_rdock_score)*0.1)/(1+abs(rdock_score[i][score_index] -base_rdock_score)*0.1)
-                    #### pj16 reward fuction:
-                    #base_rdock_score = -20
-                    #reward = (np.tanh(0.1*(abs(rdock_score[max_index])+base_rdock_score)) + 1)/2 
                 re_list.append(re)
                 print('atom', atom, 're_list', re_list)
-                #re=(- (rdock_score[i]/100))/(1+abs(rdock_score[i]/100))  
                 """backpropation step"""
 
             for i in range(len(node_pool)):
@@ -254,9 +215,6 @@ def MCTS(root, verbose = False):
     out_f.close()
                     
     """check if found the desired compound"""
-
-    #print "all valid compounds:",valid_compound
-    #print "all active compounds:",desired_compound
     print("rdock_score",score_distribution)
     print("num valid_compound:",len(valid_compound))
     print("valid compounds",valid_compound)
