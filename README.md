@@ -6,11 +6,10 @@
 2. [Keras](https://github.com/fchollet/keras) (version 2.0.5) If you installed the newest version of keras, some errors will show up. Please change it back to keras 2.0.5 by pip install keras==2.0.5. 
 3. tensoflow (version 1.15.2, ver>=2.0 occurred error.) 
 4. [rdkit](https://anaconda.org/rdkit/rdkit)
-5. [rDock](http://rdock.sourceforge.net/installation/)
 
 ## How to use
 
-1. Get SBMolGen.
+1. Get ChemTS_dev.
 
 ```bash
 git clone git@github.com:ycu-iil/ChemTS_dev.git
