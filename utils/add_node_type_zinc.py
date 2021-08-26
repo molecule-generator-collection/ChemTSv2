@@ -1,3 +1,5 @@
+import os
+import sys
 from math import *
 import numpy as np
 from keras.preprocessing import sequence
@@ -6,6 +8,8 @@ from rdkit.Chem import Descriptors
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import rdMolDescriptors
 from reward.random_reward import calc_reward_score
+from rdkit.Chem import RDConfig
+sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 import networkx as nx
 from rdkit.Chem import rdmolops
