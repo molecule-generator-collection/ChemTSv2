@@ -116,17 +116,12 @@ def make_input_smile(generate_smile):
     return new_compound
 
 
-def check_node_type(new_compound, score_type, generated_dict, sa_threshold = 10, rule = 0, radical = False, docking_num = 10, target_dir = 'cdk2', hashimoto_filter=False, dict_id=1, trial = 1):
+def check_node_type(new_compound, generated_dict, sa_threshold = 10, rule = 0, radical = False, hashimoto_filter=False, trial = 1):
     node_index=[]
     valid_compound=[]
-    all_smile=[]
-    distance=[]
-
     score=[]
-    f_list = open('list_docking_pose_%s.txt' % trial, 'a')
     for i in range(len(new_compound)):
-        #check dictionary
-        print('check dictionary', 'comp:', new_compound[i], 'check:', new_compound[i] in generated_dict)
+        print(f"check dictionary comp: {new_compound[i]} check: {new_compound[i] in generated_dict}")
         if new_compound[i] in generated_dict:
             node_index.append(i)
             valid_compound.append(new_compound[i])
@@ -134,47 +129,46 @@ def check_node_type(new_compound, score_type, generated_dict, sa_threshold = 10,
             print('duplication!!')
             continue
 
-        ko = Chem.MolFromSmiles(new_compound[i])
-        if ko!=None:
+        mol = Chem.MolFromSmiles(new_compound[i])
+        if mol != None:
             # check hashimoto_filter
             if hashimoto_filter:
                 hashifilter = HashimotoFilter()
-                hf,_ = hashifilter.filter([new_compound[i]])
+                hf, _ = hashifilter.filter([new_compound[i]])
                 print('hashimoto filter check is', hf)
                 if hf[0] == 0:
                     continue
 
             #check SA_score
-            SA_score = -sascorer.calculateScore(MolFromSmiles(new_compound[i]))
-            print('SA_score', SA_score)
+            SA_score = - sascorer.calculateScore(MolFromSmiles(new_compound[i]))
+            print(f"SA_score: {SA_score}")
             if sa_threshold < -SA_score:
                 continue
 
             #check radical
             if radical:
-                #koh = Chem.AddHs(ko)  ## get ValueError: Sanitization error: Explicit valence for atom # 3 C, 6, is
                 try:
-                    koh = Chem.AddHs(ko)
+                    mol_addH = Chem.AddHs(mol)
                 except ValueError:
                     continue
 
                 fw = Chem.SDWriter('radical_check.sdf')
                 try:
-                    fw.write(koh)
+                    fw.write(mol_addH)
                     fw.close()
                 except ValueError:
                     continue
-                Mol_atom, Mol_CartX, Mol_CartY, Mol_CartZ,TotalCharge, SpinMulti = SDF2xyzV2.Read_sdf('radical_check.sdf')
-                print('radical check', SpinMulti)
+                _, _, _, _, _, SpinMulti = SDF2xyzV2.Read_sdf('radical_check.sdf')
+                print(f"radical check: {SpinMulti}")
                 if SpinMulti == 2: #2:open
                     continue
 
             #check Rule of Five
-            weight = round(rdMolDescriptors._CalcMolWt(ko), 2)
-            logp = Descriptors.MolLogP(ko)
-            donor = rdMolDescriptors.CalcNumLipinskiHBD(ko)
-            acceptor = rdMolDescriptors.CalcNumLipinskiHBA(ko)
-            rotbonds = rdMolDescriptors.CalcNumRotatableBonds(ko)
+            weight = round(rdMolDescriptors._CalcMolWt(mol), 2)
+            logp = Descriptors.MolLogP(mol)
+            donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
+            acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
+            rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
             if rule == 1:
                 if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
                     continue
@@ -189,13 +183,12 @@ def check_node_type(new_compound, score_type, generated_dict, sa_threshold = 10,
                 cycle_length = max([ len(j) for j in cycle_list ])
             if cycle_length <= 6:
                 cycle_length = 0
-            if cycle_length==0:
-                m = calc_reward_score(new_compound[i])
-                if m[0]<10**10:
+            if cycle_length == 0:
+                scores = calc_reward_score(new_compound[i])
+                if scores[0] < 10**10:
                     node_index.append(i)
                     valid_compound.append(new_compound[i])
-                    score.append(m)
-                    generated_dict[new_compound[i]] = m
+                    score.append(scores)
+                    generated_dict[new_compound[i]] = scores
 
-    f_list.close()				
     return node_index,score,valid_compound, generated_dict

@@ -145,7 +145,15 @@ def MCTS(root, verbose = False):
         print('dict_id', dict_id)
         for comp in new_compound:
             print('lastcomp', comp[-1], ' ... ',comp[-1] == '\n')
-        node_index,rdock_score,valid_smile,generated_dict = check_node_type(new_compound, score_type, generated_dict, sa_threshold = sa_threshold, rule = rule5, radical = radical_check, docking_num = docking_num, target_dir = target_dir, hashimoto_filter = hashimoto_filter, dict_id = dict_id, trial = trial)
+        node_index,rdock_score,valid_smile,generated_dict = check_node_type(
+            new_compound,
+            generated_dict,
+            sa_threshold=sa_threshold,
+            rule=rule5,
+            radical=radical_check,
+            hashimoto_filter=hashimoto_filter,
+            trial=trial
+        )
         valid_compound.extend(valid_smile)
         score_distribution.extend(rdock_score)
         
