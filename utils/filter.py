@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from rdkit import Chem
 from rdkit.Chem import AllChem
 import pandas as pd
@@ -7,7 +5,6 @@ from os import path
 
 
 class HashimotoFilter:
-
 	neutralizer = None
 	evaluater = None
 
@@ -49,24 +46,15 @@ class Neutralizer:
 
 	def __init__(self):
 		patts= (
-			# Imidazoles
-			('[n+;H]','n'),
-			# Amines
-			('[N+;!H0]','N'),
-			# Carboxylic acids and alcohols
-			('[$([O-]);!$([O-][#7])]','O'),
-			# Thiols
-			('[S-;X1]','S'),
-			# Sulfonamides
-			('[$([N-;X2]S(=O)=O)]','N'),
-			# Enamines
-			('[$([N-;X2][C,N]=C)]','N'),
-			# Tetrazoles
-			('[n-]','[nH]'),
-			# Sulfoxides
-			('[$([S-]=O)]','S'),
-			# Amides
-			('[$([N-]C=O)]','N'),
+			('[n+;H]','n'),  # Imidazoles
+			('[N+;!H0]','N'),  # Amines
+			('[$([O-]);!$([O-][#7])]','O'),  # Carboxylic acids and alcohols
+			('[S-;X1]','S'),  # Thiols
+			('[$([N-;X2]S(=O)=O)]','N'),  # Sulfonamides
+			('[$([N-;X2][C,N]=C)]','N'),  # Enamines
+			('[n-]','[nH]'),  # Tetrazoles
+			('[$([S-]=O)]','S'),  # Sulfoxides
+			('[$([N-]C=O)]','N'),  # Amides
 			)
 		self.reactions = [(Chem.MolFromSmarts(x),Chem.MolFromSmiles(y,False)) for x,y in patts]
 
@@ -80,10 +68,7 @@ class Neutralizer:
 				mol = rms[0]
 		mol.SetProp('neutralized', str(replaced))
 		return mol
-		#if replaced:
-		#    return True
-		#else:
-		#    return False
+
 
 class Evaluater:
 
@@ -183,13 +168,11 @@ class Evaluater:
 		current_dir = path.dirname(path.abspath(__file__))
 		dfb = pd.read_csv(current_dir + '/bonds_dict.txt', delimiter='\t')
 		for i, f in dfb.iterrows():
-			#print(f['Frequency'])
 			if f['BondIs'] == 1:
 				self.b_dict[f['ES_Index_Bond']]=f['BondIs']
 
 		dfa = pd.read_csv(current_dir + '/atoms_dict.txt', delimiter='\t')
 		for i, f in dfa.iterrows():
-			#print(f['Frequency'])
 			if f['AtomIs'] == 1:
 				self.a_dict[f['ES_Index_AtomBond']]=f['AtomIs']
 
@@ -268,7 +251,6 @@ class Evaluater:
 		a_list=[]
 		aE_list=self.aEstateMol(mol)
 		a_string=''
-		#print(aE_list)
 		for atom in mol.GetAtoms():
 			idx1=atom.GetIdx()
 			key1=aE_list[idx1]
@@ -277,14 +259,9 @@ class Evaluater:
 				a_list.append(idx1)
 			else:
 				ctrue += 1
-		#print(cfalse)
-		#print(ctrue)
-		#print(a_list)
 		if len(a_list)>0:
 			aa=map(str,a_list)
-			#aa=list(map(str,a_list))
 			a_string=';'.join(aa)
-			#print(a_string)
 		mol.SetProp('UnknownAtoms', a_string)
 		if cfalse > 0:
 			mol.SetProp('UnknownAtomIs', '1')
@@ -296,7 +273,6 @@ class Evaluater:
 		bonds=mol.GetBonds()
 		a_string=''
 		invalid_atoms=[]
-		#print(len(invalid_atoms))
 		ctrue=0
 		cfalse=0
 		for bond in bonds:
@@ -316,11 +292,8 @@ class Evaluater:
 		if len(invalid_atoms)>0:
 			a_list=list(set(invalid_atoms))
 			a_list.sort()
-			#aa=list(map(str,a_list))
 			aa=map(str,a_list)
-			#print(aa)
 			a_string=';'.join(aa)
-			#print(a_string)
 
 		mol.SetProp('InvalidBonds', a_string)
 		if cfalse > 0:
@@ -333,7 +306,6 @@ class Evaluater:
 		atE_list=self.atEstateMol(mol)
 		a_string=''
 		invalid_atoms=[]
-		#print(len(invalid_atoms))
 		ctrue=0
 		cfalse=0
 		for atom in mol.GetAtoms():
@@ -347,10 +319,8 @@ class Evaluater:
 				b.append(key2)
 			b.sort()
 			b=list(map(str,b))
-			#print(b)
 			b='_'.join(b)
 			query_aE=str(key1)+':'+str(b)
-			#print(query_aE)
 			if not query_aE in self.a_dict:
 				cfalse += 1
 				invalid_atoms.append(idx1)
@@ -361,12 +331,7 @@ class Evaluater:
 			a_list=list(set(invalid_atoms))
 			a_list.sort()
 			aa=map(str,a_list)
-			#aa=list(map(str,a_list))
-			#print(aa)
 			a_string=';'.join(aa)
-			#print(a_string)
-		#print(cfalse)
-		#print(ctrue)
 
 		mol.SetProp('InvalidAtoms', a_string)
 		if cfalse > 0:
