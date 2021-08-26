@@ -1,12 +1,6 @@
 import os
 from keras.models import model_from_json
-import tensorflow as tf
 os.environ["CUDA_VISIBLE_DEVICES"]= "1" #"0,1,2,3,"                                                                                                                  
-from keras import backend as K
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-sess = tf.Session(config = config)
-K.set_session(sess)
 
 
 def prepare_data(smiles,all_smile):

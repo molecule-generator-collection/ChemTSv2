@@ -1,20 +1,15 @@
-import sys
-import os
-# check SBMolGen_PATH setting
-if os.getenv('SBMolGen_PATH') == None:
-    print("THe SBMolGen_PATH has not defined, please set it before use it!")
-    exit(0)
-else:
-    SBMolGen_PATH=os.getenv('SBMolGen_PATH')
-    sys.path.append(SBMolGen_PATH+'/utils')
-from math import *
+from math import sqrt, log
 import random as pr
-import numpy as np
+import sys
 import time
-from load_model import loaded_model
-from make_smile import zinc_data_with_bracket_original, zinc_processed_with_bracket
-from add_node_type_zinc import chem_kn_simulation, make_input_smile,predict_smile,check_node_type,node_to_add,expanded_node
 import yaml
+
+import numpy as np
+
+from utils.add_node_type_zinc import chem_kn_simulation, make_input_smile, predict_smile, check_node_type, node_to_add, expanded_node
+from utils.load_model import loaded_model
+from utils.make_smile import zinc_data_with_bracket_original, zinc_processed_with_bracket
+
 
 class chemical:
     def __init__(self):
@@ -278,7 +273,7 @@ if __name__ == "__main__":
 
     output_dir = 'result_'+target+'_C'+str(c_val)+'_trial'+str(trial)+'.txt'
 
-    smile_old=zinc_data_with_bracket_original(SBMolGen_PATH + '/data/250k_rndm_zinc_drugs_clean.smi')
+    smile_old=zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val,smile=zinc_processed_with_bracket(smile_old)
     print('val is ', val)
 
@@ -287,5 +282,5 @@ if __name__ == "__main__":
     out_f.write('\n')
     out_f.close()
 
-    model=loaded_model(SBMolGen_PATH + '/RNN-model/'+ model_name)  #WM300 not tested  
+    model=loaded_model('RNN-model/'+ model_name)  #WM300 not tested  
     valid_compound=UCTchemical()

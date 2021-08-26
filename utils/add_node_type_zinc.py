@@ -1,20 +1,17 @@
 import os
 import sys
-from math import *
-import numpy as np
+
 from keras.preprocessing import sequence
+import networkx as nx
+import numpy as np
 from rdkit import Chem
-from rdkit.Chem import Descriptors
-from rdkit.Chem import MolFromSmiles
-from rdkit.Chem import rdMolDescriptors
-from reward.random_reward import calc_reward_score
-from rdkit.Chem import RDConfig
+from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig, rdmolops
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
-import networkx as nx
-from rdkit.Chem import rdmolops
-import SDF2xyzV2
-from filter import HashimotoFilter
+
+from reward.random_reward import calc_reward_score
+from utils import SDF2xyzV2
+from utils.filter import HashimotoFilter
 
 
 smiles_max_len = 82 #MW250:60, MW300:70 

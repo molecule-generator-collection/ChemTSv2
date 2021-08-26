@@ -1,8 +1,9 @@
-from rdkit import Chem
-from rdkit.Chem import AllChem
-import pandas as pd
 from os import path
 import sys
+
+import pandas as pd
+from rdkit import Chem
+from rdkit.Chem import AllChem
 
 
 class HashimotoFilter:

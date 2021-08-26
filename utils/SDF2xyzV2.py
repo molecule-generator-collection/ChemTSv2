@@ -1,7 +1,9 @@
-#!/sw/bin/python3.6
-import sys, math
-from numpy import *
-import AtomInfo
+import sys
+
+import numpy as np
+
+from utils import AtomInfo
+
 
 def Read_sdf(infilename):
 
@@ -93,12 +95,12 @@ def Read_sdf(infilename):
 #Copy to array of numpy###########################
 
 	Mol_atom = []
-	Mol_CartX = zeros(N)
-	Mol_CartY = zeros(N)
-	Mol_CartZ = zeros(N)
+	Mol_CartX = np.zeros(N)
+	Mol_CartY = np.zeros(N)
+	Mol_CartZ = np.zeros(N)
 
-	CHG_atom = array(CHG_atom)
-	CHG = array(CHG)
+	CHG_atom = np.array(CHG_atom)
+	CHG = np.array(CHG)
 
 	for j in range(N):
 		Mol_CartX[j] = X[j] 
@@ -128,7 +130,7 @@ def Read_sdf(infilename):
 		if (len(CHG_atom) != 0):
 			Judge = CHG_atom-j
 			if (any(Judge) == 0):
-				TotalNum_electron += AtomInfo.AtomicNumElec(Mol_atom[j])-CHG[where(Judge == 0)]
+				TotalNum_electron += AtomInfo.AtomicNumElec(Mol_atom[j])-CHG[np.where(Judge == 0)]
 			else:
 				TotalNum_electron += AtomInfo.AtomicNumElec(Mol_atom[j])
 		else:
