@@ -1,27 +1,5 @@
-import csv
-import itertools
-import operator
-import numpy as np
-import nltk
-import h5py
 import os
-from datetime import datetime
-from keras.models import Sequential
-from keras.layers import Dense, Activation,TimeDistributed
-from keras.layers import LSTM,GRU
-from keras.layers.embeddings import Embedding
-from keras.optimizers import RMSprop, Adam
-from keras.utils.data_utils import get_file
-from keras.layers import Dropout
-import numpy as np
-import random
-import sys
-from keras.utils.np_utils import to_categorical
-from keras.preprocessing import sequence
 from keras.models import model_from_json
-from make_smile import zinc_data_with_bracket, zinc_processed_with_bracket
-
-import os
 import tensorflow as tf
 os.environ["CUDA_VISIBLE_DEVICES"]= "1" #"0,1,2,3,"                                                                                                                  
 from keras import backend as K
@@ -29,6 +7,7 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 sess = tf.Session(config = config)
 K.set_session(sess)
+
 
 def prepare_data(smiles,all_smile):
     all_smile_index=[]
@@ -51,30 +30,18 @@ def prepare_data(smiles,all_smile):
 
 def loaded_model(filename):
     json_file = open(filename + '.json', 'r')
-    #json_file = open('/home/terayama/molecule-design/ChemTS/train_RNN/model_enamine_GRU256_epoch10.json', 'r')
-    #json_file = open('/home/terayama/molecule-design/ChemTS/RNN-model/model.json', 'r')
-
-    #json_file = open('/Users/yang/LSTM-chemical-project/protein-ligand/model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
 
     # load weights into new model
-    #loaded_model.load_weights('/Users/yang/LSTM-chemical-project/protein-ligand/model.h5')
-
     loaded_model.load_weights(filename+'.h5')
-    #loaded_model.load_weights('/home/terayama/molecule-design/ChemTS/train_RNN/model_enamine_GRU256_epoch10.h5')
-    #loaded_model.load_weights('/home/terayama/molecule-design/ChemTS/RNN-model/model.h5')
     print("Loaded model from disk")
-    
-
     return loaded_model
 
-def loaded_activity_model():
-    #smile_old=zinc_data_with_bracket_original()
-    #valcabulary,smile=zinc_processed_with_bracket(smile_old)
 
-    #json_file = open('/Users/yang/LSTM-chemical-project/new-version-rnn/model/model.json', 'r')
+# TODO: no longer used?
+def loaded_activity_model():
     json_file = open('/Users/yang/LSTM-chemical-project/protein-ligand/ppara_model.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
@@ -82,9 +49,6 @@ def loaded_activity_model():
 
     # load weights into new model
     loaded_model.load_weights('/Users/yang/LSTM-chemical-project/protein-ligand/ppara_model.hdf5')
-    #loaded_model.load_weights('/Users/yang/LSTM-chemical-project/new-version-rnn/model/model.h5')
     print("Loaded model from disk")
 
     return loaded_model
-
-
