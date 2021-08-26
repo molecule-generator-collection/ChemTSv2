@@ -1,72 +1,44 @@
 import csv
-import itertools
-import operator
 import numpy as np
-import nltk
-import os
 import sys
-from datetime import datetime
 from keras.models import Sequential
-from keras.layers import Dense, Activation,TimeDistributed
-from keras.layers import LSTM,GRU
+from keras.layers import Dense,TimeDistributed
+from keras.layers import GRU
 from keras.layers.embeddings import Embedding
-from keras.optimizers import RMSprop, Adam
-from keras.utils.data_utils import get_file
-from keras.layers import Dropout
-import numpy as np
-import random
+from keras.optimizers import Adam
 import sys
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing import sequence
-from keras.models import model_from_json
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-#from make_smile import ziprocess_organic,process_zinc_data
 from make_smile import zinc_data_with_bracket_original,zinc_processed_with_bracket
-
-from keras.layers import Conv1D, MaxPooling1D
-#from combine_bond_atom import organic, process_organic,bond_atom
-
 import yaml
-
 import matplotlib as mpl
 mpl.use('Agg')  ## fix the "Invalid DISPLAY variable" Error
 import matplotlib.pyplot as plt
 
-def load_data():
 
+def load_data():
     sen_space=[]
-    #f = open('/Users/yang/smiles.csv', 'rb')
-    f = open(dataset, 'rb')
+    f = open(dataset, 'rb')  # TODO: dataset should be an argument
     reader = csv.reader(f)
     for row in reader:
-        #word_space[row].append(reader[row])
-        #print word_sapce
         sen_space.append(row)
-    #print sen_space
     f.close()
 
     element_table=["Cu","Ti","Zr","Ga","Ge","As","Se","Br","Si","Zn","Cl","Be","Ca","Na","Sr","Ir","Li","Rb","Cs","Fr","Be","Mg",
             "Ca","Sr","Ba","Ra","Sc","La","Ac","Ti","Zr","Nb","Ta","Db","Cr","Mo","Sg","Mn","Tc","Re","Bh","Fe","Ru","Os","Hs","Co","Rh",
             "Ir","Mt","Ni","Pd","Pt","Ds","Cu","Ag","Au","Rg","Zn","Cd","Hg","Cn","Al","Ga","In","Tl","Nh","Si","Ge","Sn","Pb","Fl",
             "As","Sb","Bi","Mc","Se","Te","Po","Lv","Cl","Br","At","Ts","He","Ne","Ar","Kr","Xe","Rn","Og"]
-    #print sen_space
     word1=sen_space[0]
     word_space=list(word1[0])
     end="\n"
-    #start="st"
-    #word_space.insert(0,end)
     word_space.append(end)
-    #print word_space
-    #print len(sen_space)
     all_smile=[]
-    #print word_space
-    #for i in range(len(all_smile)):
 
     for i in range(len(sen_space)):
         word1=sen_space[i]
         word_space=list(word1[0])
         word=[]
-        #word_space.insert(0,end)
         j=0
         while j<len(word_space):
             word_space1=[]
@@ -86,13 +58,11 @@ def load_data():
 
         word.append(end)
         all_smile.append(list(word))
-    #print all_smile
     val=[]
     for i in range(len(all_smile)):
         for j in range(len(all_smile[i])):
             if all_smile[i][j] not in val:
                 val.append(all_smile[i][j])
-    #print val
     val.remove("\n")
     val.insert(0,"\n")
 
@@ -101,39 +71,26 @@ def load_data():
 
 def organic_data():
     sen_space=[]
-    #f = open('/Users/yang/smiles.csv', 'rb')
     f = open('/Users/yang/LSTM-chemical-project/make_sm.csv', 'rb')
-    #f = open('/Users/yang/LSTM-chemical-project/smile_trainning.csv', 'rb')
     reader = csv.reader(f)
     for row in reader:
-        #word_space[row].append(reader[row])
-        #print word_sapce
         sen_space.append(row)
-    #print sen_space
     f.close()
 
     element_table=["Cu","Ti","Zr","Ga","Ge","As","Se","Br","Si","Zn","Cl","Be","Ca","Na","Sr","Ir","Li","Rb","Cs","Fr","Be","Mg",
             "Ca","Sr","Ba","Ra","Sc","La","Ac","Ti","Zr","Nb","Ta","Db","Cr","Mo","Sg","Mn","Tc","Re","Bh","Fe","Ru","Os","Hs","Co","Rh",
             "Ir","Mt","Ni","Pd","Pt","Ds","Cu","Ag","Au","Rg","Zn","Cd","Hg","Cn","Al","Ga","In","Tl","Nh","Si","Ge","Sn","Pb","Fl",
             "As","Sb","Bi","Mc","Se","Te","Po","Lv","Cl","Br","At","Ts","He","Ne","Ar","Kr","Xe","Rn","Og"]
-    #print sen_space
     word1=sen_space[0]
     word_space=list(word1[0])
     end="\n"
-    #start="st"
-    #word_space.insert(0,end)
     word_space.append(end)
-    #print word_space
-    #print len(sen_space)
     all_smile=[]
-    #print word_space
-    #for i in range(len(all_smile)):
 
     for i in range(len(sen_space)):
         word1=sen_space[i]
         word_space=list(word1[0])
         word=[]
-        #word_space.insert(0,end)
         j=0
         while j<len(word_space):
             word_space1=[]
@@ -153,13 +110,11 @@ def organic_data():
 
         word.append(end)
         all_smile.append(list(word))
-    #print all_smile
     val=[]
     for i in range(len(all_smile)):
         for j in range(len(all_smile[i])):
             if all_smile[i][j] not in val:
                 val.append(all_smile[i][j])
-    #print val
     val.remove("\n")
     val.insert(0,"\n")
 
@@ -192,35 +147,22 @@ def generate_smile(model,val):
 
     while not start_smile_index[-1] == val.index(end):
         predictions=model.predict(start_smile_index)
-        ##next atom probability
         smf=[]
         for i in range (len(X)):
             sm=[]
             for j in range(len(X[i])):
-                #if np.argmax(predictions[i][j])=!0
                 sm.append(np.argmax(predictions[i][j]))
             smf.append(sm)
-
-        #print sm
-        #print smf
-        #print len(sm)
-
-        new_smile.append(sampled_word)
-    #sentence_str = [index_to_word[x] for x in new_sentence[1:-1]]
-    #return new_sentence
-
+        new_smile.append(sampled_word)  # Check: sample_word is not defined
 
 
 def save_model(model):
-    # serialize model to JSON
     model_json = model.to_json()
-    #with open("model.json", "w") as json_file:
     with open(output_json, "w") as json_file:
         json_file.write(model_json)
-    # serialize weights to HDF5
-    #model.save_weights("model.h5")
     model.save_weights(output_weight)
     print("Saved model to disk")
+
 
 def save_model_ES(model):
     model_json = model.to_json()
@@ -287,11 +229,7 @@ if __name__ == "__main__":
 
     model.add(Embedding(input_dim=vocab_size, output_dim=len(valcabulary), input_length=N,mask_zero=False))
     model.add(GRU(output_dim=units, input_shape=(82,64),activation='tanh', dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
-    #model.add(LSTM(output_dim=256, input_shape=(82,64),activation='tanh',return_sequences=True))
-    #model.add(Dropout(dropout_rate))
     model.add(GRU(units,activation='tanh',dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
-    #model.add(LSTM(output_dim=1000, activation='sigmoid',return_sequences=True))
-    #model.add(Dropout(dropout_rate))
     model.add(TimeDistributed(Dense(embed_size, activation='softmax')))
     optimizer=Adam(lr_val)
     print(model.summary())
@@ -320,4 +258,3 @@ if __name__ == "__main__":
     plt.ylabel('Accuracy')
     plt.legend()
     plt.savefig('learning_curve_GRU'+dataset.split('/')[-1]+'_units'+str(units)+'_dropout'+str(dropout_rate)+'_recDP'+str(rec_dropout_rate)+'_lr'+str(lr_val)+'_batchsize'+str(batch_size)+'.png', dpi = 300,  bbox_inches='tight', pad_inches=0)
-                     
