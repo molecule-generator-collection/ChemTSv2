@@ -16,12 +16,6 @@ git clone git@github.com:ycu-iil/ChemTS_dev.git
 cd ChemTS_dev
 ```
 
-Set the system path, here is the example for bash.
-
-```bash
-export SBMolGen_PATH={PATH_TO_CHEMTS_DEV} 
-```
-
 2. Train the RNN model.
 
 ```bash
@@ -55,8 +49,7 @@ model_name: model
 4. Molecule generate.
 
 ```bash
-cd example_ligand_design
-python ${SBMolGen_PATH}/sbmolgen.py setting.yaml
+python run.py setting.yaml
 ```
 
 ## License
