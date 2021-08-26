@@ -62,12 +62,8 @@ visits)
         n = Node(position = m, parent = self, state = s)
         self.childNodes.append(n)
 
-    def simulation(self,state):
-        predicted_smile=predict_smile(model,state)
-        input_smile=make_input_smile(predicted_smile)
-        logp,valid_smile,all_smile=logp_calculation(input_smile)
-
-        return logp,valid_smile,all_smile
+    def simulation(self):
+        raise SystemExit("[ERROR] Do NOT use this method")
 
     def Update(self, result):
         self.visits += 1
