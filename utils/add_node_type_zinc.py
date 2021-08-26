@@ -1,19 +1,16 @@
 from math import *
 import numpy as np
-from copy import deepcopy
-from load_model import loaded_model
 from keras.preprocessing import sequence
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem import rdMolDescriptors
-from rdock_test_MP import rdock_score
+from reward.random_reward import calc_reward_score
 import sascorer
 import networkx as nx
 from rdkit.Chem import rdmolops
 import SDF2xyzV2
 from filter import HashimotoFilter
-import shutil,os
 
 
 smiles_max_len = 82 #MW250:60, MW300:70 
@@ -189,24 +186,12 @@ def check_node_type(new_compound, score_type, generated_dict, sa_threshold = 10,
             if cycle_length <= 6:
                 cycle_length = 0
             if cycle_length==0:
-                m=rdock_score(new_compound[i], score_type, target_dir, docking_num=docking_num)
+                m = calc_reward_score(new_compound[i])
                 if m[0]<10**10:
                     node_index.append(i)
                     valid_compound.append(new_compound[i])
-                    score.append(m[:2])
-                    #add dictionary                                                                                                                          
-                    generated_dict[new_compound[i]] = m[:2]
+                    score.append(m)
+                    generated_dict[new_compound[i]] = m
 
-                    #copy best docking result
-                    best_docking_id = m[2]
-                    docking_result_file = 'rdock_out_'
-                    compound_id = i
-                    # creat the directory for best docking pose.
-                    out_dir = 'mol_3D_pose_trial'+ str(trial)
-                    if not os.path.isdir(out_dir):
-                        os.mkdir(out_dir)  
-                    f_list.write('pose_'+str(dict_id)+'_'+str(compound_id)+'_'+str(best_docking_id)+','+new_compound[i])
-                    f_list.write('\n')
-                    shutil.copyfile(docking_result_file+str(best_docking_id)+'.sd', out_dir + '/pose_'+ str(dict_id)+'_'+str(compound_id)+'_'+str(best_docking_id)+'.sd')
     f_list.close()				
     return node_index,score,valid_compound, generated_dict

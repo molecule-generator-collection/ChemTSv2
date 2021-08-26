@@ -82,7 +82,8 @@ visits)
 def MCTS(root, verbose = False):
     """initialization of the chemical trees and grammar trees"""
     start_time = time.time()
-    run_time = time.time() + 3600*hours # 3600*24
+    #run_time = time.time() + 3600*hours # 3600*24
+    run_time = time.time() + 60
     rootnode = Node(state = root)
     state = root.Clone()
     """----------------------------------------------------------------------"""
