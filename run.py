@@ -278,5 +278,5 @@ if __name__ == "__main__":
     out_f.write('\n')
     out_f.close()
 
-    model=loaded_model('RNN-model/'+ model_name)  #WM300 not tested  
+    model=loaded_model('model/'+ model_name)  #WM300 not tested  
     valid_compound=UCTchemical()
