@@ -85,7 +85,7 @@ def MCTS(root, verbose = False):
     min_score_distribution = []
     generated_dict = {}  # dictionary of generated compounds
 
-    out_f = open(output_dir, 'a')
+    out_f = open(output_file, 'a')
 
     while time.time()<=run_time:
         node = rootnode  # important! This node is different with state / node is the tree node
@@ -224,8 +224,6 @@ if __name__ == "__main__":
     trial = conf.get('trial', 1)
     c_val = conf.get('c_val', 1.0)
     loop_num_nodeExpansion = conf.get('loop_num_nodeExpansion', 1000) 
-    target = conf.get('target', 'CDK2')
-    target_dir = conf.get('target_path', './')
     hours = conf.get('hours', 1) 
     score_type = conf.get('score_type', 'SCORE.INTER') #<SCORE> or <SCORE.INTER>
     docking_num = conf.get('docking_num', 10)
@@ -241,8 +239,6 @@ if __name__ == "__main__":
           f"trial num is: {trial}\n"
           f"c_val: {c_val}\n"
           f"loop_num_nodeExpansion: {loop_num_nodeExpansion}\n"
-          f"target: {target}\n"
-          f"target_dir: {target_dir}\n"
           f"max run time: {hours}\n"
           f"score_type: {score_type}\n"
           f"docking_num: {docking_num}\n"
@@ -252,14 +248,13 @@ if __name__ == "__main__":
           f"simulation_num: {simulation_num}\n"
           f"hashimoto_filter: {hashimoto_filter}")
 
-    output_dir = f"result_{target}_C{c_val}_trial{trial}.txt"
+    output_file = f"result_C{c_val}_trial{trial}.txt"
 
     smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val,smile = zinc_processed_with_bracket(smile_old)
     print(f"val is {val}")
 
-    out_f = open(output_dir, 'w')
-    with open(output_dir, 'w') as f:
+    with open(output_file, 'w') as f:
         f.write('#valid_smile, score, min_score, depth, used_time\n')
 
     model = loaded_model('model/' + model_name)  #WM300 not tested  

@@ -1,8 +1,6 @@
 trial: 1
 c_val: 1.0
 loop_num_nodeExpansion: 1000
-target: 'CDK2'
-target_path: /home/mabiao/apps/SBMolGen/example_ligand_design
 hours: 1
 score_target: 'SCORE.INTER'
 docking_num: 10
