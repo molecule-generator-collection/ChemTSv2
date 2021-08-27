@@ -15,7 +15,6 @@ class chemical:
     def __init__(self):
         self.position = ['&']
         self.num_atom = 8
-        self.vl = ['\n', '&', 'C', '1', 'N', '[C@@H]', '2', '[C@H]', '(', '=', 'O', ')', 'S', 'c', '[S@]', '[nH]', '[O-]', '[N+]', 'n', 'F', '#', '[C@]', '[C@@]', '[S@@]', 'P', '/', '\\', 'Cl', 's', 'Br', 'o', '[NH3+]', 'I', '[n+]', '[nH+]', '3', '[N-]', '[S-]', 'B', '4', '5', '[NH+]', '[Si]', '[P@]', '[NH2+]', '[P@@]', '[N@+]', '6', '[N@@+]', '[S@@+]', '7', '8', '[P@@H]', '[n-]', '[C-]', '[P+]', '[Cu]', '[Ni]', '[Zn]', '[Au-]', '[OH+]']
         
     def Clone(self):
         st = chemical()
@@ -39,7 +38,6 @@ class Node:
         self.nonvisited_atom = state.Getatom()
         self.type_node = []
         self.depth = 0
-
 
     def Selectnode(self):
         ucb=[]
@@ -93,7 +91,6 @@ def MCTS(root, verbose = False):
 
         """selection step"""
         node_pool = []
-
         while node.childNodes!=[]:
             node = node.Selectnode()
             state.SelectPosition(node.position)
@@ -214,13 +211,10 @@ def UCTchemical():
 
 
 if __name__ == "__main__":
-    # set parameter
     argvs = sys.argv
-
     """read yaml file for configuration"""
     with open(str(argvs[1]), "r+") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
-
     trial = conf.get('trial', 1)
     c_val = conf.get('c_val', 1.0)
     loop_num_nodeExpansion = conf.get('loop_num_nodeExpansion', 1000) 
@@ -234,7 +228,6 @@ if __name__ == "__main__":
     hashimoto_filter = conf.get('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
     base_score = conf.get('base_score', -20)
     model_name = conf.get('model_name', 'model')
-
     print(f"========== Configuration ==========\n"
           f"trial num is: {trial}\n"
           f"c_val: {c_val}\n"
@@ -251,7 +244,7 @@ if __name__ == "__main__":
     output_file = f"result_C{c_val}_trial{trial}.txt"
 
     smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
-    val,smile = zinc_processed_with_bracket(smile_old)
+    val, smile = zinc_processed_with_bracket(smile_old)
     print(f"val is {val}")
 
     with open(output_file, 'w') as f:
