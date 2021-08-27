@@ -1,5 +1,5 @@
 from math import sqrt, log
-import random as pr
+import random
 import sys
 import time
 import yaml
@@ -50,7 +50,7 @@ class Node:
             print(f"{self.childNodes[i].position} {ucb_tmp}") 
         m = np.amax(ucb)
         indices = np.nonzero(ucb == m)[0]
-        ind = pr.choice(indices)
+        ind = random.choice(indices)
         s = self.childNodes[ind]
         print(f"\nindex {ind} {self.position} {m}") 
         return s
