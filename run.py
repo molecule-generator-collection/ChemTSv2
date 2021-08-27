@@ -217,7 +217,6 @@ if __name__ == "__main__":
     c_val = conf.get('c_val', 1.0)
     loop_num_nodeExpansion = conf.get('loop_num_nodeExpansion', 1000) 
     hours = conf.get('hours', 1) 
-    docking_num = conf.get('docking_num', 10)
     sa_threshold = conf.get('sa_threshold', 3.5) #if SA > sa_threshold, score = 0. Default sa_threshold = 10
     rule5 = conf.get('rule5', 1) #0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
     radical_check = conf.get('radical_check', True)
@@ -230,7 +229,6 @@ if __name__ == "__main__":
           f"c_val: {c_val}\n"
           f"loop_num_nodeExpansion: {loop_num_nodeExpansion}\n"
           f"max run time: {hours}\n"
-          f"docking_num: {docking_num}\n"
           f"sa_threshold: {sa_threshold}\n"
           f"model_name: {model_name}\n"
           f"base_score: {base_score}\n"
