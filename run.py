@@ -84,7 +84,6 @@ def MCTS(root, verbose = False):
     score_distribution = []
     min_score_distribution = []
     generated_dict = {}  # dictionary of generated compounds
-    dict_id = 1  # this id used for save best docking pose.
 
     out_f = open(output_dir, 'a')
 
@@ -127,8 +126,7 @@ def MCTS(root, verbose = False):
             new_compound.extend(new_compound_tmp)
         print(f"nodeadded {nodeadded}\n"
               f"new compound {new_compound}\n"
-              f"generated_dict {generated_dict}\n"
-              f"dict_id {dict_id}") 
+              f"generated_dict {generated_dict}\n") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
         node_index, score, valid_smile, generated_dict = check_node_type(
@@ -146,7 +144,6 @@ def MCTS(root, verbose = False):
         print(f"node {node_index} score {score} valid {valid_smile}")
         out_f.write(f"{valid_smile}, {score}, {min_score}, {len(state.position)}, {time.time()-start_time}\n")
         out_f.flush()
-        dict_id += 1
 
         if len(node_index) == 0:
             re = -1.0
