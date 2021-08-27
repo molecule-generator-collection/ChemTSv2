@@ -9,4 +9,4 @@ rule5: 1
 radical_check: True
 simulation_num: 3
 hashimoto_filter: True
-model_name: model
+model_name: model.tf25
