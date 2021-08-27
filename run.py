@@ -9,6 +9,7 @@ import numpy as np
 from utils.add_node_type_zinc import chem_kn_simulation, make_input_smile, predict_smile, check_node_type, node_to_add, expanded_node
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
+from reward.random_reward import calc_simulation_score
 
 
 class chemical:
@@ -177,8 +178,7 @@ def MCTS(root, verbose = False):
                 if atom == '\n':
                     re = -1
                 else:
-                    re = ((-(score[i][0] - base_score) * 0.1)
-                        / (1 + abs(score[i][0] - base_score) * 0.1))
+                    re = calc_simulation_score(scores=score[i], base_score=base_score)
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
