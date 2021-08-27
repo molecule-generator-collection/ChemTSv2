@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# vscode
+.vscode
+
+# User define
+result_CDK2_C1.0_trial1.txt
+radical_check.sdf
