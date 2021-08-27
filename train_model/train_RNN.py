@@ -1,20 +1,21 @@
 import csv
+import sys
+
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing import sequence
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import numpy as np
-import sys
-from keras.models import Sequential
-from keras.layers import Dense,TimeDistributed
-from keras.layers import GRU
-from keras.layers.embeddings import Embedding
-from keras.optimizers import Adam
-import sys
-from keras.utils.np_utils import to_categorical
-from keras.preprocessing import sequence
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from utils.make_smiles import zinc_data_with_bracket_original,zinc_processed_with_bracket
-import yaml
 import matplotlib as mpl
 mpl.use('Agg')  ## fix the "Invalid DISPLAY variable" Error
 import matplotlib.pyplot as plt
+import yaml
+
+sys.path.append("../")
+from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 
 
 def load_data():
@@ -228,8 +229,8 @@ if __name__ == "__main__":
     model = Sequential()
 
     model.add(Embedding(input_dim=vocab_size, output_dim=len(valcabulary), input_length=N,mask_zero=False))
-    model.add(GRU(output_dim=units, input_shape=(82,64),activation='tanh', dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
-    model.add(GRU(units,activation='tanh',dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
+    model.add(GRU(units, input_shape=(82,64),activation='tanh', dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
+    model.add(GRU(units, activation='tanh',dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
     model.add(TimeDistributed(Dense(embed_size, activation='softmax')))
     optimizer=Adam(lr_val)
     print(model.summary())
