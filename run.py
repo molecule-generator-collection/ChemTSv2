@@ -83,8 +83,8 @@ def MCTS(root, verbose = False):
     min_score = 1000
     score_distribution = []
     min_score_distribution = []
-    generated_dict = {} #dictionary of generated compounds
-    dict_id = 1  ## this id used for save best docking pose.
+    generated_dict = {}  # dictionary of generated compounds
+    dict_id = 1  # this id used for save best docking pose.
 
     out_f = open(output_dir, 'a')
 
@@ -131,7 +131,7 @@ def MCTS(root, verbose = False):
               f"dict_id {dict_id}") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index,rdock_score,valid_smile,generated_dict = check_node_type(
+        node_index, score, valid_smile, generated_dict = check_node_type(
             new_compound,
             generated_dict,
             sa_threshold=sa_threshold,
@@ -139,12 +139,12 @@ def MCTS(root, verbose = False):
             radical=radical_check,
             hashimoto_filter=hashimoto_filter,
             trial=trial,
-        )
+            )
         valid_compound.extend(valid_smile)
-        score_distribution.extend(rdock_score)
+        score_distribution.extend(score)
         
-        print(f"node {node_index} rdock_score {rdock_score} valid {valid_smile}")
-        out_f.write(f"{valid_smile}, {rdock_score}, {min_score}, {len(state.position)}, {time.time()-start_time}\n")
+        print(f"node {node_index} score {score} valid {valid_smile}")
+        out_f.write(f"{valid_smile}, {score}, {min_score}, {len(state.position)}, {time.time()-start_time}\n")
         out_f.flush()
         dict_id += 1
 
@@ -175,9 +175,9 @@ def MCTS(root, verbose = False):
                 score_index = 0 if score_type == 'SCORE' else 1
 
                 print(f"current minmum score: {min_score}")
-                if rdock_score[i][score_index] <= min_score:
-                    min_score_distribution.append(rdock_score[i][score_index])
-                    min_score = rdock_score[i][score_index]
+                if score[i][score_index] <= min_score:
+                    min_score_distribution.append(score[i][score_index])
+                    min_score = score[i][score_index]
                 else:
                     min_score_distribution.append(min_score)
 
@@ -185,8 +185,8 @@ def MCTS(root, verbose = False):
                 if atom == '\n':
                     re = -1
                 else:
-                    re = ((-(rdock_score[i][score_index] - base_rdock_score) * 0.1)
-                        / (1 + abs(rdock_score[i][score_index] - base_rdock_score) * 0.1))
+                    re = ((-(score[i][score_index] - base_score) * 0.1)
+                        / (1 + abs(score[i][score_index] - base_score) * 0.1))
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
@@ -202,7 +202,7 @@ def MCTS(root, verbose = False):
     out_f.close()
                     
     """check if found the desired compound"""
-    print(f"rdock_score: {score_distribution}\n"
+    print(f"score: {score_distribution}\n"
           f"num valid_compound: {len(valid_compound)}\n"
           f"valid compounds: {valid_compound}\n"
           f"depth: {depth}\n"
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     radical_check = conf.get('radical_check', True)
     simulation_num = conf.get('simulation_num', 3)
     hashimoto_filter = conf.get('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
-    base_rdock_score = conf.get('base_rdock_score', -20)
+    base_score = conf.get('base_score', -20)
     model_name = conf.get('model_name', 'model')
 
     print(f"========== Configuration ==========\n"
@@ -251,19 +251,19 @@ if __name__ == "__main__":
           f"docking_num: {docking_num}\n"
           f"sa_threshold: {sa_threshold}\n"
           f"model_name: {model_name}\n"
-          f"base_rdock_score: {base_rdock_score}\n"
+          f"base_score: {base_score}\n"
           f"simulation_num: {simulation_num}\n"
           f"hashimoto_filter: {hashimoto_filter}")
 
     output_dir = f"result_{target}_C{c_val}_trial{trial}.txt"
 
-    smile_old=zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
-    val,smile=zinc_processed_with_bracket(smile_old)
+    smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
+    val,smile = zinc_processed_with_bracket(smile_old)
     print(f"val is {val}")
 
     out_f = open(output_dir, 'w')
     with open(output_dir, 'w') as f:
-        f.write('#valid_smile, rdock_score, min_score, depth, used_time\n')
+        f.write('#valid_smile, score, min_score, depth, used_time\n')
 
     model = loaded_model('model/' + model_name)  #WM300 not tested  
     valid_compound = UCTchemical()
