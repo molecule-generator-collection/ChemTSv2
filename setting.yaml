@@ -2,7 +2,6 @@ trial: 1
 c_val: 1.0
 loop_num_nodeExpansion: 1000
 hours: 1
-score_target: 'SCORE.INTER'
 docking_num: 10
 base_rdock_score: -20
 sa_threshold: 3.5
