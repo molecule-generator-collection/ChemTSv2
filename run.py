@@ -8,7 +8,7 @@ import numpy as np
 
 from utils.add_node_type_zinc import chem_kn_simulation, make_input_smile, predict_smile, check_node_type, node_to_add, expanded_node
 from utils.load_model import loaded_model
-from utils.make_smile import zinc_data_with_bracket_original, zinc_processed_with_bracket
+from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 
 
 class chemical:

@@ -10,7 +10,7 @@ import sys
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing import sequence
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from make_smile import zinc_data_with_bracket_original,zinc_processed_with_bracket
+from utils.make_smiles import zinc_data_with_bracket_original,zinc_processed_with_bracket
 import yaml
 import matplotlib as mpl
 mpl.use('Agg')  ## fix the "Invalid DISPLAY variable" Error
