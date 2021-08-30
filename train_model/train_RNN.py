@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 
@@ -16,6 +17,17 @@ import yaml
 sys.path.append("../")
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        description="",
+        usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
+    )
+    parser.add_argument(
+        "-c", "--config", type=str, required=True,
+        help="path to a config file"
+    )
+    return parser.parse_args()
 
 def prepare_data(smiles, all_smile):
     all_smile_index = []
@@ -60,12 +72,8 @@ def update_config(conf):
 
 
 def main():
-    argvs = sys.argv
-    if len(argvs) == 1:
-        print("input configuration file")
-        exit()
-
-    with open(str(argvs[1]), "r+") as f:
+    args = get_parser()
+    with open(args.config, "r") as f:
         conf = yaml.load(f)
     update_config(conf)
     print(f"========== Configuration ==========")
