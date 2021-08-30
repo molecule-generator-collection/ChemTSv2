@@ -10,6 +10,13 @@
 4. networkx: 2.6.2 
 5. pyyaml: 5.4.1
 
+```bash
+conda create -n chemts -c conda-forge rdkit python=3.6
+# switch a python virtual environment to `chemts`
+pip install --upgrade tensorflow==2.5
+conda install -c conda-forge matplotlib pyyaml
+```
+
 ### Old
 
 1. [Python](https://www.anaconda.com/download/)>=3.7
