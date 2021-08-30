@@ -30,7 +30,7 @@ cd ChemTS_dev
 
 ```bash
 cd train_RNN
-python train_RNN.py train_RNN.yaml
+python train_RNN.py model_setting.yaml
 ```
 
 3. Make a setting file for molecule generate.
