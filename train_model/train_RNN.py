@@ -50,7 +50,7 @@ def save_model_ES(model, output):
     print(f"Saved model to {output}")
 
 
-if __name__ == "__main__":
+def main():
     argvs = sys.argv
     if len(argvs) == 1:
         print("input configuration file")
@@ -132,3 +132,7 @@ if __name__ == "__main__":
         dpi = 300,
         bbox_inches='tight', 
         pad_inches=0,)
+
+
+if __name__ == "__main__":
+    main()
