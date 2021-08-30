@@ -29,6 +29,7 @@ def get_parser():
     )
     return parser.parse_args()
 
+
 def prepare_data(smiles, all_smile):
     all_smile_index = []
     for i in range(len(all_smile)):
@@ -69,6 +70,21 @@ def update_config(conf):
     conf.setdefault('units', 256)    
     conf.setdefault('rec_dropout_rate', 0.2)
     conf.setdefault('maxlen', 82)
+
+
+def plot_training_curve(result, conf):
+    fname = f"learning_curve_GRU_{os.path.basename(conf['dataset']).split('.')[0]}_units{conf['units']}_dropout{conf['dropout_rate']}_recDP{conf['rec_dropout_rate']}_lr{conf['learning_rate']}_batchsize{conf['batch_size']}.png"
+    plt.plot(range(1, len(result.history['accuracy']) + 1), result.history['accuracy'], label="training")
+    plt.plot(range(1, len(result.history['val_accuracy']) + 1), result.history['val_accuracy'], label="validation")
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig(
+        fname,
+        dpi = 300,
+        bbox_inches='tight', 
+        pad_inches=0,)
+    print(f"Training curve was saved to {fname}")
 
 
 def main():
@@ -117,17 +133,7 @@ def main():
         shuffle=True,)
     save_model(model, conf["output_json"])
 
-    ## plot the training acc
-    plt.plot(range(1, len(result.history['accuracy']) + 1), result.history['accuracy'], label="training")
-    plt.plot(range(1, len(result.history['val_accuracy']) + 1), result.history['val_accuracy'], label="validation")
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.savefig(
-        f"learning_curve_GRU_{os.path.basename(conf['dataset']).split('.')[0]}_units{conf['units']}_dropout{conf['dropout_rate']}_recDP{conf['rec_dropout_rate']}_lr{conf['learning_rate']}_batchsize{conf['batch_size']}.png",
-        dpi = 300,
-        bbox_inches='tight', 
-        pad_inches=0,)
+    plot_training_curve(result, conf)
 
 
 if __name__ == "__main__":
