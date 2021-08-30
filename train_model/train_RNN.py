@@ -1,7 +1,5 @@
-import csv
 import sys
 
-import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed
 from tensorflow.keras.optimizers import Adam
@@ -10,7 +8,7 @@ from tensorflow.keras.preprocessing import sequence
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 import numpy as np
 import matplotlib as mpl
-mpl.use('Agg')  ## fix the "Invalid DISPLAY variable" Error
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import yaml
 
@@ -114,7 +112,7 @@ if __name__ == "__main__":
     model.add(GRU(units, activation='tanh',dropout = dropout_rate, recurrent_dropout = rec_dropout_rate,return_sequences=True))
     model.add(TimeDistributed(Dense(embed_size, activation='softmax')))
     optimizer=Adam(lr_val)
-    print(model.summary())
+    model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
     if epochs == -1:
@@ -127,15 +125,8 @@ if __name__ == "__main__":
         save_model(model)
 
     ## plot the training acc
-    #%matplotlib inline
-    try:
-        # before keras 2.0.5
-        plt.plot(range(1, len(result.history['acc'])+1), result.history['acc'], label="training")
-        plt.plot(range(1, len(result.history['val_acc'])+1), result.history['val_acc'], label="validation")
-    except KeyError:
-        # after keras-2.3.1
-        plt.plot(range(1, len(result.history['accuracy'])+1), result.history['accuracy'], label="training")
-        plt.plot(range(1, len(result.history['val_accuracy'])+1), result.history['val_accuracy'], label="validation")
+    plt.plot(range(1, len(result.history['accuracy'])+1), result.history['accuracy'], label="training")
+    plt.plot(range(1, len(result.history['val_accuracy'])+1), result.history['val_accuracy'], label="validation")
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
