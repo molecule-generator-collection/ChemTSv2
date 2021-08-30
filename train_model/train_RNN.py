@@ -56,6 +56,7 @@ if __name__ == "__main__":
     if argc == 1:
         print("input configuration file")
         exit()
+
     with open(str(argvs[1]), "r+") as f:
         conf = yaml.load(f)
     conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
@@ -68,10 +69,11 @@ if __name__ == "__main__":
     conf.setdefault('validation_split', 0.1)
     conf.setdefault('units', 256)    
     conf.setdefault('rec_dropout_rate', 0.2)
- 
+    conf.setdefault('maxlen', 82) 
     print(f"========== Configuration ==========")
     for k, v in conf.items():
         print(f"{k}: {v}")
+    print(f"===================================")
 
     smile = zinc_data_with_bracket_original(conf["dataset"])
     valcabulary, all_smile = zinc_processed_with_bracket(smile)
@@ -79,10 +81,8 @@ if __name__ == "__main__":
           f"size of SMILES list: {len(all_smile)}")
     X_train, y_train = prepare_data(valcabulary, all_smile) 
   
-    maxlen = 82
-
-    X = sequence.pad_sequences(X_train, maxlen=maxlen, dtype='int32', padding='post', truncating='pre', value=0.)
-    y = sequence.pad_sequences(y_train, maxlen=maxlen, dtype='int32', padding='post', truncating='pre', value=0.)
+    X = sequence.pad_sequences(X_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
+    y = sequence.pad_sequences(y_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
     
     y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(valcabulary)) for sent_label in y])
     print(f"shape of y_train_one_hot: {y_train_one_hot.shape}")
