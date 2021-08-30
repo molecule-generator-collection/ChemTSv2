@@ -52,8 +52,7 @@ def save_model_ES(model, output):
 
 if __name__ == "__main__":
     argvs = sys.argv
-    argc = len(argvs)
-    if argc == 1:
+    if len(argvs) == 1:
         print("input configuration file")
         exit()
 
@@ -87,17 +86,12 @@ if __name__ == "__main__":
     y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(valcabulary)) for sent_label in y])
     print(f"shape of y_train_one_hot: {y_train_one_hot.shape}")
 
-    vocab_size = len(valcabulary)
-    embed_size = len(valcabulary)
-
-    N = X.shape[1]
-
     # Build model
     model = Sequential()
-    model.add(Embedding(input_dim=vocab_size, output_dim=len(valcabulary), input_length=N, mask_zero=False))
+    model.add(Embedding(input_dim=len(valcabulary), output_dim=len(valcabulary), input_length=X.shape[1], mask_zero=False))
     model.add(GRU(conf['units'], input_shape=(82,64), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(GRU(conf['units'], activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
-    model.add(TimeDistributed(Dense(embed_size, activation='softmax')))
+    model.add(TimeDistributed(Dense(len(valcabulary), activation='softmax')))
     optimizer=Adam(learning_rate=conf['learning_rate'])
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
