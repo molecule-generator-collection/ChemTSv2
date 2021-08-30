@@ -35,19 +35,19 @@ def prepare_data(smiles, all_smile):
     return X_train, y_train
 
 
-def save_model(model):
+def save_model(model, output, output_weight):
     model_json = model.to_json()
-    with open(output_json, "w") as json_file:
+    with open(output, "w") as json_file:
         json_file.write(model_json)
     model.save_weights(output_weight)
-    print(f"Saved model to {output_json}")
+    print(f"Saved model to {output}")
 
 
-def save_model_ES(model):
+def save_model_ES(model, output):
     model_json = model.to_json()
-    with open(output_json, "w") as json_file:
+    with open(output, "w") as json_file:
         json_file.write(model_json)
-    print(f"Saved model to {output_json}")
+    print(f"Saved model to {output}")
 
 
 if __name__ == "__main__":
@@ -56,33 +56,24 @@ if __name__ == "__main__":
     if argc == 1:
         print("input configuration file")
         exit()
-    #f = open(str(argvs[1]), "r+")
     with open(str(argvs[1]), "r+") as f:
         conf = yaml.load(f)
-    dataset = conf.get('dataset')
-    output_json = conf.get('output_json')
-    output_weight = conf.get('output_weight')
-    dropout_rate = conf.get('dropout_rate', 0.2)
-    lr_val = conf.get('learning_rate', 0.01)
-    epochs = conf.get('epoch', 100)
-    batch_size = conf.get('batch_size', 512)
-    validation_split = conf.get('validation_split', 0.1)
-    units = conf.get('units', 256)    
-    rec_dropout_rate = conf.get('rec_dropout_rate', 0.2)
+    conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
+    conf.setdefault('output_json', "../model/model.json")
+    conf.setdefault('output_weight', "../model/model.h5")
+    conf.setdefault('dropout_rate', 0.2)
+    conf.setdefault('learning_rate', 0.01)
+    conf.setdefault('epoch', 100)
+    conf.setdefault('batch_size', 512)
+    conf.setdefault('validation_split', 0.1)
+    conf.setdefault('units', 256)    
+    conf.setdefault('rec_dropout_rate', 0.2)
  
-    print(f"========== Configuration ==========\n"
-          f"dataset = {dataset}\n"
-          f"output_json = {output_json}\n"
-          f"output_weight = {output_weight}\n"
-          f"dropout_rate = {dropout_rate}\n"
-          f"learning_rate = {lr_val}\n"
-          f"epoch = {epochs}\n"
-          f"batch_size = {batch_size}\n"
-          f"validation_split = {validation_split}\n"
-          f"units = {units}\n"
-          f"rec_dropout_rate = {rec_dropout_rate}")
+    print(f"========== Configuration ==========")
+    for k, v in conf.items():
+        print(f"{k}: {v}")
 
-    smile = zinc_data_with_bracket_original(dataset)
+    smile = zinc_data_with_bracket_original(conf["dataset"])
     valcabulary, all_smile = zinc_processed_with_bracket(smile)
     print(f"vocabulary:\n{valcabulary}\n"
           f"size of SMILES list: {len(all_smile)}")
@@ -104,37 +95,37 @@ if __name__ == "__main__":
     # Build model
     model = Sequential()
     model.add(Embedding(input_dim=vocab_size, output_dim=len(valcabulary), input_length=N, mask_zero=False))
-    model.add(GRU(units, input_shape=(82,64), activation='tanh', dropout=dropout_rate, recurrent_dropout=rec_dropout_rate, return_sequences=True))
-    model.add(GRU(units, activation='tanh', dropout=dropout_rate, recurrent_dropout=rec_dropout_rate, return_sequences=True))
+    model.add(GRU(conf['units'], input_shape=(82,64), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
+    model.add(GRU(conf['units'], activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(TimeDistributed(Dense(embed_size, activation='softmax')))
-    optimizer=Adam(lr_val)
+    optimizer=Adam(learning_rate=conf['learning_rate'])
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
-    if epochs == -1:
+    if conf['epoch'] == -1:
         early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
-        checkpointer = ModelCheckpoint(filepath=output_weight, verbose=1, save_weights_only=True, save_best_only=True)
+        checkpointer = ModelCheckpoint(filepath=conf['output_weight'], verbose=1, save_weights_only=True, save_best_only=True)
         result = model.fit(
             X, 
             y_train_one_hot,
-            batch_size=batch_size,
-            epochs=100,
+            batch_size=conf['batch_size'],
+            epochs=conf['epoch'],
             verbose=1,
             callbacks=[early_stopping, checkpointer],
-            validation_split=validation_split,
+            validation_split=conf['validation_split'],
             shuffle=True,)
-        save_model_ES(model)
+        save_model_ES(model, conf["output_json"])
     else:
         result = model.fit(
             X,
             y_train_one_hot,
-            batch_size=batch_size,
-            epochs=epochs,
+            batch_size=conf['batch_size'],
+            epochs=conf['epoch'],
             verbose=1,
             callbacks=None,
-            validation_split=validation_split,
+            validation_split=conf['validation_split'],
             shuffle=True)
-        save_model(model)
+        save_model(model, conf["output_json"], conf["output_weight"])
 
     ## plot the training acc
     plt.plot(range(1, len(result.history['accuracy']) + 1), result.history['accuracy'], label="training")
@@ -142,9 +133,8 @@ if __name__ == "__main__":
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.savefig('learning_curve_GRU'+dataset.split('/')[-1]+'_units'+str(units)+'_dropout'+str(dropout_rate)+'_recDP'+str(rec_dropout_rate)+'_lr'+str(lr_val)+'_batchsize'+str(batch_size)+'.png', dpi = 300,  bbox_inches='tight', pad_inches=0)
     plt.savefig(
-        f"learning_curve_GRU_{os.path.basename(dataset).split('.')[0]}_units{units}_dropout{dropout_rate}_recDP{rec_dropout_rate}_lr{lr_val}_batchsize{batch_size}.png",
+        f"learning_curve_GRU_{os.path.basename(conf['dataset']).split('.')[0]}_units{conf['units']}_dropout{conf['dropout_rate']}_recDP{conf['rec_dropout_rate']}_lr{conf['learning_rate']}_batchsize{conf['batch_size']}.png",
         dpi = 300,
         bbox_inches='tight', 
         pad_inches=0,)
