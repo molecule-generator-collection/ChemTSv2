@@ -91,30 +91,19 @@ def main():
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
-    if conf['epoch'] == -1:
+    if conf['epoch'] == -1:  # Check: No longer work
         early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         checkpointer = ModelCheckpoint(filepath=conf['output_weight'], verbose=1, save_weights_only=True, save_best_only=True)
-        result = model.fit(
-            X, 
-            y_train_one_hot,
-            batch_size=conf['batch_size'],
-            epochs=conf['epoch'],
-            verbose=1,
-            callbacks=[early_stopping, checkpointer],
-            validation_split=conf['validation_split'],
-            shuffle=True,)
-        save_model(model, conf["output_json"])
-    else:
-        result = model.fit(
-            X,
-            y_train_one_hot,
-            batch_size=conf['batch_size'],
-            epochs=conf['epoch'],
-            verbose=1,
-            callbacks=None,
-            validation_split=conf['validation_split'],
-            shuffle=True)
-        save_model(model, conf["output_json"], output_weight=conf["output_weight"])
+    result = model.fit(
+        X, 
+        y_train_one_hot,
+        batch_size=conf['batch_size'],
+        epochs=conf['epoch'],
+        verbose=1,
+        callbacks=[early_stopping, checkpointer] if conf['epoch'] == -1 else None,
+        validation_split=conf['validation_split'],
+        shuffle=True,)
+    save_model(model, conf["output_json"])
 
     ## plot the training acc
     plt.plot(range(1, len(result.history['accuracy']) + 1), result.history['accuracy'], label="training")
