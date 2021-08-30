@@ -92,7 +92,7 @@ def main():
     
     # Setup configuration
     with open(args.config, "r") as f:
-        conf = yaml.load(f)
+        conf = yaml.load(f, Loader=yaml.SafeLoader)
     update_config(conf)
     print(f"========== Configuration ==========")
     for k, v in conf.items():
