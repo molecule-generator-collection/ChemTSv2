@@ -35,19 +35,14 @@ def prepare_data(smiles, all_smile):
     return X_train, y_train
 
 
-def save_model(model, output, output_weight):
-    model_json = model.to_json()
-    with open(output, "w") as json_file:
-        json_file.write(model_json)
-    model.save_weights(output_weight)
-    print(f"Saved model to {output}")
-
-
-def save_model_ES(model, output):
+def save_model(model, output, output_weight=None):
     model_json = model.to_json()
     with open(output, "w") as json_file:
         json_file.write(model_json)
     print(f"Saved model to {output}")
+    if output_weight is not None:
+        model.save_weights(output_weight)
+        print(f"Saved model weights to {output_weight}")
 
 
 def main():
@@ -108,7 +103,7 @@ def main():
             callbacks=[early_stopping, checkpointer],
             validation_split=conf['validation_split'],
             shuffle=True,)
-        save_model_ES(model, conf["output_json"])
+        save_model(model, conf["output_json"])
     else:
         result = model.fit(
             X,
@@ -119,7 +114,7 @@ def main():
             callbacks=None,
             validation_split=conf['validation_split'],
             shuffle=True)
-        save_model(model, conf["output_json"], conf["output_weight"])
+        save_model(model, conf["output_json"], output_weight=conf["output_weight"])
 
     ## plot the training acc
     plt.plot(range(1, len(result.history['accuracy']) + 1), result.history['accuracy'], label="training")
