@@ -89,6 +89,8 @@ def plot_training_curve(result, conf):
 
 def main():
     args = get_parser()
+    
+    # Setup configuration
     with open(args.config, "r") as f:
         conf = yaml.load(f)
     update_config(conf)
@@ -97,15 +99,14 @@ def main():
         print(f"{k}: {v}")
     print(f"===================================")
 
+    # Prepare training dataset
     smile = zinc_data_with_bracket_original(conf["dataset"])
     valcabulary, all_smile = zinc_processed_with_bracket(smile)
     print(f"vocabulary:\n{valcabulary}\n"
           f"size of SMILES list: {len(all_smile)}")
     X_train, y_train = prepare_data(valcabulary, all_smile) 
-  
     X = sequence.pad_sequences(X_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
     y = sequence.pad_sequences(y_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
-    
     y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(valcabulary)) for sent_label in y])
     print(f"shape of y_train_one_hot: {y_train_one_hot.shape}")
 
@@ -119,6 +120,7 @@ def main():
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
+    # Training
     if conf['epoch'] == -1:  # Check: No longer work
         early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         checkpointer = ModelCheckpoint(filepath=conf['output_weight'], verbose=1, save_weights_only=True, save_best_only=True)
@@ -132,9 +134,7 @@ def main():
         validation_split=conf['validation_split'],
         shuffle=True,)
     save_model(model, conf["output_json"])
-
     plot_training_curve(result, conf)
-
 
 if __name__ == "__main__":
     main()
