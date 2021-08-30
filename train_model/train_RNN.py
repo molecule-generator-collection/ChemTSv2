@@ -45,14 +45,7 @@ def save_model(model, output, output_weight=None):
         print(f"Saved model weights to {output_weight}")
 
 
-def main():
-    argvs = sys.argv
-    if len(argvs) == 1:
-        print("input configuration file")
-        exit()
-
-    with open(str(argvs[1]), "r+") as f:
-        conf = yaml.load(f)
+def update_config(conf):
     conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
     conf.setdefault('output_json', "../model/model.json")
     conf.setdefault('output_weight', "../model/model.h5")
@@ -63,7 +56,18 @@ def main():
     conf.setdefault('validation_split', 0.1)
     conf.setdefault('units', 256)    
     conf.setdefault('rec_dropout_rate', 0.2)
-    conf.setdefault('maxlen', 82) 
+    conf.setdefault('maxlen', 82)
+
+
+def main():
+    argvs = sys.argv
+    if len(argvs) == 1:
+        print("input configuration file")
+        exit()
+
+    with open(str(argvs[1]), "r+") as f:
+        conf = yaml.load(f)
+    update_config(conf)
     print(f"========== Configuration ==========")
     for k, v in conf.items():
         print(f"{k}: {v}")
