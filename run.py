@@ -2,7 +2,6 @@ import argparse
 from math import sqrt, log
 import random
 import os
-import sys
 import time
 import yaml
 
@@ -242,7 +241,7 @@ def main():
     print(f"===================================")
 
     smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
-    val, smile = zinc_processed_with_bracket(smile_old)
+    val, _ = zinc_processed_with_bracket(smile_old)
     print(f"val is {val}")
     with open(conf['output_file'], 'w') as f:
         f.write('#valid_smile, score, min_score, depth, used_time\n')
@@ -250,7 +249,7 @@ def main():
     model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
 
     state = chemical()
-    best = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
+    _ = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
 
 
 if __name__ == "__main__":
