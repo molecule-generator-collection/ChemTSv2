@@ -29,7 +29,7 @@ class chemical:
         return [i for i in range(self.num_atom)]
 
 class Node:
-    def __init__(self, position=None, parent=None, state=None):
+    def __init__(self, position=None, parent=None, state=None, conf=None):
         self.position = position
         self.parentNode = parent
         self.childNodes = []
@@ -39,13 +39,14 @@ class Node:
         self.nonvisited_atom = state.Getatom()
         self.type_node = []
         self.depth = 0
+        self.conf = conf
 
     def Selectnode(self):
         ucb=[]
         print('UCB:')
         for i in range(len(self.childNodes)):
             ucb_tmp = (self.childNodes[i].wins / self.childNodes[i].visits
-                + c_val * sqrt(2 * log(self.visits) / self.childNodes[i].visits)
+                + self.conf['c_val'] * sqrt(2 * log(self.visits) / self.childNodes[i].visits)
                 )
             ucb.append(ucb_tmp)
             print(f"{self.childNodes[i].position} {ucb_tmp}") 
@@ -57,7 +58,7 @@ class Node:
         return s
 
     def Addnode(self, m, s):
-        n = Node(position=m, parent=self, state=s)
+        n = Node(position=m, parent=self, state=s, conf=self.conf)
         self.childNodes.append(n)
 
     def simulation(self):
@@ -68,12 +69,11 @@ class Node:
         self.wins += result
 
 
-def MCTS(root, verbose = False):
+def MCTS(root, conf, verbose=False):
     """initialization of the chemical trees and grammar trees"""
     start_time = time.time()
-    #run_time = time.time() + 3600*hours # 3600*24
-    run_time = time.time() + 60
-    rootnode = Node(state=root)
+    run_time = time.time() + 3600 * conf['hours']
+    rootnode = Node(state=root, conf=conf)
     state = root.Clone()
 
     """global variables used for save valid compounds and simulated compounds"""
@@ -111,11 +111,11 @@ def MCTS(root, verbose = False):
             continue
 
         """expansion step"""
-        expanded = expanded_node(model, state.position, val, loop_num_nodeExpansion)
+        expanded = expanded_node(model, state.position, val, conf['loop_num_nodeExpansion'])
         
         new_compound = []
         nodeadded = []
-        for _ in range(simulation_num):
+        for _ in range(conf['simulation_num']):
             nodeadded_tmp = node_to_add(expanded, val)
             all_posible = chem_kn_simulation(model,state.position, val, nodeadded_tmp)
             generate_smile = predict_smile(all_posible, val)
@@ -130,11 +130,11 @@ def MCTS(root, verbose = False):
         node_index, score, valid_smile, generated_dict = check_node_type(
             new_compound,
             generated_dict,
-            sa_threshold=sa_threshold,
-            rule=rule5,
-            radical=radical_check,
-            hashimoto_filter=hashimoto_filter,
-            trial=trial,
+            sa_threshold=conf['sa_threshold'],
+            rule=conf['rule5'],
+            radical=conf['radical_check'],
+            hashimoto_filter=conf['hashimoto_filter'],
+            trial=conf['trial'],
             )
         valid_compound.extend(valid_smile)
         score_distribution.extend(score)
@@ -178,7 +178,7 @@ def MCTS(root, verbose = False):
                 if atom == '\n':
                     re = -1
                 else:
-                    re = calc_simulation_score(scores=score[i], base_score=base_score)
+                    re = calc_simulation_score(scores=score[i], base_score=conf['base_score'])
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
@@ -202,34 +202,32 @@ def MCTS(root, verbose = False):
     return valid_compound
 
 
+def update_config(conf):
+    conf.setdefault('trial', 1)
+    conf.setdefault('c_val', 1.0)
+    conf.setdefault('loop_num_nodeExpansion', 1000) 
+    conf.setdefault('hours', 1) 
+    conf.setdefault('sa_threshold', 3.5)  #if SA > sa_threshold, score = 0. Default sa_threshold = 10
+    conf.setdefault('rule5', 1)  #0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
+    conf.setdefault('radical_check', True)
+    conf.setdefault('simulation_num', 3)
+    conf.setdefault('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
+    conf.setdefault('base_score', -20)
+    conf.setdefault('model_name', 'model')
+
+
 if __name__ == "__main__":
     argvs = sys.argv
     """read yaml file for configuration"""
     with open(str(argvs[1]), "r+") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
-    trial = conf.get('trial', 1)
-    c_val = conf.get('c_val', 1.0)
-    loop_num_nodeExpansion = conf.get('loop_num_nodeExpansion', 1000) 
-    hours = conf.get('hours', 1) 
-    sa_threshold = conf.get('sa_threshold', 3.5) #if SA > sa_threshold, score = 0. Default sa_threshold = 10
-    rule5 = conf.get('rule5', 1) #0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
-    radical_check = conf.get('radical_check', True)
-    simulation_num = conf.get('simulation_num', 3)
-    hashimoto_filter = conf.get('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
-    base_score = conf.get('base_score', -20)
-    model_name = conf.get('model_name', 'model')
-    print(f"========== Configuration ==========\n"
-          f"trial num is: {trial}\n"
-          f"c_val: {c_val}\n"
-          f"loop_num_nodeExpansion: {loop_num_nodeExpansion}\n"
-          f"max run time: {hours}\n"
-          f"sa_threshold: {sa_threshold}\n"
-          f"model_name: {model_name}\n"
-          f"base_score: {base_score}\n"
-          f"simulation_num: {simulation_num}\n"
-          f"hashimoto_filter: {hashimoto_filter}")
+    update_config(conf)
+    print(f"========== Configuration ==========")
+    for k, v in conf.items():
+        print(f"{k}: {v}")
+    print(f"===================================")
 
-    output_file = f"result_C{c_val}_trial{trial}.txt"
+    output_file = f"result_C{conf['c_val']}_trial{conf['trial']}.txt"
 
     smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, smile = zinc_processed_with_bracket(smile_old)
@@ -238,7 +236,7 @@ if __name__ == "__main__":
     with open(output_file, 'w') as f:
         f.write('#valid_smile, score, min_score, depth, used_time\n')
 
-    model = loaded_model('model/' + model_name)  #WM300 not tested  
+    model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
 
     state = chemical()
-    best = MCTS(root=state, verbose=False)
+    best = MCTS(root=state, conf=conf, verbose=False)
