@@ -3,7 +3,7 @@ output_json: ../model/model.json
 output_weight: ../model/model.h5
 
 dropout_rate: 0.2
-rec_dropout_rate: 0.2
+rec_dropout_rate: 0
 learning_rate: 0.01
 epoch: 100
 batch_size: 512
