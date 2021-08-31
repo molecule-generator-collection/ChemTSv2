@@ -129,7 +129,7 @@ def main():
         callbacks=None,
         validation_split=conf['validation_split'],
         shuffle=True,)
-    save_model(model, conf["output_json"])
+    save_model(model, conf["output_json"], conf["output_weight"])
     plot_training_curve(result, conf)
 
 
