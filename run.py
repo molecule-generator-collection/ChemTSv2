@@ -202,12 +202,6 @@ def MCTS(root, verbose = False):
     return valid_compound
 
 
-def UCTchemical():
-    state = chemical()
-    best = MCTS(root=state, verbose=False)
-    return best
-
-
 if __name__ == "__main__":
     argvs = sys.argv
     """read yaml file for configuration"""
@@ -245,4 +239,6 @@ if __name__ == "__main__":
         f.write('#valid_smile, score, min_score, depth, used_time\n')
 
     model = loaded_model('model/' + model_name)  #WM300 not tested  
-    valid_compound = UCTchemical()
+
+    state = chemical()
+    best = MCTS(root=state, verbose=False)
