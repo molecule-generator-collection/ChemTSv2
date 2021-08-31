@@ -17,106 +17,106 @@ from utils.filter import HashimotoFilter
 smiles_max_len = 82 #MW250:60, MW300:70 
 
 def expanded_node(model,state,val,loop_num):
-    all_nodes=[]
-
-    position=[]
+    all_nodes = []
+    position = []
     position.extend(state)
-    get_int_old=[]
-    for j in range(len(position)):
-        get_int_old.append(val.index(position[j]))
+    get_int_old = [val.index(position[j]) for j in range(len(position))]
+    get_int = get_int_old
+    x = np.reshape(get_int, (1, len(get_int)))
+    x_pad = sequence.pad_sequences(
+        x,
+        maxlen=smiles_max_len,
+        dtype='int32',
+        padding='post',
+        truncating='pre',
+        value=0.)
 
-    get_int=get_int_old
-
-    x=np.reshape(get_int,(1,len(get_int)))
-    x_pad= sequence.pad_sequences(x, maxlen=smiles_max_len, dtype='int32',                               
-        padding='post', truncating='pre', value=0.)
-
-    for i in range(loop_num):
-        predictions=model.predict(x_pad)
-        preds=np.asarray(predictions[0][len(get_int)-1]).astype('float64')
+    for _ in range(loop_num):
+        predictions = model.predict(x_pad)
+        preds = np.asarray(predictions[0][len(get_int) - 1]).astype('float64')
         preds = np.log(preds) / 1.0
         preds = np.exp(preds) / np.sum(np.exp(preds))
         next_probas = np.random.multinomial(1, preds, 1)
-        next_int=np.argmax(next_probas)
+        next_int = np.argmax(next_probas)
         all_nodes.append(next_int)
     print(all_nodes)
-    all_nodes=list(set(all_nodes))
+    all_nodes = list(set(all_nodes))
     print(all_nodes)
     return all_nodes
 
 
-def node_to_add(all_nodes,val):
-    added_nodes=[]
-    for i in range(len(all_nodes)):
-        added_nodes.append(val[all_nodes[i]])
+def node_to_add(all_nodes, val):
+    added_nodes = [val[all_nodes[i]] for i in range(len(all_nodes))]
     print(added_nodes)
     return added_nodes
 
 
-def chem_kn_simulation(model,state,val,added_nodes):
-    all_posible=[]
-
-    end="\n"
+def chem_kn_simulation(model, state, val, added_nodes):
+    all_posible = []
+    end = "\n"
     for i in range(len(added_nodes)):
-        position=[]
+        position = []
         position.extend(state)
         position.append(added_nodes[i])
-        total_generated=[]
-        get_int_old=[]
-        for j in range(len(position)):
-            get_int_old.append(val.index(position[j]))
+        total_generated = []
+        get_int_old = [val.index(position[j]) for j in range(len(position))]
+        get_int = get_int_old
+        x = np.reshape(get_int, (1, len(get_int)))
+        x_pad = sequence.pad_sequences(
+            x,
+            maxlen=smiles_max_len,
+            dtype='int32',
+            padding='post',
+            truncating='pre',
+            value=0.)
 
-        get_int=get_int_old
-
-        x=np.reshape(get_int,(1,len(get_int)))
-        x_pad= sequence.pad_sequences(x, maxlen=smiles_max_len, dtype='int32',
-            padding='post', truncating='pre', value=0.)
         while not get_int[-1] == val.index(end):
-            predictions=model.predict(x_pad)
-            preds=np.asarray(predictions[0][len(get_int)-1]).astype('float64')
+            predictions = model.predict(x_pad)
+            preds = np.asarray(predictions[0][len(get_int) - 1]).astype('float64')
             preds = np.log(preds) / 1.0
             preds = np.exp(preds) / np.sum(np.exp(preds))
             next_probas = np.random.multinomial(1, preds, 1)
-            next_int=np.argmax(next_probas)
-            a=predictions[0][len(get_int)-1]
+            next_int = np.argmax(next_probas)
+            a = predictions[0][len(get_int) - 1]
             get_int.append(next_int)
-            x=np.reshape(get_int,(1,len(get_int)))
-            x_pad = sequence.pad_sequences(x, maxlen=smiles_max_len, dtype='int32',
-                padding='post', truncating='pre', value=0.)
-            if len(get_int)>smiles_max_len:
+            x = np.reshape(get_int, (1, len(get_int)))
+            x_pad = sequence.pad_sequences(
+                x,
+                maxlen=smiles_max_len,
+                dtype='int32',
+                padding='post',
+                truncating='pre',
+                value=0.)
+            if len(get_int) > smiles_max_len:
                 break
         total_generated.append(get_int)
         all_posible.extend(total_generated)
     return all_posible
 
 
-def predict_smile(all_posible,val):
-    new_compound=[]
+def predict_smile(all_posible, val):
+    new_compound = []
     for i in range(len(all_posible)):
-        total_generated=all_posible[i]
-        generate_smile=[]
-        for j in range(len(total_generated)-1):
-            generate_smile.append(val[total_generated[j]])
+        total_generated = all_posible[i]
+        generate_smile = [val[total_generated[j]] for j in range(len(total_generated) - 1)]
         generate_smile.remove("&")
         new_compound.append(generate_smile)
     return new_compound
 
 
 def make_input_smile(generate_smile):
-    new_compound=[]
+    new_compound = []
     for i in range(len(generate_smile)):
-        middle=[]
-        for j in range(len(generate_smile[i])):
-            middle.append(generate_smile[i][j])
-        com=''.join(middle)
+        middle = [generate_smile[i][j] for j in range(len(generate_smile[i]))]
+        com = ''.join(middle)
         new_compound.append(com)
     return new_compound
 
 
-def check_node_type(new_compound, generated_dict, sa_threshold = 10, rule = 0, radical = False, hashimoto_filter=False, trial = 1):
-    node_index=[]
-    valid_compound=[]
-    score=[]
+def check_node_type(new_compound, generated_dict, sa_threshold=10, rule=0, radical=False, hashimoto_filter=False, trial=1):
+    node_index = []
+    valid_compound = []
+    score = []
     for i in range(len(new_compound)):
         print(f"check dictionary comp: {new_compound[i]} check: {new_compound[i] in generated_dict}")
         if new_compound[i] in generated_dict:
@@ -174,15 +174,12 @@ def check_node_type(new_compound, generated_dict, sa_threshold = 10, rule = 0, r
                     continue
 
             cycle_list = nx.cycle_basis(nx.Graph(rdmolops.GetAdjacencyMatrix(MolFromSmiles(new_compound[i]))))
-            if len(cycle_list) == 0:
-                cycle_length =0
-            else:
-                cycle_length = max([ len(j) for j in cycle_list ])
+            cycle_length = 0 if len(cycle_list) == 0 else max([len(j) for j in cycle_list])
             if cycle_length <= 6:
                 cycle_length = 0
             if cycle_length == 0:
                 scores = calc_reward_score(new_compound[i])
-                if scores[0] < 10**10:
+                if scores[0] < 10 ** 10:
                     node_index.append(i)
                     valid_compound.append(new_compound[i])
                     score.append(scores)
