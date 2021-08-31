@@ -62,7 +62,7 @@ model_name: model.tf25
 4. Molecule generate.
 
 ```bash
-python run.py setting.yaml
+python run.py -c setting.yaml
 ```
 
 ## License

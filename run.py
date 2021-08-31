@@ -1,5 +1,7 @@
+import argparse
 from math import sqrt, log
 import random
+import os
 import sys
 import time
 import yaml
@@ -10,6 +12,18 @@ from utils.add_node_type_zinc import chem_kn_simulation, make_input_smile, predi
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 from reward.random_reward import calc_simulation_score
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        description="",
+        usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
+    )
+    parser.add_argument(
+        "-c", "--config", type=str, required=True,
+        help="path to a config file"
+    )
+    return parser.parse_args()
 
 
 class chemical:
@@ -217,9 +231,8 @@ def update_config(conf):
 
 
 if __name__ == "__main__":
-    argvs = sys.argv
-    """read yaml file for configuration"""
-    with open(str(argvs[1]), "r+") as f:
+    args = get_parser()
+    with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     update_config(conf)
     print(f"========== Configuration ==========")
