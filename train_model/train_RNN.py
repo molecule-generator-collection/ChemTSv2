@@ -44,7 +44,6 @@ def prepare_data(smiles, all_smile):
         x2 = x1[1:len(x1)]
         x2.append(0)
         y_train.append(x2)
-
     return X_train, y_train
 
 
@@ -81,7 +80,7 @@ def plot_training_curve(result, conf):
     plt.legend()
     plt.savefig(
         fname,
-        dpi = 300,
+        dpi=300,
         bbox_inches='tight', 
         pad_inches=0,)
     print(f"Training curve was saved to {fname}")
@@ -121,20 +120,18 @@ def main():
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
     # Training
-    if conf['epoch'] == -1:  # Check: No longer work
-        early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)
-        checkpointer = ModelCheckpoint(filepath=conf['output_weight'], verbose=1, save_weights_only=True, save_best_only=True)
     result = model.fit(
         X, 
         y_train_one_hot,
         batch_size=conf['batch_size'],
         epochs=conf['epoch'],
         verbose=1,
-        callbacks=[early_stopping, checkpointer] if conf['epoch'] == -1 else None,
+        callbacks=None,
         validation_split=conf['validation_split'],
         shuffle=True,)
     save_model(model, conf["output_json"])
     plot_training_curve(result, conf)
+
 
 if __name__ == "__main__":
     main()
