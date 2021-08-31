@@ -83,7 +83,7 @@ class Node:
         self.wins += result
 
 
-def MCTS(root, conf, verbose=False):
+def MCTS(root, conf, val, model, verbose=False):
     """initialization of the chemical trees and grammar trees"""
     start_time = time.time()
     run_time = time.time() + 3600 * conf['hours']
@@ -98,7 +98,7 @@ def MCTS(root, conf, verbose=False):
     min_score_distribution = []
     generated_dict = {}  # dictionary of generated compounds
 
-    out_f = open(output_file, 'a')
+    out_f = open(conf['output_file'], 'a')
 
     while time.time()<=run_time:
         node = rootnode  # important! This node is different with state / node is the tree node
@@ -131,7 +131,7 @@ def MCTS(root, conf, verbose=False):
         nodeadded = []
         for _ in range(conf['simulation_num']):
             nodeadded_tmp = node_to_add(expanded, val)
-            all_posible = chem_kn_simulation(model,state.position, val, nodeadded_tmp)
+            all_posible = chem_kn_simulation(model, state.position, val, nodeadded_tmp)
             generate_smile = predict_smile(all_posible, val)
             new_compound_tmp = make_input_smile(generate_smile)
             nodeadded.extend(nodeadded_tmp)
@@ -228,9 +228,10 @@ def update_config(conf):
     conf.setdefault('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
     conf.setdefault('base_score', -20)
     conf.setdefault('model_name', 'model')
+    conf.setdefault('output_file', f"result_C{conf['c_val']}_trial{conf['trial']}.txt")
 
 
-if __name__ == "__main__":
+def main():
     args = get_parser()
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
@@ -240,16 +241,17 @@ if __name__ == "__main__":
         print(f"{k}: {v}")
     print(f"===================================")
 
-    output_file = f"result_C{conf['c_val']}_trial{conf['trial']}.txt"
-
     smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, smile = zinc_processed_with_bracket(smile_old)
     print(f"val is {val}")
-
-    with open(output_file, 'w') as f:
+    with open(conf['output_file'], 'w') as f:
         f.write('#valid_smile, score, min_score, depth, used_time\n')
 
     model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
 
     state = chemical()
-    best = MCTS(root=state, conf=conf, verbose=False)
+    best = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
+
+
+if __name__ == "__main__":
+    main()
