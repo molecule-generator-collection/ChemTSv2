@@ -4,13 +4,14 @@ from tensorflow.keras.models import model_from_json  # for tensorflow 2.5
 os.environ["CUDA_VISIBLE_DEVICES"]= "-1" #"0,1,2,3,"                                                                                                                  
 
 
-def loaded_model(filename):
-    with open(f"{filename}.json", 'r') as f:
+def loaded_model(model_json, model_weight):
+    with open(model_json, 'r') as f:
         loaded_model_json = f.read()
     loaded_model = model_from_json(loaded_model_json)
+    print(f"Loaded model_json from {model_json}")
 
     # load weights into new model
-    loaded_model.load_weights(filename+'.h5')
-    print("Loaded model from disk")
+    loaded_model.load_weights(model_weight)
+    print(f"Loaded model_weight from {model_weight}")
     return loaded_model
 
