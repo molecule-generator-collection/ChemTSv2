@@ -94,7 +94,7 @@ def make_input_smiles(generate_smiles):
     return new_compound
 
 
-def check_node_type(new_compound, generated_dict, sa_threshold=10, rule=0, radical=False, hashimoto_filter=False, trial=1):
+def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical=False, hashimoto_filter=False, trial=1):
     node_index = []
     valid_compound = []
     score = []
@@ -166,4 +166,4 @@ def check_node_type(new_compound, generated_dict, sa_threshold=10, rule=0, radic
                     score.append(scores)
                     generated_dict[new_compound[i]] = scores
 
-    return node_index,score,valid_compound, generated_dict
+    return node_index, score, valid_compound, generated_dict
