@@ -7,7 +7,7 @@ from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing import sequence
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
@@ -59,6 +59,7 @@ def save_model(model, output, output_weight=None):
 
 def update_config(conf):
     conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
+    conf.setdefault('output_model_dir', "../model")
     conf.setdefault('output_json', "../model/model.json")
     conf.setdefault('output_weight', "../model/model.h5")
     conf.setdefault('dropout_rate', 0.2)
@@ -115,9 +116,29 @@ def main():
     model.add(GRU(conf['units'], input_shape=(X.shape[1], len(vocabulary)), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(GRU(conf['units'], activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(TimeDistributed(Dense(len(vocabulary), activation='softmax')))
-    optimizer=Adam(learning_rate=conf['learning_rate'])
     model.summary()
-    model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
+    # Create callbacks
+    log_path = os.path.join(conf['output_model_dir'], "train.log")
+    logger = CSVLogger(log_path)
+    early_stopping = EarlyStopping(
+        monitor="val_accuracy",
+        patience=5
+    )
+    model_ckpt = ModelCheckpoint(
+        filepath = os.path.join(conf['output_model_dir'], "model.tf25.best.ckpt.h5"),
+        monitor='val_accuracy',
+        verbose=1,
+        save_best_only=True,
+        save_weights_only=False,
+        mode='max',
+        save_freq='epoch'
+    )
+    callbacks = [logger, early_stopping, model_ckpt]
+
+    model.compile(
+        loss='categorical_crossentropy',
+        optimizer=Adam(learning_rate=conf['learning_rate']),
+        metrics=['accuracy'],)
 
     # Training
     result = model.fit(
@@ -126,7 +147,7 @@ def main():
         batch_size=conf['batch_size'],
         epochs=conf['epoch'],
         verbose=1,
-        callbacks=None,
+        callbacks=callbacks,
         validation_split=conf['validation_split'],
         shuffle=True,)
     save_model(model, conf["output_json"], conf["output_weight"])
