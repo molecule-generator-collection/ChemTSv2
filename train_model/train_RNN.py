@@ -100,21 +100,21 @@ def main():
 
     # Prepare training dataset
     smile = zinc_data_with_bracket_original(conf["dataset"])
-    valcabulary, all_smile = zinc_processed_with_bracket(smile)
-    print(f"vocabulary:\n{valcabulary}\n"
+    vocabulary, all_smile = zinc_processed_with_bracket(smile)
+    print(f"vocabulary:\n{vocabulary}\n"
           f"size of SMILES list: {len(all_smile)}")
-    X_train, y_train = prepare_data(valcabulary, all_smile) 
+    X_train, y_train = prepare_data(vocabulary, all_smile) 
     X = sequence.pad_sequences(X_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
     y = sequence.pad_sequences(y_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
-    y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(valcabulary)) for sent_label in y])
+    y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(vocabulary)) for sent_label in y])
     print(f"shape of y_train_one_hot: {y_train_one_hot.shape}")
 
     # Build model
     model = Sequential()
-    model.add(Embedding(input_dim=len(valcabulary), output_dim=len(valcabulary), input_length=X.shape[1], mask_zero=False))
+    model.add(Embedding(input_dim=len(vocabulary), output_dim=len(vocabulary), input_length=X.shape[1], mask_zero=False))
     model.add(GRU(conf['units'], input_shape=(82,64), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(GRU(conf['units'], activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
-    model.add(TimeDistributed(Dense(len(valcabulary), activation='softmax')))
+    model.add(TimeDistributed(Dense(len(vocabulary), activation='softmax')))
     optimizer=Adam(learning_rate=conf['learning_rate'])
     model.summary()
     model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
