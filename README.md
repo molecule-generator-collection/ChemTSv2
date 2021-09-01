@@ -48,7 +48,6 @@ setting.yaml
 
 ```yaml
 c_val: 1.0
-loop_num_nodeExpansion: 1000
 hours: 1
 base_score: -20
 sa_threshold: 3.5
@@ -56,7 +55,8 @@ rule5: 1
 radical_check: True
 simulation_num: 3
 hashimoto_filter: True
-model_name: model.tf25
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.best.ckpt.h5
 ```
 
 4. Molecule generate.
