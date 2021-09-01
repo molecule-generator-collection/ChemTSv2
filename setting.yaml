@@ -8,4 +8,5 @@ rule5: 1
 radical_check: True
 simulation_num: 3
 hashimoto_filter: True
-model_name: model.tf25
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.h5

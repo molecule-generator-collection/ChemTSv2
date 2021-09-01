@@ -225,7 +225,8 @@ def update_config(conf):
     conf.setdefault('simulation_num', 3)
     conf.setdefault('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
     conf.setdefault('base_score', -20)
-    conf.setdefault('model_name', 'model')
+    conf.setdefault('model_json', 'model/model.json')
+    conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_file', f"result_C{conf['c_val']}_trial{conf['trial']}.txt")
 
 
@@ -234,7 +235,7 @@ def main():
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     update_config(conf)
-    model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
+    model = loaded_model(conf['model_json'], conf['model_weight'])  #WM300 not tested  
     conf["max_len"] = model.input_shape[1]
     print(f"========== Configuration ==========")
     for k, v in conf.items():
