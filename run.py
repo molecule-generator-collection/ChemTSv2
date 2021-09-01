@@ -7,7 +7,7 @@ import yaml
 
 import numpy as np
 
-from utils.add_node_type_zinc import chem_kn_simulation, make_input_smile, predict_smile, check_node_type, node_to_add, expanded_node
+from utils.add_node_type_zinc import chem_kn_simulation, make_input_smiles, predict_smiles, check_node_type, node_to_add, expanded_node
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 from reward.random_reward import calc_simulation_score
@@ -131,8 +131,8 @@ def MCTS(root, conf, val, model, verbose=False):
         for _ in range(conf['simulation_num']):
             nodeadded_tmp = node_to_add(expanded, val)
             all_posible = chem_kn_simulation(model, state.position, val, nodeadded_tmp)
-            generate_smile = predict_smile(all_posible, val)
-            new_compound_tmp = make_input_smile(generate_smile)
+            generate_smiles = predict_smiles(all_posible, val)
+            new_compound_tmp = make_input_smiles(generate_smiles)
             nodeadded.extend(nodeadded_tmp)
             new_compound.extend(new_compound_tmp)
         print(f"nodeadded {nodeadded}\n"
@@ -140,7 +140,7 @@ def MCTS(root, conf, val, model, verbose=False):
               f"generated_dict {generated_dict}\n") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, score, valid_smile, generated_dict = check_node_type(
+        node_index, score, valid_smiles, generated_dict = check_node_type(
             new_compound,
             generated_dict,
             sa_threshold=conf['sa_threshold'],
@@ -149,11 +149,11 @@ def MCTS(root, conf, val, model, verbose=False):
             hashimoto_filter=conf['hashimoto_filter'],
             trial=conf['trial'],
             )
-        valid_compound.extend(valid_smile)
+        valid_compound.extend(valid_smiles)
         score_distribution.extend(score)
         
-        print(f"node {node_index} score {score} valid {valid_smile}")
-        out_f.write(f"{valid_smile}, {score}, {min_score}, {len(state.position)}, {time.time()-start_time}\n")
+        print(f"node {node_index} score {score} valid {valid_smiles}")
+        out_f.write(f"{valid_smiles}, {score}, {min_score}, {len(state.position)}, {time.time()-start_time}\n")
         out_f.flush()
 
         if len(node_index) == 0:
@@ -240,11 +240,11 @@ def main():
         print(f"{k}: {v}")
     print(f"===================================")
 
-    smile_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
-    val, _ = zinc_processed_with_bracket(smile_old)
+    smiles_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
+    val, _ = zinc_processed_with_bracket(smiles_old)
     print(f"val is {val}")
     with open(conf['output_file'], 'w') as f:
-        f.write('#valid_smile, score, min_score, depth, used_time\n')
+        f.write('#valid_smiles, score, min_score, depth, used_time\n')
 
     model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
 
