@@ -46,6 +46,8 @@ def Read_sdf(infilename):
 
 		if count == 3:
 			a = line.split()
+			if len(a[0])>=4:
+        			a = [a[0][:-3], a[0][-3:]]+a[1:]
 			N = int(a[0])
 			N_Bond = int(a[1])
 
@@ -55,6 +57,8 @@ def Read_sdf(infilename):
 		if 3 < count <= N+4:
 			i_atom = line.split()
 			if len(i_atom) != 0:
+				if len(i_atom[0])>=4:
+					i_atom = [i_atom[0][:-3], i_atom[0][-3:]] + i_atom[1:]
 				X.append(float(i_atom[0]))
 				Y.append(float(i_atom[1]))
 				Z.append(float(i_atom[2]))
