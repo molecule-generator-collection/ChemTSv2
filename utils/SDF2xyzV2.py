@@ -57,8 +57,6 @@ def Read_sdf(infilename):
 		if 3 < count <= N+4:
 			i_atom = line.split()
 			if len(i_atom) != 0:
-				if len(i_atom[0])>=4:
-					i_atom = [i_atom[0][:-3], i_atom[0][-3:]] + i_atom[1:]
 				X.append(float(i_atom[0]))
 				Y.append(float(i_atom[1]))
 				Z.append(float(i_atom[2]))
