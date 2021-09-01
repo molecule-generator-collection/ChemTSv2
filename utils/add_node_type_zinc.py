@@ -24,8 +24,8 @@ def expanded_node(model, state, val, loop_num, smiles_max_len, top_k=10):
         padding='post',
         truncating='pre',
         value=0.)
-    preds = model.predict(x_pad)  # the sum of predictions is equal to the `conf['max_len']`
-    state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of preds is equal to 1
+    preds = model.predict(x_pad)  # the sum of preds is equal to the `conf['max_len']`
+    state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
     top_k_idxs = np.argpartition(state_pred, -top_k)[-top_k:]
     print(f"top_k_indices: {top_k_idxs}")
     return top_k_idxs
