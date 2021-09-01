@@ -67,7 +67,7 @@ def update_config(conf):
     conf.setdefault('batch_size', 512)
     conf.setdefault('validation_split', 0.1)
     conf.setdefault('units', 256)    
-    conf.setdefault('rec_dropout_rate', 0.2)
+    conf.setdefault('rec_dropout_rate', 0)
     conf.setdefault('maxlen', 82)
 
 
