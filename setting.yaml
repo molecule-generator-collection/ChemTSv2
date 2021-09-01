@@ -1,6 +1,5 @@
 trial: 1
 c_val: 1.0
-loop_num_nodeExpansion: 1000
 hours: 1
 base_score: -20
 sa_threshold: 3.5

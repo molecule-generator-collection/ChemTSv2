@@ -14,7 +14,7 @@ from utils import SDF2xyzV2
 from utils.filter import HashimotoFilter
 
 
-def expanded_node(model, state, val, loop_num, smiles_max_len, top_k=10):
+def expanded_node(model, state, val, smiles_max_len, top_k=10):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     x_pad = sequence.pad_sequences(

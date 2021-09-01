@@ -124,7 +124,7 @@ def MCTS(root, conf, val, model, verbose=False):
             continue
 
         """expansion step"""
-        expanded = expanded_node(model, state.position, val, conf['loop_num_nodeExpansion'], conf['max_len'])
+        expanded = expanded_node(model, state.position, val, conf['max_len'])
         
         new_compound = []
         nodeadded = []
@@ -218,7 +218,6 @@ def MCTS(root, conf, val, model, verbose=False):
 def update_config(conf):
     conf.setdefault('trial', 1)
     conf.setdefault('c_val', 1.0)
-    conf.setdefault('loop_num_nodeExpansion', 1000) 
     conf.setdefault('hours', 1) 
     conf.setdefault('sa_threshold', 3.5)  #if SA > sa_threshold, score = 0. Default sa_threshold = 10
     conf.setdefault('rule5', 1)  #0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
