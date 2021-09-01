@@ -124,13 +124,13 @@ def MCTS(root, conf, val, model, verbose=False):
             continue
 
         """expansion step"""
-        expanded = expanded_node(model, state.position, val, conf['loop_num_nodeExpansion'])
+        expanded = expanded_node(model, state.position, val, conf['loop_num_nodeExpansion'], conf['max_len'])
         
         new_compound = []
         nodeadded = []
         for _ in range(conf['simulation_num']):
             nodeadded_tmp = node_to_add(expanded, val)
-            all_posible = chem_kn_simulation(model, state.position, val, nodeadded_tmp)
+            all_posible = chem_kn_simulation(model, state.position, val, nodeadded_tmp, conf['max_len'])
             generate_smiles = predict_smiles(all_posible, val)
             new_compound_tmp = make_input_smiles(generate_smiles)
             nodeadded.extend(nodeadded_tmp)
@@ -235,6 +235,8 @@ def main():
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     update_config(conf)
+    model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
+    conf["max_len"] = model.input_shape[1]
     print(f"========== Configuration ==========")
     for k, v in conf.items():
         print(f"{k}: {v}")
@@ -245,8 +247,6 @@ def main():
     print(f"val is {val}")
     with open(conf['output_file'], 'w') as f:
         f.write('#valid_smiles, score, min_score, depth, used_time\n')
-
-    model = loaded_model('model/' + conf['model_name'])  #WM300 not tested  
 
     state = chemical()
     _ = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)

@@ -14,9 +14,7 @@ from utils import SDF2xyzV2
 from utils.filter import HashimotoFilter
 
 
-smiles_max_len = 82 #MW250:60, MW300:70 
-
-def expanded_node(model,state,val,loop_num):
+def expanded_node(model, state, val, loop_num, smiles_max_len):
     all_nodes = []
     position = []
     position.extend(state)
@@ -51,7 +49,7 @@ def node_to_add(all_nodes, val):
     return added_nodes
 
 
-def chem_kn_simulation(model, state, val, added_nodes):
+def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
     all_posible = []
     end = "\n"
     for i in range(len(added_nodes)):
