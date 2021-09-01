@@ -14,12 +14,8 @@ from utils import SDF2xyzV2
 from utils.filter import HashimotoFilter
 
 
-def expanded_node(model, state, val, loop_num, smiles_max_len):
-    all_nodes = []
-    position = []
-    position.extend(state)
-    get_int_old = [val.index(position[j]) for j in range(len(position))]
-    get_int = get_int_old
+def expanded_node(model, state, val, loop_num, smiles_max_len, top_k=10):
+    get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     x_pad = sequence.pad_sequences(
         x,
@@ -28,19 +24,11 @@ def expanded_node(model, state, val, loop_num, smiles_max_len):
         padding='post',
         truncating='pre',
         value=0.)
-
-    for _ in range(loop_num):
-        predictions = model.predict(x_pad)
-        preds = np.asarray(predictions[0][len(get_int) - 1]).astype('float64')
-        preds = np.log(preds) / 1.0
-        preds = np.exp(preds) / np.sum(np.exp(preds))
-        next_probas = np.random.multinomial(1, preds, 1)
-        next_int = np.argmax(next_probas)
-        all_nodes.append(next_int)
-    print(all_nodes)
-    all_nodes = list(set(all_nodes))
-    print(all_nodes)
-    return all_nodes
+    preds = model.predict(x_pad)  # the sum of predictions is equal to the `conf['max_len']`
+    state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of preds is equal to 1
+    top_k_idxs = np.argpartition(state_pred, -top_k)[-top_k:]
+    print(f"top_k_indices: {top_k_idxs}")
+    return top_k_idxs
 
 
 def node_to_add(all_nodes, val):
