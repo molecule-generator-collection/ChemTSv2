@@ -112,7 +112,7 @@ def main():
     # Build model
     model = Sequential()
     model.add(Embedding(input_dim=len(vocabulary), output_dim=len(vocabulary), input_length=X.shape[1], mask_zero=False))
-    model.add(GRU(conf['units'], input_shape=(82,64), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
+    model.add(GRU(conf['units'], input_shape=(X.shape[1], len(vocabulary)), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(GRU(conf['units'], activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
     model.add(TimeDistributed(Dense(len(vocabulary), activation='softmax')))
     optimizer=Adam(learning_rate=conf['learning_rate'])
