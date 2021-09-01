@@ -2,7 +2,7 @@ import csv
 
 
 def zinc_processed_with_bracket(sen_space):
-    all_smile = []
+    all_smiles = []
     length = []
     end = "\n"
     element_table = ["C", "N", "B", "O", "P", "S", "F", "Cl", "Br", "I", "(", ")", "=", "#"]
@@ -44,14 +44,14 @@ def zinc_processed_with_bracket(sen_space):
         word.insert(0, "&")
         len1 = len(word)
         length.append(len1)
-        all_smile.append(list(word))
+        all_smiles.append(list(word))
     val = ["\n"]
-    for i in range(len(all_smile)):
-        for j in range(len(all_smile[i])):
-            if all_smile[i][j] not in val:
-                val.append(all_smile[i][j])
+    for i in range(len(all_smiles)):
+        for j in range(len(all_smiles[i])):
+            if all_smiles[i][j] not in val:
+                val.append(all_smiles[i][j])
 
-    return val, all_smile
+    return val, all_smiles
 
 
 def zinc_data_with_bracket_original(file_dir):
