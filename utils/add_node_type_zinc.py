@@ -45,8 +45,7 @@ def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
         position.extend(state)
         position.append(added_nodes[i])
         total_generated = []
-        get_int_old = [val.index(position[j]) for j in range(len(position))]
-        get_int = get_int_old
+        get_int = [val.index(position[j]) for j in range(len(position))]
         x = np.reshape(get_int, (1, len(get_int)))
         x_pad = sequence.pad_sequences(
             x,
@@ -57,13 +56,9 @@ def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
             value=0.)
 
         while not get_int[-1] == val.index(end):
-            predictions = model.predict(x_pad)
-            preds = np.asarray(predictions[0][len(get_int) - 1]).astype('float64')
-            preds = np.log(preds) / 1.0
-            preds = np.exp(preds) / np.sum(np.exp(preds))
-            next_probas = np.random.multinomial(1, preds, 1)
-            next_int = np.argmax(next_probas)
-            a = predictions[0][len(get_int) - 1]
+            preds = model.predict(x_pad)  # the sum of preds is equal to the `conf['max_len']` 
+            state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
+            next_int = np.argmax(state_pred)
             get_int.append(next_int)
             x = np.reshape(get_int, (1, len(get_int)))
             x_pad = sequence.pad_sequences(
