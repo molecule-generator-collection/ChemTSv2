@@ -1,6 +1,5 @@
 import os
-from tensorflow.keras.models import model_from_json  # for tensorflow 2.5
-#from keras.models import model_from_json  # for tensorflow 1.15.2
+from tensorflow.keras.models import model_from_json
 os.environ["CUDA_VISIBLE_DEVICES"]= "-1" #"0,1,2,3,"                                                                                                                  
 
 
