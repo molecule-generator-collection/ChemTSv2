@@ -7,7 +7,7 @@ import yaml
 
 import numpy as np
 
-from utils.add_node_type_zinc import chem_kn_simulation, make_input_smiles, predict_smiles, check_node_type, node_to_add, expanded_node
+from utils.add_node_type_zinc import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 from reward.random_reward import calc_simulation_score
@@ -140,7 +140,7 @@ def MCTS(root, conf, val, model, verbose=False):
               f"generated_dict {generated_dict}\n") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, score, valid_smiles, generated_dict = check_node_type(
+        node_index, score, valid_smiles, generated_dict = evaluate_node(
             new_compound,
             generated_dict,
             sa_threshold=conf['sa_threshold'],
