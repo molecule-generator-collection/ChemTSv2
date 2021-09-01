@@ -30,14 +30,14 @@ def get_parser():
     return parser.parse_args()
 
 
-def prepare_data(smiles, all_smile):
-    all_smile_index = []
-    for i in range(len(all_smile)):
-        smile_index = []
-        for j in range(len(all_smile[i])):
-            smile_index.append(smiles.index(all_smile[i][j]))
-        all_smile_index.append(smile_index)
-    X_train = all_smile_index
+def prepare_data(smiles, all_smiles):
+    all_smiles_index = []
+    for i in range(len(all_smiles)):
+        smiles_index = []
+        for j in range(len(all_smiles[i])):
+            smiles_index.append(smiles.index(all_smiles[i][j]))
+        all_smiles_index.append(smiles_index)
+    X_train = all_smiles_index
     y_train = []
     for i in range(len(X_train)):
         x1 = X_train[i]
@@ -99,11 +99,11 @@ def main():
     print(f"===================================")
 
     # Prepare training dataset
-    smile = zinc_data_with_bracket_original(conf["dataset"])
-    vocabulary, all_smile = zinc_processed_with_bracket(smile)
+    smiles = zinc_data_with_bracket_original(conf["dataset"])
+    vocabulary, all_smiles = zinc_processed_with_bracket(smiles)
     print(f"vocabulary:\n{vocabulary}\n"
-          f"size of SMILES list: {len(all_smile)}")
-    X_train, y_train = prepare_data(vocabulary, all_smile) 
+          f"size of SMILES list: {len(all_smiles)}")
+    X_train, y_train = prepare_data(vocabulary, all_smiles) 
     X = sequence.pad_sequences(X_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
     y = sequence.pad_sequences(y_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
     y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(vocabulary)) for sent_label in y])
