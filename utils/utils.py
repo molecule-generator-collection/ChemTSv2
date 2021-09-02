@@ -106,48 +106,50 @@ def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical
             continue
 
         mol = Chem.MolFromSmiles(new_compound[i])
-        if mol != None:
-            # check hashimoto_filter
-            if hashimoto_filter:
-                hashifilter = HashimotoFilter()
-                hf, _ = hashifilter.filter([new_compound[i]])
-                print('hashimoto filter check is', hf)
-                if hf[0] == 0:
-                    continue
+        if mol is None:
+            continue
 
-            #check SA_score
-            SA_score = - sascorer.calculateScore(MolFromSmiles(new_compound[i]))
-            print(f"SA_score: {SA_score}")
-            if sa_threshold < -SA_score:
+        # check hashimoto_filter
+        if hashimoto_filter:
+            hashifilter = HashimotoFilter()
+            hf, _ = hashifilter.filter([new_compound[i]])
+            print('hashimoto filter check is', hf)
+            if hf[0] == 0:
                 continue
 
-            #check radical
-            if radical:
-                if Descriptors.NumRadicalElectrons(mol) != 0:
-                    continue
+        #check SA_score
+        SA_score = - sascorer.calculateScore(MolFromSmiles(new_compound[i]))
+        print(f"SA_score: {SA_score}")
+        if sa_threshold < -SA_score:
+            continue
 
-            #check Rule of Five
-            weight = round(rdMolDescriptors._CalcMolWt(mol), 2)
-            logp = Descriptors.MolLogP(mol)
-            donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
-            acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
-            rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
-            if rule == 1:
-                if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
-                    continue
-            if rule == 2:
-                if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
-                    continue
+        #check radical
+        if radical:
+            if Descriptors.NumRadicalElectrons(mol) != 0:
+                continue
+
+        #check Rule of Five
+        weight = round(rdMolDescriptors._CalcMolWt(mol), 2)
+        logp = Descriptors.MolLogP(mol)
+        donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
+        acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
+        rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
+        if rule == 1:
+            if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
+                continue
+        if rule == 2:
+            if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
+                continue
             
-            # check ring size
-            ri = mol.GetRingInfo()
-            max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
-            if max_ring_size > 6:
-                continue
-            scores = calc_reward_score(new_compound[i])
-            node_index.append(i)
-            valid_compound.append(new_compound[i])
-            score.append(scores)
-            generated_dict[new_compound[i]] = scores
+        # check ring size
+        ri = mol.GetRingInfo()
+        max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
+        if max_ring_size > 6:
+            continue
+        scores = calc_reward_score(new_compound[i])
+        node_index.append(i)
+        valid_compound.append(new_compound[i])
+        score.append(scores)
+        generated_dict[new_compound[i]] = scores
 
     return node_index, score, valid_compound, generated_dict
