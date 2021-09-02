@@ -97,7 +97,7 @@ def MCTS(root, conf, val, model, verbose=False):
     min_score_distribution = []
     generated_dict = {}  # dictionary of generated compounds
 
-    out_f = open(conf['output_file'], 'a')
+    out_f = open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'a')
 
     while time.time()<=run_time:
         node = rootnode  # important! This node is different with state / node is the tree node
@@ -227,7 +227,7 @@ def update_config(conf):
     conf.setdefault('base_score', -20)
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
-    conf.setdefault('output_file', f"result_C{conf['c_val']}_trial{conf['trial']}.txt")
+    conf.setdefault('output_dir', 'result')
 
 
 def main():
@@ -235,6 +235,7 @@ def main():
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     update_config(conf)
+    os.makedirs(conf['output_dir'], exist_ok=True)
     model = loaded_model(conf['model_json'], conf['model_weight'])  #WM300 not tested  
     conf["max_len"] = model.input_shape[1]
     print(f"========== Configuration ==========")
@@ -245,7 +246,7 @@ def main():
     smiles_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, _ = zinc_processed_with_bracket(smiles_old)
     print(f"val is {val}")
-    with open(conf['output_file'], 'w') as f:
+    with open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'w') as f:
         f.write('#valid_smiles, score, min_score, depth, used_time\n')
 
     state = chemical()

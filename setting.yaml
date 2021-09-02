@@ -10,3 +10,4 @@ simulation_num: 3
 hashimoto_filter: True
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
+output_dir: result/
