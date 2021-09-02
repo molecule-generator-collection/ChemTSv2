@@ -7,10 +7,10 @@ import yaml
 
 import numpy as np
 
-from utils.add_node_type_zinc import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node
+from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
-from reward.random_reward import calc_simulation_score
+from reward.random_reward import scaling_score
 
 
 def get_parser():
@@ -25,13 +25,13 @@ def get_parser():
     return parser.parse_args()
 
 
-class chemical:
+class State:
     def __init__(self):
         self.position = ['&']
         self.num_atom = 8
         
     def Clone(self):
-        st = chemical()
+        st = State()
         st.position = self.position[:]
         return st
 
@@ -187,11 +187,11 @@ def MCTS(root, conf, val, model, verbose=False):
                 else:
                     min_score_distribution.append(min_score)
 
-                """simulation"""
+                # Score scaling
                 if atom == '\n':
                     re = -1
                 else:
-                    re = calc_simulation_score(scores=score[i], base_score=conf['base_score'])
+                    re = scaling_score(scores=score[i], conf=conf)
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
@@ -249,7 +249,7 @@ def main():
     with open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'w') as f:
         f.write('#valid_smiles, score, min_score, depth, used_time\n')
 
-    state = chemical()
+    state = State()
     _ = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
 
 
