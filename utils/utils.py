@@ -10,7 +10,6 @@ sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
 from reward.random_reward import calc_reward_score
-from utils import SDF2xyzV2
 from utils.filter import HashimotoFilter
 
 
@@ -125,20 +124,7 @@ def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical
 
             #check radical
             if radical:
-                try:
-                    mol_addH = Chem.AddHs(mol)
-                except ValueError:
-                    continue
-
-                fw = Chem.SDWriter('radical_check.sdf')
-                try:
-                    fw.write(mol_addH)
-                    fw.close()
-                except ValueError:
-                    continue
-                _, _, _, _, _, SpinMulti = SDF2xyzV2.Read_sdf('radical_check.sdf')
-                print(f"radical check: {SpinMulti}")
-                if SpinMulti == 2: #2:open
+                if Descriptors.NumRadicalElectrons(mol) != 0:
                     continue
 
             #check Rule of Five
