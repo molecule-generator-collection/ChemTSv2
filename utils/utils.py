@@ -2,10 +2,9 @@ import os
 import sys
 
 from keras.preprocessing import sequence
-import networkx as nx
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig, rdmolops
+from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
@@ -139,17 +138,17 @@ def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical
             if rule == 2:
                 if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
                     continue
-
-            cycle_list = nx.cycle_basis(nx.Graph(rdmolops.GetAdjacencyMatrix(MolFromSmiles(new_compound[i]))))
-            cycle_length = 0 if len(cycle_list) == 0 else max([len(j) for j in cycle_list])
-            if cycle_length <= 6:
-                cycle_length = 0
-            if cycle_length == 0:
-                scores = calc_reward_score(new_compound[i])
-                if scores[0] < 10 ** 10:
-                    node_index.append(i)
-                    valid_compound.append(new_compound[i])
-                    score.append(scores)
-                    generated_dict[new_compound[i]] = scores
+            
+            # check ring size
+            ri = mol.GetRingInfo()
+            max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
+            if max_ring_size > 6:
+                continue
+            scores = calc_reward_score(new_compound[i])
+            if scores[0] < 10 ** 10:
+                node_index.append(i)
+                valid_compound.append(new_compound[i])
+                score.append(scores)
+                generated_dict[new_compound[i]] = scores
 
     return node_index, score, valid_compound, generated_dict
