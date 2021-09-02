@@ -188,10 +188,7 @@ def MCTS(root, conf, val, model, verbose=False):
                     min_score_distribution.append(min_score)
 
                 # Score scaling
-                if atom == '\n':
-                    re = -1
-                else:
-                    re = scaling_score(scores=score[i], conf=conf)
+                re = -1 if atom == '\n' else scaling_score(scores=score[i], conf=conf)
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
