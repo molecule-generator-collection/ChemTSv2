@@ -145,10 +145,9 @@ def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical
             if max_ring_size > 6:
                 continue
             scores = calc_reward_score(new_compound[i])
-            if scores[0] < 10 ** 10:
-                node_index.append(i)
-                valid_compound.append(new_compound[i])
-                score.append(scores)
-                generated_dict[new_compound[i]] = scores
+            node_index.append(i)
+            valid_compound.append(new_compound[i])
+            score.append(scores)
+            generated_dict[new_compound[i]] = scores
 
     return node_index, score, valid_compound, generated_dict
