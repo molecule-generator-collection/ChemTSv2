@@ -7,8 +7,7 @@
 1. python: 3.6
 2. rdkit: 2021.03.5
 3. tensorflow: 2.5.0
-4. networkx: 2.6.2 
-5. pyyaml: 5.4.1
+4. pyyaml: 5.4.1
 
 ```bash
 conda create -n chemts -c conda-forge rdkit python=3.6
