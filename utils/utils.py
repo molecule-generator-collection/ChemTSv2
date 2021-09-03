@@ -12,7 +12,6 @@ from reward.logP_reward import calc_reward_module
 from utils.filter import HashimotoFilter
 
 
-# TODO 累積確立で決める
 def expanded_node(model, state, val, smiles_max_len, top_k=10):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
@@ -58,8 +57,6 @@ def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
             preds = model.predict(x_pad)  # the sum of preds is equal to the `conf['max_len']` 
             state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
             next_int = np.random.choice(range(len(state_pred)), p=state_pred)
-            #next_probas = np.random.multinomial(1, state_pred, 1) 
-            #next_int = np.argmax(state_pred)
             get_int.append(next_int)
             x = np.reshape(get_int, (1, len(get_int)))
             x_pad = sequence.pad_sequences(
