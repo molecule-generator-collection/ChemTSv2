@@ -2,11 +2,10 @@ trial: 1
 c_val: 1.0
 hours: 1
 sa_threshold: 3.5
-# rule5 1: weigth < 500 logp <5 donor < 5 acceptor < 10, 2: weigth < 300 logp <3 donor < 3 acceptor < 3 rotbonds <3
-rule5: 1
+use_lipinski_filter: 'rule_of_5'
 radical_check: True
 simulation_num: 3
-hashimoto_filter: True
+use_hashimoto_filter: True
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/

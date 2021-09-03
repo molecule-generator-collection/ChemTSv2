@@ -140,15 +140,7 @@ def MCTS(root, conf, val, model, verbose=False):
               f"generated_dict {generated_dict}\n") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, score, valid_smiles, generated_dict = evaluate_node(
-            new_compound,
-            generated_dict,
-            sa_threshold=conf['sa_threshold'],
-            rule=conf['rule5'],
-            radical=conf['radical_check'],
-            hashimoto_filter=conf['hashimoto_filter'],
-            trial=conf['trial'],
-            )
+        node_index, score, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
         valid_compound.extend(valid_smiles)
         score_distribution.extend(score)
         
@@ -217,10 +209,10 @@ def set_default_config(conf):
     conf.setdefault('c_val', 1.0)
     conf.setdefault('hours', 1) 
     conf.setdefault('sa_threshold', 3.5)
-    conf.setdefault('rule5', 1)  # 0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
+    conf.setdefault('use_lipinski_filter', 'rule_of_5')  # rule_of_5, rule_of_3
     conf.setdefault('radical_check', True)
     conf.setdefault('simulation_num', 3)
-    conf.setdefault('hashimoto_filter', True) 
+    conf.setdefault('use_hashimoto_filter', True) 
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
