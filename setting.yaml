@@ -1,7 +1,6 @@
 trial: 1
 c_val: 1.0
 hours: 1
-base_score: -20
 sa_threshold: 3.5
 # rule5 1: weigth < 500 logp <5 donor < 5 acceptor < 10, 2: weigth < 300 logp <3 donor < 3 acceptor < 3 rotbonds <3
 rule5: 1

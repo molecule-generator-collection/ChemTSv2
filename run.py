@@ -10,7 +10,7 @@ import numpy as np
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
-from reward.random_reward import scaling_score
+from reward.logP_reward import scaling_score
 
 
 def get_parser():
@@ -221,7 +221,6 @@ def update_config(conf):
     conf.setdefault('radical_check', True)
     conf.setdefault('simulation_num', 3)
     conf.setdefault('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
-    conf.setdefault('base_score', -20)
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
