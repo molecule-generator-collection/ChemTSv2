@@ -8,7 +8,7 @@ from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
-from reward.random_reward import calc_reward_score
+from reward.logP_reward import calc_reward_score
 from utils.filter import HashimotoFilter
 
 
