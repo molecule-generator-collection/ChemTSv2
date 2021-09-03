@@ -92,7 +92,7 @@ def make_input_smiles(generate_smiles):
     return new_compound
 
 
-def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical=False, hashimoto_filter=False, trial=1):
+def evaluate_node(new_compound, generated_dict, conf):
     node_index = []
     valid_compound = []
     score = []
@@ -109,37 +109,40 @@ def evaluate_node(new_compound, generated_dict, sa_threshold=10, rule=0, radical
         if mol is None:
             continue
 
-        # check hashimoto_filter
-        if hashimoto_filter:
+        if conf['use_hashimoto_filter']:
             hashifilter = HashimotoFilter()
             hf, _ = hashifilter.filter([new_compound[i]])
             print('hashimoto filter check is', hf)
             if hf[0] == 0:
                 continue
 
-        #check SA_score
         SA_score = - sascorer.calculateScore(MolFromSmiles(new_compound[i]))
         print(f"SA_score: {SA_score}")
-        if sa_threshold < -SA_score:
+        if conf['sa_threshold'] < -SA_score:
             continue
 
-        #check radical
-        if radical:
+        if conf['radical_check']:
+            print("radical check")
             if Descriptors.NumRadicalElectrons(mol) != 0:
                 continue
 
-        #check Rule of Five
-        weight = round(rdMolDescriptors._CalcMolWt(mol), 2)
-        logp = Descriptors.MolLogP(mol)
-        donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
-        acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
-        rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
-        if rule == 1:
-            if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
-                continue
-        if rule == 2:
-            if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
-                continue
+        if conf['use_lipinski_filter']:
+            weight = round(rdMolDescriptors._CalcMolWt(mol), 2)
+            logp = Descriptors.MolLogP(mol)
+            donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
+            acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
+            rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
+            if conf['use_lipinski_filter'] == 'rule_of_5':
+                print("lipinski's rule of 5 check")
+                if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
+                    continue
+            elif conf['use_lipinski_filter'] == 'rule_of_3':
+                print("lipinski's rule of 3 check")
+                if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
+                    continue
+            else:
+                print("[ERROR] `use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
+                sys.exit(1)
             
         # check ring size
         ri = mol.GetRingInfo()
