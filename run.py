@@ -10,7 +10,7 @@ import numpy as np
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
-from reward.logP_reward import scaling_score
+from reward.logP_reward import calc_reward_score
 
 
 def get_parser():
@@ -187,8 +187,8 @@ def MCTS(root, conf, val, model, verbose=False):
                 else:
                     min_score_distribution.append(min_score)
 
-                # Score scaling
-                re = -1 if atom == '\n' else scaling_score(scores=score[i], conf=conf)
+                # calculate reward score
+                re = -1 if atom == '\n' else calc_reward_score(scores=score[i], conf=conf)
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
@@ -212,15 +212,15 @@ def MCTS(root, conf, val, model, verbose=False):
     return valid_compound
 
 
-def update_config(conf):
+def set_default_config(conf):
     conf.setdefault('trial', 1)
     conf.setdefault('c_val', 1.0)
     conf.setdefault('hours', 1) 
-    conf.setdefault('sa_threshold', 3.5)  #if SA > sa_threshold, score = 0. Default sa_threshold = 10
-    conf.setdefault('rule5', 1)  #0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
+    conf.setdefault('sa_threshold', 3.5)
+    conf.setdefault('rule5', 1)  # 0:none, 1: rule of 5, 2: rule of 3  #RO5: if a compound does not satisfy rule of 5, score = 0.
     conf.setdefault('radical_check', True)
     conf.setdefault('simulation_num', 3)
-    conf.setdefault('hashimoto_filter', True)  # or False, use/not use hashimoto filter 
+    conf.setdefault('hashimoto_filter', True) 
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
@@ -230,7 +230,7 @@ def main():
     args = get_parser()
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
-    update_config(conf)
+    set_default_config(conf)
     os.makedirs(conf['output_dir'], exist_ok=True)
     model = loaded_model(conf['model_json'], conf['model_weight'])  #WM300 not tested  
     conf["max_len"] = model.input_shape[1]
