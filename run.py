@@ -153,7 +153,7 @@ def MCTS(root, conf, val, model, verbose=False):
         score_distribution.extend(score)
         
         print(f"node {node_index} score {score} valid {valid_smiles}")
-        out_f.write(f"{valid_smiles}, {score}, {min_score}, {len(state.position)}, {time.time()-start_time}\n")
+        out_f.write(f"{valid_smiles}\t{score}\t{min_score}\t{len(state.position)}\t{time.time()-start_time}\n")
         out_f.flush()
 
         if len(node_index) == 0:
@@ -243,7 +243,7 @@ def main():
     val, _ = zinc_processed_with_bracket(smiles_old)
     print(f"val is {val}")
     with open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'w') as f:
-        f.write('#valid_smiles, score, min_score, depth, used_time\n')
+        f.write('#valid_smiles\tscore\tmin_score\tdepth\tused_time\n')
 
     state = State()
     _ = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
