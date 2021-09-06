@@ -6,6 +6,7 @@ import time
 import yaml
 
 import numpy as np
+import pandas as pd
 
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node, back_propagation
 from utils.load_model import loaded_model
@@ -90,13 +91,11 @@ def MCTS(root, conf, val, model, verbose=False):
     state = root.Clone()
 
     """global variables used for save valid compounds and simulated compounds"""
-    valid_compound = []
-    depth = []
+    valid_smiles_list = []
+    depth_list = []
     objective_value_list = []
     elapsed_time_list = []
     generated_dict = {}  # dictionary of generated compounds
-
-    out_f = open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'a')
 
     while time.time()<=run_time:
         node = rootnode  # important! This node is different with state / node is the tree node
@@ -132,15 +131,14 @@ def MCTS(root, conf, val, model, verbose=False):
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
         node_index, score, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
 
-        valid_compound.extend(valid_smiles)
-        depth.extend([len(state.position) for _ in range(len(valid_smiles))])
+        valid_smiles_list.extend(valid_smiles)
+        depth = len(state.position)
+        depth_list.extend([depth for _ in range(len(valid_smiles))])
         elapsed_time = round(time.time()-start_time, 1)
         elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
         objective_value_list.extend(score)
         
         print(f"node {node_index} score {score} valid {valid_smiles} time {elapsed_time}")
-        out_f.write(f"{valid_smiles}\t{score}\t{len(state.position)}\t{elapsed_time}\n")
-        out_f.flush()
 
         if len(node_index) == 0:
             back_propagation(node, reward=-1.0)
@@ -174,15 +172,20 @@ def MCTS(root, conf, val, model, verbose=False):
             
             for child in node_pool:
                 print(child.position, child.wins, child.visits)
-    out_f.close()
                     
     """check if found the desired compound"""
-    print(f"num valid_compound: {len(valid_compound)}\n"
-          f"valid compounds: {valid_compound}\n"
-          f"depth: {depth}\n"
+    print(f"num valid_smiles: {len(valid_smiles_list)}\n"
+          f"valid smiles: {valid_smiles_list}\n"
+          f"depth: {depth_list}\n"
           f"objective value: {objective_value_list}\n"
           f"time: {elapsed_time_list}")
-    return valid_compound
+    df = pd.DataFrame({
+        "smiles": valid_smiles_list,
+        "objective_value": objective_value_list,
+        "depth": depth_list,
+        "elapsed_time": elapsed_time_list,
+    })
+    return df
 
 
 def set_default_config(conf):
@@ -215,11 +218,12 @@ def main():
     smiles_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, _ = zinc_processed_with_bracket(smiles_old)
     print(f"val is {val}")
-    with open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'w') as f:
-        f.write('#valid_smiles\tscore\tdepth\tused_time\n')
 
     state = State()
-    _ = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
+    df = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
+    output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.pkl")
+    print(f"[INFO] save results at {output_path}")
+    df.to_pickle(output_path)
 
 
 if __name__ == "__main__":
