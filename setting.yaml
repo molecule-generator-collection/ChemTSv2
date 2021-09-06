@@ -2,10 +2,11 @@ trial: 1
 c_val: 1.0
 hours: 1
 sa_threshold: 3.5
-use_lipinski_filter: 'rule_of_5'
+use_lipinski_filter: rule_of_5
 radical_check: True
 simulation_num: 3
 use_hashimoto_filter: True
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/
+reward_calculator: reward.logP_reward

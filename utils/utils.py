@@ -8,7 +8,6 @@ from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
-from reward.logP_reward import calc_objective_values
 from utils.filter import HashimotoFilter
 
 
@@ -98,7 +97,7 @@ def make_input_smiles(generate_smiles):
     return new_compound
 
 
-def evaluate_node(new_compound, generated_dict, conf):
+def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
     node_index = []
     valid_compound = []
     objective_values_list = []
@@ -155,7 +154,7 @@ def evaluate_node(new_compound, generated_dict, conf):
         max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
         if max_ring_size > 6:
             continue
-        values = calc_objective_values(new_compound[i])
+        values = reward_calculator.calc_objective_values(new_compound[i])
         node_index.append(i)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)
