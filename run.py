@@ -7,7 +7,7 @@ import yaml
 
 import numpy as np
 
-from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node
+from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node, back_propagation
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 from reward.logP_reward import calc_reward_score
@@ -109,17 +109,8 @@ def MCTS(root, conf, val, model, verbose=False):
             state.SelectPosition(node.position)
         print(f"state position: {state.position}")
 
-        if len(state.position) >= 70:
-            re = -1.0
-            while node != None:
-                node.Update(re)
-                node = node.parentNode
-            continue
-        if node.position == '\n':
-            re = -1.0
-            while node != None:
-                node.Update(re)
-                node = node.parentNode
+        if len(state.position) >= 70 or node.position == '\n':
+            back_propagation(node, reward=-1.0)
             continue
 
         """expansion step"""
@@ -152,10 +143,7 @@ def MCTS(root, conf, val, model, verbose=False):
         out_f.flush()
 
         if len(node_index) == 0:
-            re = -1.0
-            while node != None:
-                node.Update(re)
-                node = node.parentNode
+            back_propagation(node, reward=-1.0)
         else:
             re_list = []
             atom_checked = []
@@ -182,9 +170,7 @@ def MCTS(root, conf, val, model, verbose=False):
             """backpropation step"""
             for i in range(len(node_pool)):
                 node = node_pool[i]
-                while node != None:
-                    node.Update(re_list[i])
-                    node = node.parentNode
+                back_propagation(node, reward=re_list[i])
             
             for child in node_pool:
                 print(child.position, child.wins, child.visits)

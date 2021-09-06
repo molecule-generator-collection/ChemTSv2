@@ -35,6 +35,12 @@ def node_to_add(all_nodes, val):
     return added_nodes
 
 
+def back_propagation(node, reward):
+    while node != None:
+        node.Update(reward)
+        node = node.parentNode
+
+
 def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
     all_posible = []
     end = "\n"
