@@ -11,7 +11,7 @@ import pandas as pd
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node, back_propagation
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
-from reward.logP_reward import calc_reward_score
+from reward.logP_reward import calc_reward_from_objective_values
 
 
 def get_parser():
@@ -93,7 +93,7 @@ def MCTS(root, conf, val, model, verbose=False):
     """global variables used for save valid compounds and simulated compounds"""
     valid_smiles_list = []
     depth_list = []
-    objective_value_list = []
+    objective_values_list = []
     elapsed_time_list = []
     generated_dict = {}  # dictionary of generated compounds
 
@@ -129,16 +129,16 @@ def MCTS(root, conf, val, model, verbose=False):
               f"generated_dict {generated_dict}\n") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, score, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
+        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
 
         valid_smiles_list.extend(valid_smiles)
         depth = len(state.position)
         depth_list.extend([depth for _ in range(len(valid_smiles))])
         elapsed_time = round(time.time()-start_time, 1)
         elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
-        objective_value_list.extend(score)
+        objective_values_list.extend(objective_values)
         
-        print(f"node {node_index} score {score} valid {valid_smiles} time {elapsed_time}")
+        print(f"node {node_index} objective_values {objective_values} valid {valid_smiles} time {elapsed_time}")
 
         if len(node_index) == 0:
             back_propagation(node, reward=-1.0)
@@ -160,8 +160,7 @@ def MCTS(root, conf, val, model, verbose=False):
                     print(child.position)
                 print('\n')
 
-                # calculate reward score
-                re = -1 if atom == '\n' else calc_reward_score(scores=score[i], conf=conf)
+                re = -1 if atom == '\n' else calc_reward_from_objective_values(values=objective_values[i], conf=conf)
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
@@ -177,11 +176,11 @@ def MCTS(root, conf, val, model, verbose=False):
     print(f"num valid_smiles: {len(valid_smiles_list)}\n"
           f"valid smiles: {valid_smiles_list}\n"
           f"depth: {depth_list}\n"
-          f"objective value: {objective_value_list}\n"
+          f"objective value: {objective_values_list}\n"
           f"time: {elapsed_time_list}")
     df = pd.DataFrame({
         "smiles": valid_smiles_list,
-        "objective_value": objective_value_list,
+        "objective_value": objective_values_list,
         "depth": depth_list,
         "elapsed_time": elapsed_time_list,
     })

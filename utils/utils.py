@@ -8,7 +8,7 @@ from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
-from reward.logP_reward import calc_reward_module
+from reward.logP_reward import calc_objective_values
 from utils.filter import HashimotoFilter
 
 
@@ -101,13 +101,13 @@ def make_input_smiles(generate_smiles):
 def evaluate_node(new_compound, generated_dict, conf):
     node_index = []
     valid_compound = []
-    score = []  # objective_values_list
+    objective_values_list = []
     for i in range(len(new_compound)):
         print(f"check dictionary comp: {new_compound[i]} check: {new_compound[i] in generated_dict}")
         if new_compound[i] in generated_dict:
             node_index.append(i)
             valid_compound.append(new_compound[i])
-            score.append(generated_dict[new_compound[i]])
+            objective_values_list.append(generated_dict[new_compound[i]])
             print('duplication!!')
             continue
 
@@ -155,10 +155,10 @@ def evaluate_node(new_compound, generated_dict, conf):
         max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
         if max_ring_size > 6:
             continue
-        scores = calc_reward_module(new_compound[i])
+        values = calc_objective_values(new_compound[i])
         node_index.append(i)
         valid_compound.append(new_compound[i])
-        score.append(scores)
-        generated_dict[new_compound[i]] = scores
+        objective_values_list.append(values)
+        generated_dict[new_compound[i]] = values
 
-    return node_index, score, valid_compound, generated_dict
+    return node_index, objective_values_list, valid_compound, generated_dict
