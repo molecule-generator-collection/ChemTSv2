@@ -92,6 +92,8 @@ def MCTS(root, conf, val, model, verbose=False):
     """global variables used for save valid compounds and simulated compounds"""
     valid_compound = []
     depth = []
+    objective_value_list = []
+    elapsed_time_list = []
     generated_dict = {}  # dictionary of generated compounds
 
     out_f = open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'a')
@@ -138,10 +140,15 @@ def MCTS(root, conf, val, model, verbose=False):
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
         node_index, score, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
+
         valid_compound.extend(valid_smiles)
+        depth.extend([len(state.position) for _ in range(len(valid_smiles))])
+        elapsed_time = round(time.time()-start_time, 1)
+        elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
+        objective_value_list.extend(score)
         
-        print(f"node {node_index} score {score} valid {valid_smiles}")
-        out_f.write(f"{valid_smiles}\t{score}\t{len(state.position)}\t{time.time()-start_time}\n")
+        print(f"node {node_index} score {score} valid {valid_smiles} time {elapsed_time}")
+        out_f.write(f"{valid_smiles}\t{score}\t{len(state.position)}\t{elapsed_time}\n")
         out_f.flush()
 
         if len(node_index) == 0:
@@ -159,7 +166,6 @@ def MCTS(root, conf, val, model, verbose=False):
                 if atom not in atom_checked: 
                     node.Addnode(atom, state)
                     node_pool.append(node.childNodes[len(atom_checked)])
-                    depth.append(len(state.position))
                     atom_checked.append(atom)
                 else:
                     node_pool.append(node.childNodes[atom_checked.index(atom)])
@@ -187,7 +193,9 @@ def MCTS(root, conf, val, model, verbose=False):
     """check if found the desired compound"""
     print(f"num valid_compound: {len(valid_compound)}\n"
           f"valid compounds: {valid_compound}\n"
-          f"depth: {depth}\n")
+          f"depth: {depth}\n"
+          f"objective value: {objective_value_list}\n"
+          f"time: {elapsed_time_list}")
     return valid_compound
 
 
