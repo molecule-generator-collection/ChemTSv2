@@ -1,4 +1,5 @@
 import argparse
+import importlib
 from math import sqrt, log
 import random
 import os
@@ -11,7 +12,6 @@ import pandas as pd
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node, back_propagation
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
-from reward.logP_reward import calc_reward_from_objective_values
 
 
 def get_parser():
@@ -83,7 +83,7 @@ class Node:
         self.wins += result
 
 
-def MCTS(root, conf, val, model, verbose=False):
+def MCTS(root, conf, val, model, reward_calculator, verbose=False):
     """initialization of the chemical trees and grammar trees"""
     start_time = time.time()
     run_time = time.time() + 3600 * conf['hours']
@@ -129,7 +129,7 @@ def MCTS(root, conf, val, model, verbose=False):
               f"generated_dict {generated_dict}\n") 
         for comp in new_compound:
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
+        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf)
 
         valid_smiles_list.extend(valid_smiles)
         depth = len(state.position)
@@ -160,7 +160,7 @@ def MCTS(root, conf, val, model, verbose=False):
                     print(child.position)
                 print('\n')
 
-                re = -1 if atom == '\n' else calc_reward_from_objective_values(values=objective_values[i], conf=conf)
+                re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
                 re_list.append(re)
                 print(f"atom: {atom} re_list: {re_list}")
 
@@ -199,6 +199,7 @@ def set_default_config(conf):
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
+    conf.setdefault('reward_calculator', 'reward.logP_reward')
 
 
 def main():
@@ -208,6 +209,7 @@ def main():
     set_default_config(conf)
     os.makedirs(conf['output_dir'], exist_ok=True)
     model = loaded_model(conf['model_json'], conf['model_weight'])  #WM300 not tested  
+    reward_calculator = importlib.import_module(conf["reward_calculator"])
     conf["max_len"] = model.input_shape[1]
     print(f"========== Configuration ==========")
     for k, v in conf.items():
@@ -219,7 +221,7 @@ def main():
     print(f"val is {val}")
 
     state = State()
-    df = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
+    df = MCTS(root=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, verbose=False)
     output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.pkl")
     print(f"[INFO] save results at {output_path}")
     df.to_pickle(output_path)
