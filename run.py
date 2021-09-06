@@ -92,9 +92,6 @@ def MCTS(root, conf, val, model, verbose=False):
     """global variables used for save valid compounds and simulated compounds"""
     valid_compound = []
     depth = []
-    min_score = 1000
-    score_distribution = []
-    min_score_distribution = []
     generated_dict = {}  # dictionary of generated compounds
 
     out_f = open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'a')
@@ -142,10 +139,9 @@ def MCTS(root, conf, val, model, verbose=False):
             print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
         node_index, score, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, conf)
         valid_compound.extend(valid_smiles)
-        score_distribution.extend(score)
         
         print(f"node {node_index} score {score} valid {valid_smiles}")
-        out_f.write(f"{valid_smiles}\t{score}\t{min_score}\t{len(state.position)}\t{time.time()-start_time}\n")
+        out_f.write(f"{valid_smiles}\t{score}\t{len(state.position)}\t{time.time()-start_time}\n")
         out_f.flush()
 
         if len(node_index) == 0:
@@ -172,13 +168,6 @@ def MCTS(root, conf, val, model, verbose=False):
                     print(child.position)
                 print('\n')
 
-                print(f"current minmum score: {min_score}")
-                if score[i][0] <= min_score:
-                    min_score_distribution.append(score[i][0])
-                    min_score = score[i][0]
-                else:
-                    min_score_distribution.append(min_score)
-
                 # calculate reward score
                 re = -1 if atom == '\n' else calc_reward_score(scores=score[i], conf=conf)
                 re_list.append(re)
@@ -196,11 +185,9 @@ def MCTS(root, conf, val, model, verbose=False):
     out_f.close()
                     
     """check if found the desired compound"""
-    print(f"score: {score_distribution}\n"
-          f"num valid_compound: {len(valid_compound)}\n"
+    print(f"num valid_compound: {len(valid_compound)}\n"
           f"valid compounds: {valid_compound}\n"
-          f"depth: {depth}\n"
-          f"min_score: {min_score_distribution}")
+          f"depth: {depth}\n")
     return valid_compound
 
 
@@ -235,7 +222,7 @@ def main():
     val, _ = zinc_processed_with_bracket(smiles_old)
     print(f"val is {val}")
     with open(os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_trial{conf['trial']}.txt"), 'w') as f:
-        f.write('#valid_smiles\tscore\tmin_score\tdepth\tused_time\n')
+        f.write('#valid_smiles\tscore\tdepth\tused_time\n')
 
     state = State()
     _ = MCTS(root=state, conf=conf, val=val, model=model, verbose=False)
