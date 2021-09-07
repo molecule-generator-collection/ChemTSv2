@@ -55,7 +55,7 @@ output_dir: result
 4. Molecule generate.
 
 ```bash
-python run.py -c setting.yaml
+python run.py -c config/setting.yaml
 ```
 
 ## License
