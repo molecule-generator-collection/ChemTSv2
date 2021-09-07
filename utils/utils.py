@@ -1,3 +1,4 @@
+import itertools
 import os
 import sys
 
@@ -11,7 +12,7 @@ import sascorer
 from utils.filter import HashimotoFilter
 
 
-def expanded_node(model, state, val, smiles_max_len, top_k=10):
+def expanded_node(model, state, val, smiles_max_len, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     x_pad = sequence.pad_sequences(
@@ -22,10 +23,16 @@ def expanded_node(model, state, val, smiles_max_len, top_k=10):
         truncating='pre',
         value=0.)
     preds = model.predict(x_pad)  # the sum of preds is equal to the `conf['max_len']`
-    state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
-    top_k_idxs = np.argpartition(state_pred, -top_k)[-top_k:]
-    print(f"top_k_indices: {top_k_idxs}")
-    return top_k_idxs
+    state_preds = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
+    sorted_idxs = np.argsort(state_preds)[::-1]
+    sorted_preds = state_preds[sorted_idxs]
+    for i, v in enumerate(itertools.accumulate(sorted_preds)):
+        print(v)
+        if v > threshold:
+            i = i if i != 0 else 1  # return one index if the first prediction value exceeds the threshold.
+            break 
+    print(f"indices for expansion: {sorted_idxs[:i]}")
+    return sorted_idxs[:i]
 
 
 def node_to_add(all_nodes, val):
