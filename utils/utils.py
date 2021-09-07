@@ -108,12 +108,10 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
     valid_compound = []
     objective_values_list = []
     for i in range(len(new_compound)):
-        print(f"check dictionary comp: {new_compound[i]} check: {new_compound[i] in generated_dict}")
         if new_compound[i] in generated_dict:
             node_index.append(i)
             valid_compound.append(new_compound[i])
             objective_values_list.append(generated_dict[new_compound[i]])
-            print('duplication!!')
             continue
 
         mol = Chem.MolFromSmiles(new_compound[i])
@@ -123,17 +121,14 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
         if conf['use_hashimoto_filter']:
             hashifilter = HashimotoFilter()
             hf, _ = hashifilter.filter([new_compound[i]])
-            print('hashimoto filter check is', hf)
             if hf[0] == 0:
                 continue
 
         SA_score = - sascorer.calculateScore(MolFromSmiles(new_compound[i]))
-        print(f"SA_score: {SA_score}")
         if conf['sa_threshold'] < -SA_score:
             continue
 
         if conf['radical_check']:
-            print("radical check")
             if Descriptors.NumRadicalElectrons(mol) != 0:
                 continue
 
@@ -144,11 +139,9 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
             acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
             rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
             if conf['use_lipinski_filter'] == 'rule_of_5':
-                print("lipinski's rule of 5 check")
                 if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
                     continue
             elif conf['use_lipinski_filter'] == 'rule_of_3':
-                print("lipinski's rule of 3 check")
                 if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
                     continue
             else:
@@ -165,5 +158,6 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)
         generated_dict[new_compound[i]] = values
+    print(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
     return node_index, objective_values_list, valid_compound, generated_dict
