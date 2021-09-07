@@ -163,6 +163,7 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
         elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
         objective_values_list.extend(objective_values)
         
+        logger.info(f"Number of valid SMILES: {len(valid_smiles_list)}")
         logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
 
         if len(node_index) == 0:
@@ -197,7 +198,7 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
                 logger.debug(child.position, child.wins, child.visits)
                     
     """check if found the desired compound"""
-    logger.info(f"num valid_smiles: {len(valid_smiles_list)}\n"
+    logger.debug(f"num valid_smiles: {len(valid_smiles_list)}\n"
                 f"valid smiles: {valid_smiles_list}\n"
                 f"depth: {depth_list}\n"
                 f"objective value: {objective_values_list}\n"
