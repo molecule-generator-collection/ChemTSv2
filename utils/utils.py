@@ -2,7 +2,7 @@ import itertools
 import os
 import sys
 
-from keras.preprocessing import sequence
+from tensorflow.keras.preprocessing import sequence
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
@@ -22,7 +22,7 @@ def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):
         padding='post',
         truncating='pre',
         value=0.)
-    preds = model.predict(x_pad)  # the sum of preds is equal to the `conf['max_len']`
+    preds = model.predict_on_batch(x_pad)  # the sum of preds is equal to the `conf['max_len']`
     state_preds = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
     sorted_idxs = np.argsort(state_preds)[::-1]
     sorted_preds = state_preds[sorted_idxs]
@@ -65,7 +65,7 @@ def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
             value=0.)
 
         while not get_int[-1] == val.index(end):
-            preds = model.predict(x_pad)  # the sum of preds is equal to the `conf['max_len']` 
+            preds = model.predict_on_batch(x_pad)  # the sum of preds is equal to the `conf['max_len']` 
             state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
             next_int = np.random.choice(range(len(state_pred)), p=state_pred)
             get_int.append(next_int)
