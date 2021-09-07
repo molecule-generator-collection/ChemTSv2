@@ -27,7 +27,6 @@ def expanded_node(model, state, val, smiles_max_len, threshold=0.995):
     sorted_idxs = np.argsort(state_preds)[::-1]
     sorted_preds = state_preds[sorted_idxs]
     for i, v in enumerate(itertools.accumulate(sorted_preds)):
-        print(v)
         if v > threshold:
             i = i if i != 0 else 1  # return one index if the first prediction value exceeds the threshold.
             break 
