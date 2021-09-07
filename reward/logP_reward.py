@@ -1,5 +1,6 @@
 from rdkit import Chem
 from rdkit.Chem import Descriptors
+import numpy as np
 
 
 def calc_objective_values(smiles):
@@ -9,4 +10,4 @@ def calc_objective_values(smiles):
 
 
 def calc_reward_from_objective_values(values, conf):
-    return (0.8 * values[0]) / (1 + 0.8 * abs(values[0]))
+    return np.tanh(values[0]/10)
