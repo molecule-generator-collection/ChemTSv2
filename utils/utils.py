@@ -12,7 +12,7 @@ import sascorer
 from utils.filter import HashimotoFilter
 
 
-def expanded_node(model, state, val, smiles_max_len, threshold=0.995):
+def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     x_pad = sequence.pad_sequences(
@@ -30,13 +30,13 @@ def expanded_node(model, state, val, smiles_max_len, threshold=0.995):
         if v > threshold:
             i = i if i != 0 else 1  # return one index if the first prediction value exceeds the threshold.
             break 
-    print(f"indices for expansion: {sorted_idxs[:i]}")
+    logger.debug(f"indices for expansion: {sorted_idxs[:i]}")
     return sorted_idxs[:i]
 
 
-def node_to_add(all_nodes, val):
+def node_to_add(all_nodes, val, logger):
     added_nodes = [val[all_nodes[i]] for i in range(len(all_nodes))]
-    print(added_nodes)
+    logger.debug(added_nodes)
     return added_nodes
 
 
@@ -103,7 +103,7 @@ def make_input_smiles(generate_smiles):
     return new_compound
 
 
-def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
+def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger):
     node_index = []
     valid_compound = []
     objective_values_list = []
@@ -145,7 +145,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
                 if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
                     continue
             else:
-                print("[ERROR] `use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
+                logger.error("`use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
                 sys.exit(1)
             
         # check ring size
@@ -158,6 +158,6 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf):
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)
         generated_dict[new_compound[i]] = values
-    print(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
+    logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
     return node_index, objective_values_list, valid_compound, generated_dict

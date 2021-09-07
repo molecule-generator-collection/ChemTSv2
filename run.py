@@ -1,4 +1,5 @@
 import argparse
+from logging import getLogger, StreamHandler, FileHandler, Formatter, INFO, DEBUG
 import importlib
 from math import sqrt, log
 import random
@@ -7,6 +8,7 @@ import time
 import yaml
 
 import numpy as np
+from rdkit import RDLogger
 import pandas as pd
 
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node, back_propagation
@@ -23,7 +25,30 @@ def get_parser():
         "-c", "--config", type=str, required=True,
         help="path to a config file"
     )
+    parser.add_argument(
+        "-d", "--debug", action='store_true',
+        help="debug mode"
+    )
     return parser.parse_args()
+
+
+def get_logger(level, save_dir):
+    logger = getLogger(__name__)
+    logger.setLevel(level)
+    logger.propagate = False
+
+    formatter = Formatter("%(asctime)s : %(levelname)s : %(message)s ")
+
+    fh = FileHandler(filename=os.path.join(save_dir, "run.log"), mode='w')
+    fh.setLevel(level)
+    fh.setFormatter(formatter)
+    sh = StreamHandler()
+    sh.setLevel(level)
+    sh.setFormatter(formatter)
+
+    logger.addHandler(fh)
+    logger.addHandler(sh)
+    return logger
 
 
 class State:
@@ -55,20 +80,20 @@ class Node:
         self.depth = 0
         self.conf = conf
 
-    def Selectnode(self):
+    def Selectnode(self, logger):
         ucb=[]
-        print('UCB:')
+        logger.debug('UCB:')
         for i in range(len(self.childNodes)):
             ucb_tmp = (self.childNodes[i].wins / self.childNodes[i].visits
                 + self.conf['c_val'] * sqrt(2 * log(self.visits) / self.childNodes[i].visits)
                 )
             ucb.append(ucb_tmp)
-            print(f"{self.childNodes[i].position} {ucb_tmp}") 
+            logger.debug(f"{self.childNodes[i].position} {ucb_tmp}") 
         m = np.amax(ucb)
         indices = np.nonzero(ucb == m)[0]
         ind = random.choice(indices)
         s = self.childNodes[ind]
-        print(f"\nindex {ind} {self.position} {m}") 
+        logger.debug(f"\nindex {ind} {self.position} {m}") 
         return s
 
     def Addnode(self, m, s):
@@ -83,7 +108,7 @@ class Node:
         self.wins += result
 
 
-def MCTS(root, conf, val, model, reward_calculator, verbose=False):
+def MCTS(root, conf, val, model, reward_calculator, logger):
     """initialization of the chemical trees and grammar trees"""
     start_time = time.time()
     run_time = time.time() + 3600 * conf['hours']
@@ -104,32 +129,32 @@ def MCTS(root, conf, val, model, reward_calculator, verbose=False):
         """selection step"""
         node_pool = []
         while node.childNodes!=[]:
-            node = node.Selectnode()
+            node = node.Selectnode(logger)
             state.SelectPosition(node.position)
-        print(f"state position: {state.position}")
+        logger.info(f"state position: {state.position}")
 
         if len(state.position) >= 70 or node.position == '\n':
             back_propagation(node, reward=-1.0)
             continue
 
         """expansion step"""
-        expanded = expanded_node(model, state.position, val, conf['max_len'], threshold=conf['expansion_threshold'])
+        expanded = expanded_node(model, state.position, val, conf['max_len'], logger, threshold=conf['expansion_threshold'])
         
         new_compound = []
         nodeadded = []
         for _ in range(conf['simulation_num']):
-            nodeadded_tmp = node_to_add(expanded, val)
+            nodeadded_tmp = node_to_add(expanded, val, logger)
             all_posible = chem_kn_simulation(model, state.position, val, nodeadded_tmp, conf['max_len'])
             generate_smiles = predict_smiles(all_posible, val)
             new_compound_tmp = make_input_smiles(generate_smiles)
             nodeadded.extend(nodeadded_tmp)
             new_compound.extend(new_compound_tmp)
-        print(f"nodeadded {nodeadded}\n"
-              f"new compound {new_compound}\n"
-              f"generated_dict {generated_dict}\n") 
+        logger.debug(f"nodeadded {nodeadded}")
+        logger.info(f"new compound {new_compound}")
+        logger.debug(f"generated_dict {generated_dict}") 
         for comp in new_compound:
-            print(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf)
+            logger.debug(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
+        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
 
         valid_smiles_list.extend(valid_smiles)
         depth = len(state.position)
@@ -138,7 +163,7 @@ def MCTS(root, conf, val, model, reward_calculator, verbose=False):
         elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
         objective_values_list.extend(objective_values)
         
-        print(f"node {node_index} objective_values {objective_values} valid {valid_smiles} time {elapsed_time}")
+        logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
 
         if len(node_index) == 0:
             back_propagation(node, reward=-1.0)
@@ -157,12 +182,11 @@ def MCTS(root, conf, val, model, reward_calculator, verbose=False):
                     node_pool.append(node.childNodes[atom_checked.index(atom)])
                 
                 for child in node.childNodes:
-                    print(child.position)
-                print('\n')
+                    logger.debug(child.position)
 
                 re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
                 re_list.append(re)
-                print(f"atom: {atom} re_list: {re_list}")
+                logger.debug(f"atom: {atom} re_list: {re_list}")
 
             """backpropation step"""
             for i in range(len(node_pool)):
@@ -170,14 +194,14 @@ def MCTS(root, conf, val, model, reward_calculator, verbose=False):
                 back_propagation(node, reward=re_list[i])
             
             for child in node_pool:
-                print(child.position, child.wins, child.visits)
+                logger.debug(child.position, child.wins, child.visits)
                     
     """check if found the desired compound"""
-    print(f"num valid_smiles: {len(valid_smiles_list)}\n"
-          f"valid smiles: {valid_smiles_list}\n"
-          f"depth: {depth_list}\n"
-          f"objective value: {objective_values_list}\n"
-          f"time: {elapsed_time_list}")
+    logger.info(f"num valid_smiles: {len(valid_smiles_list)}\n"
+                f"valid smiles: {valid_smiles_list}\n"
+                f"depth: {depth_list}\n"
+                f"objective value: {objective_values_list}\n"
+                f"time: {elapsed_time_list}")
     df = pd.DataFrame({
         "smiles": valid_smiles_list,
         "objective_value": objective_values_list,
@@ -209,22 +233,31 @@ def main():
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     set_default_config(conf)
     os.makedirs(conf['output_dir'], exist_ok=True)
-    model = loaded_model(conf['model_json'], conf['model_weight'])  #WM300 not tested  
+
+    # set log level
+    log_level = DEBUG if args.debug else INFO
+    logger = get_logger(log_level, conf["output_dir"])
+    if not args.debug:
+        RDLogger.DisableLog("rdApp.*")
+
+    model = loaded_model(conf['model_json'], conf['model_weight'], logger)  #WM300 not tested  
     reward_calculator = importlib.import_module(conf["reward_calculator"])
     conf["max_len"] = model.input_shape[1]
-    print(f"========== Configuration ==========")
+
+    logger.info(f"========== Configuration ==========")
     for k, v in conf.items():
-        print(f"{k}: {v}")
-    print(f"===================================")
+        logger.info(f"{k}: {v}")
+    logger.info(f"===================================")
+
 
     smiles_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, _ = zinc_processed_with_bracket(smiles_old)
-    print(f"val is {val}")
+    logger.debug(f"val is {val}")
 
     state = State()
-    df = MCTS(root=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, verbose=False)
+    df = MCTS(root=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, logger=logger)
     output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.pkl")
-    print(f"[INFO] save results at {output_path}")
+    logger.info(f"save results at {output_path}")
     df.to_pickle(output_path)
 
 
