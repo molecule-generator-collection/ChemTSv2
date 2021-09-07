@@ -2,6 +2,7 @@ trial: 1
 c_val: 1.0
 hours: 1
 sa_threshold: 3.5
+expansion_threshold: 0.995
 use_lipinski_filter: rule_of_5
 radical_check: True
 simulation_num: 3

@@ -113,7 +113,7 @@ def MCTS(root, conf, val, model, reward_calculator, verbose=False):
             continue
 
         """expansion step"""
-        expanded = expanded_node(model, state.position, val, conf['max_len'])
+        expanded = expanded_node(model, state.position, val, conf['max_len'], threshold=conf['expansion_threshold'])
         
         new_compound = []
         nodeadded = []
@@ -200,6 +200,7 @@ def set_default_config(conf):
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
     conf.setdefault('reward_calculator', 'reward.logP_reward')
+    conf.setdefault('expansion_threshold', 0.995)
 
 
 def main():
