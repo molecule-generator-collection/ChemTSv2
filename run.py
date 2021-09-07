@@ -14,6 +14,7 @@ import pandas as pd
 from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, evaluate_node, node_to_add, expanded_node, back_propagation
 from utils.load_model import loaded_model
 from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
+from utils.filter import HashimotoFilter
 
 
 def get_parser():
@@ -250,7 +251,7 @@ def main():
         logger.info(f"{k}: {v}")
     logger.info(f"===================================")
 
-
+    conf["hashimoto_filter"] = HashimotoFilter()
     smiles_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, _ = zinc_processed_with_bracket(smiles_old)
     logger.debug(f"val is {val}")

@@ -119,8 +119,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
             continue
 
         if conf['use_hashimoto_filter']:
-            hashifilter = HashimotoFilter()
-            hf, _ = hashifilter.filter([new_compound[i]])
+            hf, _ = conf["hashimoto_filter"].filter([new_compound[i]])
             if hf[0] == 0:
                 continue
 
