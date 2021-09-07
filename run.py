@@ -30,6 +30,10 @@ def get_parser():
         "-d", "--debug", action='store_true',
         help="debug mode"
     )
+    parser.add_argument(
+        "-g", "--gpu", type=str,
+        help="constrain gpu. (e.g. 0,1)"
+    )
     return parser.parse_args()
 
 
@@ -235,6 +239,7 @@ def main():
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     set_default_config(conf)
     os.makedirs(conf['output_dir'], exist_ok=True)
+    os.environ['CUDA_VISIBLE_DEVICES'] = "-1" if args.gpu is None else args.gpu
 
     # set log level
     log_level = DEBUG if args.debug else INFO
@@ -249,8 +254,9 @@ def main():
     logger.info(f"========== Configuration ==========")
     for k, v in conf.items():
         logger.info(f"{k}: {v}")
+    logger.info(f"GPU devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
     logger.info(f"===================================")
-
+            
     conf["hashimoto_filter"] = HashimotoFilter()
     smiles_old = zinc_data_with_bracket_original('data/250k_rndm_zinc_drugs_clean.smi')
     val, _ = zinc_processed_with_bracket(smiles_old)
