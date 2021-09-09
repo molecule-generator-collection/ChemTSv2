@@ -8,7 +8,7 @@ from rdkit import RDLogger
 
 from chemts import MCTS, State
 from utils.load_model import loaded_model
-from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
+from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket, smi_tokenizer
 from utils.filter import HashimotoFilter
 
 
@@ -28,6 +28,10 @@ def get_parser():
     parser.add_argument(
         "-g", "--gpu", type=str,
         help="constrain gpu. (e.g. 0,1)"
+    )
+    parser.add_argument(
+        "--input_smiles", type=str,
+        help="SMILES string (Need to put the atom you want to extend at the end of the string)"
     )
     return parser.parse_args()
 
@@ -84,6 +88,10 @@ def main():
     model = loaded_model(conf['model_json'], conf['model_weight'], logger)  #WM300 not tested  
     reward_calculator = importlib.import_module(conf["reward_calculator"])
     conf["max_len"] = model.input_shape[1]
+    if args.input_smiles is not None:
+        logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
+        conf["input_smiles"] = args.input_smiles
+        conf["tokenized_smiles"] = smi_tokenizer(conf["input_smiles"])
 
     logger.info(f"========== Configuration ==========")
     for k, v in conf.items():
@@ -96,7 +104,7 @@ def main():
     val, _ = zinc_processed_with_bracket(smiles_old)
     logger.debug(f"val is {val}")
 
-    state = State()
+    state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
     df = MCTS(root=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, logger=logger)
     output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.pkl")
     logger.info(f"save results at {output_path}")
