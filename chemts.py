@@ -10,9 +10,9 @@ from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
 
 
 class State:
-    def __init__(self):
-        self.position = ['&']
-        self.num_atom = 8
+    def __init__(self, position=['&']):
+        self.position = position
+        self.num_atom = 8  # no longer used?
         
     def Clone(self):
         st = State()
@@ -34,7 +34,7 @@ class Node:
         self.child = None
         self.wins = 0
         self.visits = 0
-        self.nonvisited_atom = state.Getatom()
+        self.nonvisited_atom = state.Getatom()  # no longer used?
         self.type_node = []
         self.depth = 0
         self.conf = conf

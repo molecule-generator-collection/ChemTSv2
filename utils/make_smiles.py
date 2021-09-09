@@ -1,4 +1,5 @@
 import csv
+import re
 
 
 def zinc_processed_with_bracket(sen_space):
@@ -71,3 +72,16 @@ def zinc_data_with_bracket_original(file_dir):
         zinc_processed.append(word1[0])
 
     return zinc_processed
+
+
+def smi_tokenizer(smi):
+    """
+    This function is based on https://github.com/pschwllr/MolecularTransformer#pre-processing
+    Modified by Shoichi Ishida
+    """
+    pattern =  "(\[[^\]]+]|Br?|Cl?|N|O|S|P|F|I|b|c|n|o|s|p|\(|\)|\.|=|#|-|\+|\\\\|\/|:|~|@|\?|>|\*|\$|\%[0-9]{2}|[0-9])"
+    regex = re.compile(pattern)
+    tokens = [token for token in regex.findall(smi)]
+    assert smi == ''.join(tokens)
+    tokens.insert(0, '&')
+    return tokens

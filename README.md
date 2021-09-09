@@ -57,6 +57,17 @@ reward_calculator: reward.logP_reward
 python run_chemts.py -c config/setting.yaml
 ```
 
+## Advanced usege
+
+### Extend user-specified SMILES
+
+You can extend the SMILES string you input. 
+In this case, you need to put the atom you want to extend at the end of the string and run ChemTS with `--input_smiles` argument as follows. 
+
+```bash
+python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
+```
+
 ## For developer
 
 ### How to define your own reward function
