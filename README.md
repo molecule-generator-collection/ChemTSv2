@@ -66,9 +66,9 @@ You only need to define two functions: `calc_objective_values()` and `calc_rewar
 If you want to use your own reward function, follow the instructions below.
 
 1. Create a python file in `reward` (e.g., `reward/logP_reward.py`). 
-2. Define `calc_objective_values()` and `calc_reward_from_objective_values`. 
-   2.1 `calc_objective_values()` takes an SMILES string as an input and returns raw objective values in the format of `list`.
-   2.2 `calc_reward_from_objective_values` takes the objective values as `list` type and return a `float` value. 
+2. Define `calc_objective_values()` and `calc_reward_from_objective_values`.  
+   2.1. `calc_objective_values()` takes an SMILES string as an input and returns raw objective values in the format of `list`.  
+   2.2. `calc_reward_from_objective_values` takes the objective values as `list` type and return a `float` value.  
 3. Set `reward_calculator` to a dot path of the created file (e.g., reward.logP_reward). 
 4. Run ChemTS (e.g, python run_chemts.py -c `PATH_TO_YOUR_CONFIG_FILE`). 
 
