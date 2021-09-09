@@ -41,15 +41,16 @@ setting.yaml
 ```yaml
 c_val: 1.0
 hours: 1
-base_score: -20
 sa_threshold: 3.5
-rule5: 1
+expansion_threshold: 0.995
+use_lipinski_filter: rule_of_5
 radical_check: True
 simulation_num: 3
-hashimoto_filter: True
+use_hashimoto_filter: True
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result
+output_dir: result/example01
+reward_calculator: reward.logP_reward
 ```
 
 4. Molecule generate.
