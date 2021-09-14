@@ -38,17 +38,12 @@ def calc_objective_values(smiles):
         bace1 = lgb_bace1.predict(fp)[0]
         sascore = sascorer.calculateScore(mol)
         qed = Chem.QED.qed(mol)
-        scaled_egfr = max_gauss(egfr)
-        scaled_bace1 = min_gauss(bace1)
-        scaled_sascore = minmax(-1 * sascore, -10, -1)
-        dscore = ((scaled_egfr ** 5) * (scaled_bace1 ** 3) * scaled_sascore * qed) ** (1/10)
     else:
         egfr = -1
         bace1 = -1
         sascore = -1
         qed = -1
-        dscore = -1
-    return [egfr, bace1, sascore, qed, dscore]
+    return [egfr, bace1, sascore, qed]
 
 
 def calc_reward_from_objective_values(values, conf):
