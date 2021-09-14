@@ -47,11 +47,23 @@ def calc_objective_values(smiles):
 
 
 def calc_reward_from_objective_values(values, conf):
+    weight = conf["weight"]
+    activity = conf["activity"]
     # If QED could not be calculated, 'values' contains None. In that case, -1 is returned.
     if all(values):
-        egfr = max_gauss(values[0])
-        bace = min_gauss(values[1])
+        if activity["egfr"] == 0:
+            egfr = max_gauss(values[0])
+        elif activity["egfr"] == 1:
+            egfr = min_gauss(values[0])
+        else:
+            egfr = None
+        if activity["bace1"] == 0:
+            bace1 = max_gauss(values[1])
+        elif activity["bace1"] == 1:
+            bace1 = min_gauss(values[1])
+        else:
+            bace1 = None
         sascore = minmax(-1 * values[2], -10, -1)
-        return ((egfr ** 5) * (bace ** 3) * sascore * values[3]) ** (1/10)
+        return ((egfr ** weight["egfr"]) * (bace1 ** weight["bace1"]) * (sascore * weight["sascore"]) * (values[3] * weight["qed"])) ** (1/sum(weight.values()))
     else:
         return -1

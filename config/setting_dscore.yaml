@@ -1,0 +1,17 @@
+trial: 1
+c_val: 1.0
+hours: 1
+sa_threshold: 10.
+expansion_threshold: 0.995
+use_lipinski_filter: rule_of_5
+radical_check: True
+simulation_num: 3
+use_hashimoto_filter: True
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.best.ckpt.h5
+output_dir: result/example01
+reward_calculator: reward.dscore_reward
+# Select 0 to activate, or 1 to deactivate.
+activity: {"egfr": 0, "bace1": 1}
+# Set the weight for each indicator.
+weight: {"egfr": 5, "bace1": 3, "sascore": 1, "qed": 1}
