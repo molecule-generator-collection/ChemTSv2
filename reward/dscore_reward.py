@@ -1,6 +1,7 @@
 import os
 import pickle
 import sys
+import traceback
 
 from rdkit import Chem
 from rdkit.Chem import AllChem, RDConfig
@@ -31,23 +32,26 @@ def min_gauss(x, a=1, mu=2, sigma=2):
     return y
 
 def calc_objective_values(smiles):
+    egfr = bace1 = sascore = qed = None
     mol = Chem.MolFromSmiles(smiles)
     if mol is not None:
         fp = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, 2048)]
         egfr = lgb_egfr.predict(fp)[0]
         bace1 = lgb_bace1.predict(fp)[0]
         sascore = sascorer.calculateScore(mol)
-        qed = Chem.QED.qed(mol)
-    else:
-        egfr = -1
-        bace1 = -1
-        sascore = -1
-        qed = -1
+        try:
+            qed = Chem.QED.qed(mol)
+        except Chem.rdchem.AtomValenceException:
+            traceback.print_exc()
     return [egfr, bace1, sascore, qed]
 
 
 def calc_reward_from_objective_values(values, conf):
-    egfr = max_gauss(values[0])
-    bace = min_gauss(values[1])
-    sascore = minmax(-1 * values[2], -10, -1)
-    return ((egfr ** 5) * (bace ** 3) * sascore * values[3]) ** (1/10)
+    # If QED could not be calculated, 'values' contains None. In that case, -1 is returned.
+    if all(values):
+        egfr = max_gauss(values[0])
+        bace = min_gauss(values[1])
+        sascore = minmax(-1 * values[2], -10, -1)
+        return ((egfr ** 5) * (bace ** 3) * sascore * values[3]) ** (1/10)
+    else:
+        return -1
