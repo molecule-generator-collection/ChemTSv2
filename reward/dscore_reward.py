@@ -14,22 +14,24 @@ with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'model', 'lgb_eg
 with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'model', 'lgb_bace1.pickle'), mode='rb') as f:
         lgb_bace1 = pickle.load(f)
 
+
 def minmax(x, min, max):
     return (x - min)/(max - min)
 
+
 def max_gauss(x, a=1, mu=8, sigma=2):
     if x > mu:
-        y = 1
+        return 1
     else :
-        y = a * np.exp(-(x - mu)**2 / (2*sigma**2))
-    return y
+        return a * np.exp(-(x - mu)**2 / (2*sigma**2))
+
 
 def min_gauss(x, a=1, mu=2, sigma=2):
     if x < mu:
-        y = 1
+        return 1
     else :
-        y = a * np.exp(-(x - mu)**2 / (2*sigma**2))
-    return y
+        return a * np.exp(-(x - mu)**2 / (2*sigma**2))
+
 
 def calc_objective_values(smiles):
     egfr = bace1 = sascore = qed = None
