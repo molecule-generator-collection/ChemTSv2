@@ -9,8 +9,6 @@ from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
-from utils.filter import HashimotoFilter
-
 
 def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
