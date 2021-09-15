@@ -59,16 +59,22 @@ def set_default_config(conf):
     conf.setdefault('trial', 1)
     conf.setdefault('c_val', 1.0)
     conf.setdefault('hours', 1) 
-    conf.setdefault('sa_threshold', 3.5)
-    conf.setdefault('use_lipinski_filter', 'rule_of_5')  # rule_of_5, rule_of_3
-    conf.setdefault('radical_check', True)
     conf.setdefault('simulation_num', 3)
+    conf.setdefault('expansion_threshold', 0.995)
+
+    conf.setdefault('use_lipinski_filter', True)
+    conf.setdefault('lipinski_filter_type', 'rule_of_5')
+    conf.setdefault('use_radical_filter', True)
     conf.setdefault('use_hashimoto_filter', True) 
+    conf.setdefault('use_sascore_filter', True)
+    conf.setdefault('sa_threshold', 3.5)
+    conf.setdefault('use_ring_size_filter', True)
+    conf.setdefault('ring_size_threshold', 6)
+
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
     conf.setdefault('reward_calculator', 'reward.logP_reward')
-    conf.setdefault('expansion_threshold', 0.995)
 
 
 def main():
