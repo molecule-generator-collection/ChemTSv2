@@ -5,8 +5,11 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 import numpy as np
 
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'model', 'lgb_bace1.pickle'), mode='rb') as f:
+
+BACE1_MODEL_PATH = 'data/model/lgb_bace1.pickle'
+with open(BACE1_MODEL_PATH, mode='rb') as f:
         lgb_bace1 = pickle.load(f)
+        print(f"[INFO] loaded model from {BACE1_MODEL_PATH}")
 
 def calc_objective_values(smiles):
     mol = Chem.MolFromSmiles(smiles)

@@ -5,8 +5,12 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 import numpy as np
 
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'model', 'lgb_egfr.pickle'), mode='rb') as f:
+
+EGFR_MODEL_PATH = 'data/model/lgb_egfr.pickle'
+with open(EGFR_MODEL_PATH, mode='rb') as f:
         lgb_egfr = pickle.load(f)
+        print(f"[INFO] loaded model from {EGFR_MODEL_PATH}")
+
 
 def calc_objective_values(smiles):
     mol = Chem.MolFromSmiles(smiles)
