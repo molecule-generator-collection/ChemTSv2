@@ -132,5 +132,9 @@ dmypy.json
 .vscode
 
 # User define
-result_CDK2_C1.0_trial1.txt
-radical_check.sdf
+result/
+!result/.gitkeep
+config/*_c*.yaml
+model/backup/
+*.png
+*.pstats

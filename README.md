@@ -18,7 +18,7 @@ conda install -c conda-forge matplotlib pyyaml
 
 ## How to run ChemTS
 
-1. Clone this repository and move into it. 
+1. Clone this repository and move into it.
 
 ```bash
 git clone git@github.com:ycu-iil/ChemTS_dev.git
@@ -37,19 +37,28 @@ python train_RNN.py -c model_setting.yaml
 Please refer to the sample file `config/setting.yaml` and you will see the following content:
 
 ```yaml
+trial: 1
 c_val: 1.0
-hours: 1
-sa_threshold: 3.5
+hours: 0.01
 expansion_threshold: 0.995
-use_lipinski_filter: rule_of_5
-radical_check: True
 simulation_num: 3
+
+use_lipinski_filter: True
+#lipinski_filter_type: rule_of_5
+use_radical_filter: True
 use_hashimoto_filter: True
+use_sascore_filter: True
+#sa_threshold: 10.
+use_ring_size_filter: True
+#ring_size_threshold: 6
+
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
 reward_calculator: reward.logP_reward
 ```
+
+If you want to pass any value to `calc_reward_from_objective_values` (e.g., weights for each value), add it in the config file.
 
 4. Generate molecules.
 
@@ -61,8 +70,8 @@ python run_chemts.py -c config/setting.yaml
 
 ### Extend user-specified SMILES
 
-You can extend the SMILES string you input. 
-In this case, you need to put the atom you want to extend at the end of the string and run ChemTS with `--input_smiles` argument as follows. 
+You can extend the SMILES string you input.
+In this case, you need to put the atom you want to extend at the end of the string and run ChemTS with `--input_smiles` argument as follows.
 
 ```bash
 python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
@@ -73,15 +82,15 @@ python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ### How to define your own reward function
 
 This ChemTS frexibly accept user-defined reward function. 
-You only need to define two functions: `calc_objective_values()` and `calc_reward_from_objective_values`. 
+You only need to define two functions: `calc_objective_values()` and `calc_reward_from_objective_values`.
 If you want to use your own reward function, follow the instructions below.
 
-1. Create a python file in `reward` (e.g., `reward/logP_reward.py`). 
+1. Create a python file in `reward` (e.g., `reward/logP_reward.py`).
 2. Define `calc_objective_values()` and `calc_reward_from_objective_values`.  
    2.1. `calc_objective_values()` takes an SMILES string as an input and returns raw objective values in the format of `list`.  
    2.2. `calc_reward_from_objective_values` takes the objective values as `list` type and return a `float` value.  
-3. Set `reward_calculator` to a dot path of the created file (e.g., reward.logP_reward). 
-4. Run ChemTS (e.g, python run_chemts.py -c `PATH_TO_YOUR_CONFIG_FILE`). 
+3. Set `reward_calculator` to a dot path of the created file (e.g., reward.logP_reward).
+4. Run ChemTS (e.g, python run_chemts.py -c `PATH_TO_YOUR_CONFIG_FILE`).
 
 ## License
 
