@@ -9,10 +9,15 @@ import numpy as np
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'model', 'lgb_egfr.pickle'), mode='rb') as f:
-        lgb_egfr = pickle.load(f)
-with open(os.path.join(os.path.dirname(__file__), '..', 'data', 'model', 'lgb_bace1.pickle'), mode='rb') as f:
-        lgb_bace1 = pickle.load(f)
+
+egfr_model_path = '../data/model/lgb_egfr.pickle'
+bace1_model_path = '../data/model/lgb_bace1.pickle'
+
+with open(egfr_model_path, mode='rb') as f1, open(bace1_model_path , mode='rb') as f2:
+        lgb_egfr = pickle.load(f1)
+        print(f"[INFO] {egfr_model_path} has loaded.")
+        lgb_bace1 = pickle.load(f2)
+        print(f"[INFO] {bace1_model_path} has loaded.")
 
 
 def minmax(x, min, max):
