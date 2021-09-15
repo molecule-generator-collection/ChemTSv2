@@ -13,11 +13,12 @@ import sascorer
 egfr_model_path = '../data/model/lgb_egfr.pickle'
 bace1_model_path = '../data/model/lgb_bace1.pickle'
 
-with open(egfr_model_path, mode='rb') as f1, open(bace1_model_path , mode='rb') as f2:
+with open('../data/model/lgb_egfr.pickle', mode='rb') as f1, \
+     open('../data/model/lgb_bace1.pickle', mode='rb') as f2:
         lgb_egfr = pickle.load(f1)
-        print(f"[INFO] {egfr_model_path} has loaded.")
+        print("[INFO] '../data/model/lgb_egfr.pickle' has loaded.")
         lgb_bace1 = pickle.load(f2)
-        print(f"[INFO] {bace1_model_path} has loaded.")
+        print("[INFO] '../data/model/lgb_bace1.pickle' has loaded.")
 
 
 def minmax(x, min, max):
