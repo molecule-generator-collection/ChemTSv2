@@ -57,21 +57,27 @@ def calc_objective_values(smiles):
 def calc_reward_from_objective_values(values, conf):
     weight = conf["weight"]
     scaling = conf["scaling_function"]
-    # If QED could not be calculated, 'values' contains None. In that case, -1 is returned.
     if None in values:
         return -1
     else:
+        egfr, bace1, sascore, qed = values
         if scaling["egfr"] == "max_gauss":
-            egfr = max_gauss(values[0])
+            scaled_egfr = max_gauss(egfr)
         elif scaling["egfr"] == "min_gauss":
-            egfr = min_gauss(values[0])
+            scaled_egfr = min_gauss(egfr)
         else:
-            egfr = None
+            scaled_egfr = None
         if scaling["bace1"] == "max_gauss":
-            bace1 = max_gauss(values[1])
+            scaled_bace1 = max_gauss(bace1)
         elif scaling["bace1"] == "min_gauss":
-            bace1 = min_gauss(values[1])
+            scaled_bace1 = min_gauss(bace1)
         else:
-            bace1 = None
-        sascore = minmax(-1 * values[2], -10, -1)
-        return ((egfr ** weight["egfr"]) * (bace1 ** weight["bace1"]) * (sascore * weight["sascore"]) * (values[3] * weight["qed"])) ** (1/sum(weight.values()))
+            scaled_bace1 = None
+        scaled_sascore = minmax(-1 * sascore, -10, -1)
+        # Since QED is a value between 0 and 1, there is no need to scale it.
+        scaled_values = scaled_egfr, scaled_bace1, scaled_sascore, qed
+        multiplication_value = 1
+        for v, w in zip(scaled_values, weight.values()):
+            multiplication_value *= v**w
+        dscore = multiplication_value ** (1/sum(weight.values()))
+        return dscore
