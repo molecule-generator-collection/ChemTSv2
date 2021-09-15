@@ -127,34 +127,35 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
 
         if len(node_index) == 0:
             back_propagation(node, reward=-1.0)
-        else:
-            re_list = []
-            atom_checked = []
-            for i in range(len(node_index)):
-                m = node_index[i]
-                atom = nodeadded[m]
-                
-                if atom not in atom_checked: 
-                    node.Addnode(atom, state)
-                    node_pool.append(node.childNodes[len(atom_checked)])
-                    atom_checked.append(atom)
-                else:
-                    node_pool.append(node.childNodes[atom_checked.index(atom)])
-                
-                for child in node.childNodes:
-                    logger.debug(child.position)
+            continue
 
-                re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
-                re_list.append(re)
-                logger.debug(f"atom: {atom} re_list: {re_list}")
-
-            """backpropation step"""
-            for i in range(len(node_pool)):
-                node = node_pool[i]
-                back_propagation(node, reward=re_list[i])
+        re_list = []
+        atom_checked = []
+        for i in range(len(node_index)):
+            m = node_index[i]
+            atom = nodeadded[m]
             
-            for child in node_pool:
-                logger.debug(child.position, child.wins, child.visits)
+            if atom not in atom_checked: 
+                node.Addnode(atom, state)
+                node_pool.append(node.childNodes[len(atom_checked)])
+                atom_checked.append(atom)
+            else:
+                node_pool.append(node.childNodes[atom_checked.index(atom)])
+            
+            for child in node.childNodes:
+                logger.debug(child.position)
+
+            re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
+            re_list.append(re)
+            logger.debug(f"atom: {atom} re_list: {re_list}")
+
+        """backpropation step"""
+        for i in range(len(node_pool)):
+            node = node_pool[i]
+            back_propagation(node, reward=re_list[i])
+            
+        for child in node_pool:
+            logger.debug(child.position, child.wins, child.visits)
                     
     """check if found the desired compound"""
     logger.debug(f"num valid_smiles: {len(valid_smiles_list)}\n"
