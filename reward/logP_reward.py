@@ -5,7 +5,7 @@ import numpy as np
 
 def calc_objective_values(smiles):
     mol = Chem.MolFromSmiles(smiles)
-    score = Descriptors.MolLogP(mol) if mol is not None else -1.
+    score = Descriptors.MolLogP(mol)
     return [score]
 
 
