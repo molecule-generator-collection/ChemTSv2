@@ -56,20 +56,20 @@ def calc_objective_values(smiles):
 
 def calc_reward_from_objective_values(values, conf):
     weight = conf["weight"]
-    activity = conf["activity"]
+    scaling = conf["scaling_function"]
     # If QED could not be calculated, 'values' contains None. In that case, -1 is returned.
     if None in values:
         return -1
     else:
-        if activity["egfr"] == 0:
+        if scaling["egfr"] == "max_gauss":
             egfr = max_gauss(values[0])
-        elif activity["egfr"] == 1:
+        elif scaling["egfr"] == "min_gauss":
             egfr = min_gauss(values[0])
         else:
             egfr = None
-        if activity["bace1"] == 0:
+        if scaling["bace1"] == "max_gauss":
             bace1 = max_gauss(values[1])
-        elif activity["bace1"] == 1:
+        elif scaling["bace1"] == "min_gauss":
             bace1 = min_gauss(values[1])
         else:
             bace1 = None
