@@ -10,15 +10,15 @@ sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
 
-egfr_model_path = '../data/model/lgb_egfr.pickle'
-bace1_model_path = '../data/model/lgb_bace1.pickle'
+EGFR_MODEL_PATH = 'data/model/lgb_egfr.pickle'
+BACE1_MODEL_PATH = 'data/model/lgb_bace1.pickle'
 
-with open('../data/model/lgb_egfr.pickle', mode='rb') as f1, \
-     open('../data/model/lgb_bace1.pickle', mode='rb') as f2:
+with open(EGFR_MODEL_PATH, mode='rb') as f1, \
+     open(BACE1_MODEL_PATH, mode='rb') as f2:
         lgb_egfr = pickle.load(f1)
-        print("[INFO] '../data/model/lgb_egfr.pickle' has loaded.")
+        print(f"[INFO] loaded model from {EGFR_MODEL_PATH}")
         lgb_bace1 = pickle.load(f2)
-        print("[INFO] '../data/model/lgb_bace1.pickle' has loaded.")
+        print(f"[INFO] loaded model from {BACE1_MODEL_PATH}")
 
 
 def minmax(x, min, max):
