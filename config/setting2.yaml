@@ -1,12 +1,18 @@
 trial: 1
 c_val: 1.0
-hours: 1
-sa_threshold: 10.
+hours: 0.01
 expansion_threshold: 0.995
-use_lipinski_filter: False
-radical_check: True
 simulation_num: 3
-use_hashimoto_filter: False
+
+use_lipinski_filter: True
+#lipinski_filter_type: rule_of_5
+use_radical_filter: True
+use_hashimoto_filter: True
+use_sascore_filter: True
+#sa_threshold: 10.
+use_ring_size_filter: True
+#ring_size_threshold: 6
+
 model_json: model/model2.tf25.json
 model_weight: model/model2.tf25.best.ckpt.h5
 output_dir: result/example02

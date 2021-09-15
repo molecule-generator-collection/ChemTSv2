@@ -103,7 +103,7 @@ def make_input_smiles(generate_smiles):
 
 def has_passed_through_filters(smiles, conf, logger):
     mol = Chem.MolFromSmiles(smiles)
-    if mol is None:
+    if mol is None:  # default check
         return False
 
     if conf['use_hashimoto_filter']:
@@ -111,11 +111,11 @@ def has_passed_through_filters(smiles, conf, logger):
         if hf[0] == 0:
             return False
 
-    SA_score = - sascorer.calculateScore(MolFromSmiles(smiles))
-    if conf['sa_threshold'] < -SA_score:
-        return False
+    if conf['use_sascore_filter']:
+        if conf['sa_threshold'] < sascorer.calculateScore(mol):
+            return False
 
-    if conf['radical_check']:
+    if conf['use_radical_filter']:
         if Descriptors.NumRadicalElectrons(mol) != 0:
             return False
 
@@ -125,21 +125,21 @@ def has_passed_through_filters(smiles, conf, logger):
         donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
         acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
         rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
-        if conf['use_lipinski_filter'] == 'rule_of_5':
+        if conf['lipinski_filter_type'] == 'rule_of_5':
             if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
                 return False
-        elif conf['use_lipinski_filter'] == 'rule_of_3':
+        elif conf['lipinski_filter_type'] == 'rule_of_3':
             if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
                 return False
         else:
             logger.error("`use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
             sys.exit(1)
         
-    # check ring size
-    ri = mol.GetRingInfo()
-    max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
-    if max_ring_size > 6:
-        return False
+    if conf['use_ring_size_filter']:
+        ri = mol.GetRingInfo()
+        max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
+        if max_ring_size > conf['ring_size_threshold']:
+            return False
 
     return True
 
