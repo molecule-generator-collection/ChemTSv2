@@ -48,7 +48,7 @@ use_lipinski_filter: True
 use_radical_filter: True
 use_hashimoto_filter: True
 use_sascore_filter: True
-#sa_threshold: 10.
+#sa_threshold: 3.5
 use_ring_size_filter: True
 #ring_size_threshold: 6
 
