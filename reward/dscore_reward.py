@@ -62,25 +62,25 @@ def calc_reward_from_objective_values(values, conf):
     scaling = conf["scaling_function"]
     if None in values:
         return -1
+    egfr, bace1, sascore, qed = values
+    if scaling["egfr"] == "max_gauss":
+        scaled_egfr = max_gauss(egfr)
+    elif scaling["egfr"] == "min_gauss":
+        scaled_egfr = min_gauss(egfr)
     else:
-        egfr, bace1, sascore, qed = values
-        if scaling["egfr"] == "max_gauss":
-            scaled_egfr = max_gauss(egfr)
-        elif scaling["egfr"] == "min_gauss":
-            scaled_egfr = min_gauss(egfr)
-        else:
-            scaled_egfr = None
-        if scaling["bace1"] == "max_gauss":
-            scaled_bace1 = max_gauss(bace1)
-        elif scaling["bace1"] == "min_gauss":
-            scaled_bace1 = min_gauss(bace1)
-        else:
-            scaled_bace1 = None
-        scaled_sascore = minmax(-1 * sascore, -10, -1)
-        # Since QED is a value between 0 and 1, there is no need to scale it.
-        scaled_values = scaled_egfr, scaled_bace1, scaled_sascore, qed
-        multiplication_value = 1
-        for v, w in zip(scaled_values, weight.values()):
-            multiplication_value *= v**w
-        dscore = multiplication_value ** (1/sum(weight.values()))
-        return dscore
+        scaled_egfr = None
+    if scaling["bace1"] == "max_gauss":
+        scaled_bace1 = max_gauss(bace1)
+    elif scaling["bace1"] == "min_gauss":
+        scaled_bace1 = min_gauss(bace1)
+    else:
+        scaled_bace1 = None
+    # SA score is made negative when scaling because a smaller value is more desirable.
+    scaled_sascore = minmax(-1 * sascore, -10, -1)
+    # Since QED is a value between 0 and 1, there is no need to scale it.
+    scaled_values = [scaled_egfr, scaled_bace1, scaled_sascore, qed]
+    multiplication_value = 1
+    for v, w in zip(scaled_values, weight.values()):
+        multiplication_value *= v**w
+    dscore = multiplication_value ** (1/sum(weight.values()))
+    return dscore

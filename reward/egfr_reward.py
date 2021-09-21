@@ -7,8 +7,8 @@ import numpy as np
 
 EGFR_MODEL_PATH = 'data/model/lgb_egfr.pickle'
 with open(EGFR_MODEL_PATH, mode='rb') as f:
-        lgb_egfr = pickle.load(f)
-        print(f"[INFO] loaded model from {EGFR_MODEL_PATH}")
+    lgb_egfr = pickle.load(f)
+    print(f"[INFO] loaded model from {EGFR_MODEL_PATH}")
 
 
 def calc_objective_values(smiles):
