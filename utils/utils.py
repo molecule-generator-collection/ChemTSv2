@@ -8,7 +8,7 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors, MolFromSmiles, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
-
+import shutil
 
 def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
@@ -144,7 +144,7 @@ def has_passed_through_filters(smiles, conf, logger):
     return True
 
 
-def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger):
+def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, dict_id=1):
     node_index = []
     valid_compound = []
     objective_values_list = []
@@ -158,7 +158,17 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
         if not has_passed_through_filters(new_compound[i], conf, logger):
             continue
 
-        values = reward_calculator.calc_objective_values(new_compound[i])
+        # check the reward name
+        if conf['reward_calculator'] == "reward.rDock_reward":
+            values = reward_calculator.calc_objective_values(new_compound[i], i, dict_id, logger, score_type=conf['score_type'], target_dir=conf['target_file_dir'], docking_num=conf['docking_num'])
+            # save best pose to sdf file.
+            best_pose_fname = f"rdock_out_{values[1]}.sd"
+            best_pose_dir = os.path.join(conf['output_dir'], "best_3D_pose")
+            os.makedirs(best_pose_dir, exist_ok=True)
+            shutil.copyfile(best_pose_fname, f"{best_pose_dir}/3D_pose_{values[2]}.sdf")
+            logger.info(f"Best pose of {new_compound[i]} is saved to {best_pose_dir}/3D_pose_{values[2]}.sdf")
+        else:
+            values = reward_calculator.calc_objective_values(new_compound[i])
         node_index.append(i)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)

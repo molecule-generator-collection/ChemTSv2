@@ -1,0 +1,26 @@
+trial: 1
+c_val: 1.0
+hours: 1
+expansion_threshold: 0.995
+simulation_num: 3
+
+use_lipinski_filter: True
+#lipinski_filter_type: rule_of_5
+use_radical_filter: True
+use_hashimoto_filter: True
+use_sascore_filter: True
+sa_threshold: 3.5
+use_ring_size_filter: True
+#ring_size_threshold: 6
+
+model_json: /home/mabiao/apps/ChemTS_dev/model/model.tf25.json
+model_weight: /home/mabiao/apps/ChemTS_dev/model/model.tf25.best.ckpt.h5
+output_dir: /home/mabiao/work/sbmolgen/test_chemts_dev/example_ligand_design/result/example_03
+reward_calculator: reward.rDock_reward
+
+# setting for rDock_reward
+target: CDK2
+target_file_dir: /home/mabiao/work/sbmolgen/test_chemts_dev/example_ligand_design
+docking_num: 10
+score_type: 'SCORE.INTER'
+base_docking_score: -20

@@ -80,6 +80,7 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
     objective_values_list = []
     elapsed_time_list = []
     generated_dict = {}  # dictionary of generated compounds
+    dict_id = 1  # this id used for save best docking pose.
 
     while time.time()<=run_time:
         node = rootnode  # important! This node is different with state / node is the tree node
@@ -112,8 +113,15 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
         logger.info(f"new compound {new_compound}")
         logger.debug(f"generated_dict {generated_dict}") 
         for comp in new_compound:
-            logger.debug(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
+            logger.debug(f"lastcomp {comp[-1]} ...")
+        # check the reward name
+        
+        if conf['reward_calculator'] == "reward.rDock_reward":
+            # when use rDock_reward, should give the depth values for best pose ID.
+            node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, dict_id=dict_id)
+            dict_id += 1
+        else:
+            node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
 
         valid_smiles_list.extend(valid_smiles)
         depth = len(state.position)
@@ -124,7 +132,7 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
         
         logger.info(f"Number of valid SMILES: {len(valid_smiles_list)}")
         logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
-
+        
         if len(node_index) == 0:
             back_propagation(node, reward=-1.0)
             continue
@@ -145,7 +153,10 @@ def MCTS(root, conf, val, model, reward_calculator, logger):
             for child in node.childNodes:
                 logger.debug(child.position)
 
-            re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
+            if conf['reward_calculator'] == "reward.rDock_reward":
+                re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i][0], conf=conf)
+            else:
+                re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
             re_list.append(re)
             logger.debug(f"atom: {atom} re_list: {re_list}")
 
