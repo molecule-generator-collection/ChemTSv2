@@ -84,11 +84,13 @@ class MCTS:
         self.objective_values_list = []
         self.elapsed_time_list = []
         self.generated_dict = {}  # dictionary of generated compounds
+        self.generated_id_list = []
 
     def search(self):
         while time.time() <= self.run_time:
             node = self.rootnode  # important! This node is different with state / node is the tree node
             state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
+            gid = 0
 
             """selection step"""
             node_pool = []
@@ -113,12 +115,16 @@ class MCTS:
                 new_compound_tmp = make_input_smiles(generate_smiles)
                 nodeadded.extend(nodeadded_tmp)
                 new_compound.extend(new_compound_tmp)
+
+            _gids = list(range(gid, gid+len(new_compound)))
+            gid += len(new_compound)
+
             self.logger.debug(f"nodeadded {nodeadded}")
             self.logger.info(f"new compound {new_compound}")
             self.logger.debug(f"generated_dict {self.generated_dict}") 
             for comp in new_compound:
                 self.logger.debug(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-            node_index, objective_values, valid_smiles, self.generated_dict = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger)
+            node_index, objective_values, valid_smiles, self.generated_dict, generated_id_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
             self.valid_smiles_list.extend(valid_smiles)
             depth = len(state.position)
@@ -126,6 +132,7 @@ class MCTS:
             elapsed_time = round(time.time()-self.start_time, 1)
             self.elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
             self.objective_values_list.extend(objective_values)
+            self.generated_id_list.extend(generated_id_list)
 
             self.logger.info(f"Number of valid SMILES: {len(self.valid_smiles_list)}")
             self.logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
@@ -169,6 +176,7 @@ class MCTS:
                     f"objective value: {self.objective_values_list}\n"
                     f"time: {self.elapsed_time_list}")
         df = pd.DataFrame({
+            "generated_id": self.generated_id_list,
             "smiles": self.valid_smiles_list,
             "objective_value": self.objective_values_list,
             "depth": self.depth_list,

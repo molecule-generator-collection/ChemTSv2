@@ -144,10 +144,11 @@ def has_passed_through_filters(smiles, conf, logger):
     return True
 
 
-def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger):
+def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, gids):
     node_index = []
     valid_compound = []
     objective_values_list = []
+    generated_ids = []
     for i in range(len(new_compound)):
         if new_compound[i] in generated_dict:
             node_index.append(i)
@@ -163,6 +164,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)
         generated_dict[new_compound[i]] = values
+        generated_ids.append(gids[i])
     logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
-    return node_index, objective_values_list, valid_compound, generated_dict
+    return node_index, objective_values_list, valid_compound, generated_dict, generated_ids
