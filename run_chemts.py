@@ -111,7 +111,8 @@ def main():
     logger.debug(f"val is {val}")
 
     state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
-    df = MCTS(root=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, logger=logger)
+    mcts = MCTS(root_state=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, logger=logger)
+    df = mcts.search()
     output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.pkl")
     logger.info(f"save results at {output_path}")
     df.to_pickle(output_path)

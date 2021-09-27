@@ -67,106 +67,111 @@ class Node:
         self.wins += result
 
 
-def MCTS(root, conf, val, model, reward_calculator, logger):
-    """initialization of the chemical trees and grammar trees"""
-    start_time = time.time()
-    run_time = time.time() + 3600 * conf['hours']
-    rootnode = Node(state=root, conf=conf)
-    state = root.Clone()
+class MCTS:
+    def __init__(self, root_state, conf, val, model, reward_calculator, logger):
+        self.start_time = time.time()
+        self.run_time = time.time() + 3600 * conf['hours']
+        self.rootnode = Node(state=root_state, conf=conf)
+        self.root_state = root_state
+        self.conf = conf
+        self.val = val
+        self.model = model
+        self.reward_calculator = reward_calculator
+        self.logger = logger
 
-    """global variables used for save valid compounds and simulated compounds"""
-    valid_smiles_list = []
-    depth_list = []
-    objective_values_list = []
-    elapsed_time_list = []
-    generated_dict = {}  # dictionary of generated compounds
+        self.valid_smiles_list = []
+        self.depth_list = []
+        self.objective_values_list = []
+        self.elapsed_time_list = []
+        self.generated_dict = {}  # dictionary of generated compounds
 
-    while time.time()<=run_time:
-        node = rootnode  # important! This node is different with state / node is the tree node
-        state = root.Clone()  # but this state is the state of the initialization. Too important!
+    def search(self):
+        while time.time() <= self.run_time:
+            node = self.rootnode  # important! This node is different with state / node is the tree node
+            state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
 
-        """selection step"""
-        node_pool = []
-        while node.childNodes!=[]:
-            node = node.Selectnode(logger)
-            state.SelectPosition(node.position)
-        logger.info(f"state position: {state.position}")
+            """selection step"""
+            node_pool = []
+            while node.childNodes!=[]:
+                node = node.Selectnode(self.logger)
+                state.SelectPosition(node.position)
+            self.logger.info(f"state position: {state.position}")
 
-        if len(state.position) >= 70 or node.position == '\n':
-            back_propagation(node, reward=-1.0)
-            continue
+            if len(state.position) >= 70 or node.position == '\n':
+                back_propagation(node, reward=-1.0)
+                continue
 
-        """expansion step"""
-        expanded = expanded_node(model, state.position, val, conf['max_len'], logger, threshold=conf['expansion_threshold'])
-        
-        new_compound = []
-        nodeadded = []
-        for _ in range(conf['simulation_num']):
-            nodeadded_tmp = node_to_add(expanded, val, logger)
-            all_posible = chem_kn_simulation(model, state.position, val, nodeadded_tmp, conf['max_len'])
-            generate_smiles = predict_smiles(all_posible, val)
-            new_compound_tmp = make_input_smiles(generate_smiles)
-            nodeadded.extend(nodeadded_tmp)
-            new_compound.extend(new_compound_tmp)
-        logger.debug(f"nodeadded {nodeadded}")
-        logger.info(f"new compound {new_compound}")
-        logger.debug(f"generated_dict {generated_dict}") 
-        for comp in new_compound:
-            logger.debug(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
-        node_index, objective_values, valid_smiles, generated_dict = evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger)
+            """expansion step"""
+            expanded = expanded_node(self.model, state.position, self.val, self.conf['max_len'], self.logger, threshold=self.conf['expansion_threshold'])
 
-        valid_smiles_list.extend(valid_smiles)
-        depth = len(state.position)
-        depth_list.extend([depth for _ in range(len(valid_smiles))])
-        elapsed_time = round(time.time()-start_time, 1)
-        elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
-        objective_values_list.extend(objective_values)
-        
-        logger.info(f"Number of valid SMILES: {len(valid_smiles_list)}")
-        logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
+            new_compound = []
+            nodeadded = []
+            for _ in range(self.conf['simulation_num']):
+                nodeadded_tmp = node_to_add(expanded, self.val, self.logger)
+                all_posible = chem_kn_simulation(self.model, state.position, self.val, nodeadded_tmp, self.conf['max_len'])
+                generate_smiles = predict_smiles(all_posible, self.val)
+                new_compound_tmp = make_input_smiles(generate_smiles)
+                nodeadded.extend(nodeadded_tmp)
+                new_compound.extend(new_compound_tmp)
+            self.logger.debug(f"nodeadded {nodeadded}")
+            self.logger.info(f"new compound {new_compound}")
+            self.logger.debug(f"generated_dict {self.generated_dict}") 
+            for comp in new_compound:
+                self.logger.debug(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
+            node_index, objective_values, valid_smiles, self.generated_dict = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger)
 
-        if len(node_index) == 0:
-            back_propagation(node, reward=-1.0)
-            continue
+            self.valid_smiles_list.extend(valid_smiles)
+            depth = len(state.position)
+            self.depth_list.extend([depth for _ in range(len(valid_smiles))])
+            elapsed_time = round(time.time()-self.start_time, 1)
+            self.elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
+            self.objective_values_list.extend(objective_values)
 
-        re_list = []
-        atom_checked = []
-        for i in range(len(node_index)):
-            m = node_index[i]
-            atom = nodeadded[m]
-            
-            if atom not in atom_checked: 
-                node.Addnode(atom, state)
-                node_pool.append(node.childNodes[len(atom_checked)])
-                atom_checked.append(atom)
-            else:
-                node_pool.append(node.childNodes[atom_checked.index(atom)])
-            
-            for child in node.childNodes:
-                logger.debug(child.position)
+            self.logger.info(f"Number of valid SMILES: {len(self.valid_smiles_list)}")
+            self.logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
 
-            re = -1 if atom == '\n' else reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=conf)
-            re_list.append(re)
-            logger.debug(f"atom: {atom} re_list: {re_list}")
+            if len(node_index) == 0:
+                back_propagation(node, reward=-1.0)
+                continue
 
-        """backpropation step"""
-        for i in range(len(node_pool)):
-            node = node_pool[i]
-            back_propagation(node, reward=re_list[i])
-            
-        for child in node_pool:
-            logger.debug(child.position, child.wins, child.visits)
-                    
-    """check if found the desired compound"""
-    logger.debug(f"num valid_smiles: {len(valid_smiles_list)}\n"
-                f"valid smiles: {valid_smiles_list}\n"
-                f"depth: {depth_list}\n"
-                f"objective value: {objective_values_list}\n"
-                f"time: {elapsed_time_list}")
-    df = pd.DataFrame({
-        "smiles": valid_smiles_list,
-        "objective_value": objective_values_list,
-        "depth": depth_list,
-        "elapsed_time": elapsed_time_list,
-    })
-    return df
+            re_list = []
+            atom_checked = []
+            for i in range(len(node_index)):
+                m = node_index[i]
+                atom = nodeadded[m]
+
+                if atom not in atom_checked: 
+                    node.Addnode(atom, state)
+                    node_pool.append(node.childNodes[len(atom_checked)])
+                    atom_checked.append(atom)
+                else:
+                    node_pool.append(node.childNodes[atom_checked.index(atom)])
+
+                for child in node.childNodes:
+                    self.logger.debug(child.position)
+
+                re = -1 if atom == '\n' else self.reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=self.conf)
+                re_list.append(re)
+                self.logger.debug(f"atom: {atom} re_list: {re_list}")
+
+            """backpropation step"""
+            for i in range(len(node_pool)):
+                node = node_pool[i]
+                back_propagation(node, reward=re_list[i])
+
+            for child in node_pool:
+                self.logger.debug(child.position, child.wins, child.visits)
+
+        """check if found the desired compound"""
+        self.logger.debug(f"num valid_smiles: {len(self.valid_smiles_list)}\n"
+                    f"valid smiles: {self.valid_smiles_list}\n"
+                    f"depth: {self.depth_list}\n"
+                    f"objective value: {self.objective_values_list}\n"
+                    f"time: {self.elapsed_time_list}")
+        df = pd.DataFrame({
+            "smiles": self.valid_smiles_list,
+            "objective_value": self.objective_values_list,
+            "depth": self.depth_list,
+            "elapsed_time": self.elapsed_time_list,
+        })
+        return df
