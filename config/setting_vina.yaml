@@ -1,0 +1,26 @@
+trial: 1
+c_val: 1.0
+hours: 0.01
+expansion_threshold: 0.995
+simulation_num: 3
+
+use_lipinski_filter: True
+#lipinski_filter_type: rule_of_5
+use_radical_filter: True
+use_hashimoto_filter: True
+use_sascore_filter: True
+#sa_threshold: 10.
+use_ring_size_filter: True
+#ring_size_threshold: 6
+
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.best.ckpt.h5
+output_dir: result/example01
+reward_calculator: reward.Vina_reward
+
+vina_sf_name: vina
+vina_cpus: 4
+receptor: data/1iep_receptor.pdbqt
+center: [15.190, 53.903, 16.917]
+box_size: [20, 20, 20]
+base_score: -20
