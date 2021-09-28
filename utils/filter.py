@@ -1,11 +1,57 @@
-from os import path
+import os
 import sys
 
 import pandas as pd
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, Descriptors, rdMolDescriptors, RDConfig
+sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+import sascorer
 
 from utils import metadata
+
+
+def has_passed_through_filters(smiles, conf, logger):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:  # default check
+        return False
+
+    if conf['use_hashimoto_filter']:
+        hf, _ = conf["hashimoto_filter"].filter([smiles])
+        if hf[0] == 0:
+            return False
+
+    if conf['use_sascore_filter']:
+        if conf['sa_threshold'] < sascorer.calculateScore(mol):
+            return False
+
+    if conf['use_radical_filter']:
+        if Descriptors.NumRadicalElectrons(mol) != 0:
+            return False
+
+    if conf['use_lipinski_filter']:
+        weight = round(rdMolDescriptors._CalcMolWt(mol), 2)
+        logp = Descriptors.MolLogP(mol)
+        donor = rdMolDescriptors.CalcNumLipinskiHBD(mol)
+        acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
+        rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
+        if conf['lipinski_filter_type'] == 'rule_of_5':
+            if weight > 500 or logp > 5 or donor > 5 or acceptor > 10:
+                return False
+        elif conf['lipinski_filter_type'] == 'rule_of_3':
+            if weight > 300 or logp > 3 or donor > 3 or acceptor > 3 or rotbonds > 3:
+                return False
+        else:
+            logger.error("`use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
+            sys.exit(1)
+        
+    if conf['use_ring_size_filter']:
+        ri = mol.GetRingInfo()
+        max_ring_size = max((len(r) for r in ri.AtomRings()), default=0)
+        if max_ring_size > conf['ring_size_threshold']:
+            return False
+
+    return True
+
 
 class HashimotoFilter:
     neutralizer = None
@@ -71,7 +117,7 @@ class Evaluater:
     dict_atEstate = metadata.atEstate
 
     def __init__(self):
-        current_dir = path.dirname(path.abspath(__file__))
+        current_dir = os.path.dirname(os.path.abspath(__file__))
         dfb = pd.read_csv(current_dir + '/bonds_dict.txt', delimiter='\t')
         for i, f in dfb.iterrows():
             if f['BondIs'] == 1:
