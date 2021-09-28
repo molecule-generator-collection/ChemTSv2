@@ -86,6 +86,7 @@ def main():
     os.environ['CUDA_VISIBLE_DEVICES'] = "-1" if args.gpu is None else args.gpu
 
     # set log level
+    conf["debug"] = args.debug
     log_level = DEBUG if args.debug else INFO
     logger = get_logger(log_level, conf["output_dir"])
     if not args.debug:

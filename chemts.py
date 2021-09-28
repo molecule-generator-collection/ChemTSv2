@@ -122,8 +122,8 @@ class MCTS:
             self.logger.debug(f"nodeadded {nodeadded}")
             self.logger.info(f"new compound {new_compound}")
             self.logger.debug(f"generated_dict {self.generated_dict}") 
-            for comp in new_compound:
-                self.logger.debug(f"lastcomp {comp[-1]} ... ", comp[-1] == '\n')
+            if self.conf["debug"]:
+                self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
             node_index, objective_values, valid_smiles, self.generated_dict, generated_id_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
             self.valid_smiles_list.extend(valid_smiles)
@@ -154,8 +154,8 @@ class MCTS:
                 else:
                     node_pool.append(node.childNodes[atom_checked.index(atom)])
 
-                for child in node.childNodes:
-                    self.logger.debug(child.position)
+                if self.conf["debug"]:
+                    self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.childNodes]))
 
                 re = -1 if atom == '\n' else self.reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=self.conf)
                 re_list.append(re)
@@ -166,15 +166,15 @@ class MCTS:
                 node = node_pool[i]
                 back_propagation(node, reward=re_list[i])
 
-            for child in node_pool:
-                self.logger.debug(child.position, child.wins, child.visits)
+            if self.conf['debug']:
+                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, wins: {c.wins}, visits: {c.visits}" for c in node_pool]))
 
         """check if found the desired compound"""
-        self.logger.debug(f"num valid_smiles: {len(self.valid_smiles_list)}\n"
-                    f"valid smiles: {self.valid_smiles_list}\n"
-                    f"depth: {self.depth_list}\n"
-                    f"objective value: {self.objective_values_list}\n"
-                    f"time: {self.elapsed_time_list}")
+        self.logger.debug(f"\nnum valid_smiles: {len(self.valid_smiles_list)}\n\n"
+                    f"valid smiles:\n {self.valid_smiles_list}\n\n"
+                    f"depth:\n {self.depth_list}\n\n"
+                    f"objective value:\n {self.objective_values_list}\n\n"
+                    f"time:\n {self.elapsed_time_list}")
         df = pd.DataFrame({
             "generated_id": self.generated_id_list,
             "smiles": self.valid_smiles_list,
