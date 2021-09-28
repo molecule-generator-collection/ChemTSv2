@@ -113,7 +113,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         if not has_passed_through_filters(new_compound[i], conf, logger):
             continue
 
-        values = reward_calculator.calc_objective_values(new_compound[i])
+        values = reward_calculator.calc_objective_values(new_compound[i], conf)
         node_index.append(i)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)

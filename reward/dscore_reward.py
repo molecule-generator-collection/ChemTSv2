@@ -39,7 +39,7 @@ def min_gauss(x, a=1, mu=2, sigma=2):
         return a * np.exp(-(x-mu)**2 / (2*sigma**2))
 
 
-def calc_objective_values(smiles):
+def calc_objective_values(smiles, conf):
     egfr = None
     bace1 = None
     sascore = None

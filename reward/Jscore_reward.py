@@ -8,7 +8,7 @@ sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
 
-def calc_objective_values(smiles):
+def calc_objective_values(smiles, conf):
     mol = Chem.MolFromSmiles(smiles)
     logP = Descriptors.MolLogP(mol)
     sascore = sascorer.calculateScore(mol)
