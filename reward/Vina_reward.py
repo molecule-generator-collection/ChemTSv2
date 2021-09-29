@@ -41,5 +41,4 @@ def calc_objective_values(smiles, conf):
 def calc_reward_from_objective_values(values, conf):
     min_inter_score = values[0]
     score_diff = min_inter_score - conf['vina_base_score']
-    print(- score_diff * 0.1 / (1 + abs(score_diff) * 0.1))
     return - score_diff * 0.1 / (1 + abs(score_diff) * 0.1)
