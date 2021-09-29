@@ -1,6 +1,6 @@
 trial: 1
 c_val: 1.0
-hours: 0.01
+hours: 0.05
 expansion_threshold: 0.995
 simulation_num: 3
 
@@ -19,8 +19,13 @@ output_dir: result/example01
 reward_calculator: reward.Vina_reward
 
 vina_sf_name: vina
-vina_cpus: 4
-receptor: data/1iep_receptor.pdbqt
-center: [15.190, 53.903, 16.917]
-box_size: [20, 20, 20]
-base_score: -20
+vina_cpus: 8
+vina_receptor: data/1iep_receptor.pdbqt
+vina_center: [15.190, 53.903, 16.917]
+vina_box_size: [20, 20, 20]
+vina_spacing: 0.375
+vina_exhaustiveness: 32
+vina_n_poses: 10
+vina_base_score: -20
+vina_min_rmsd: 1.0
+vina_max_evals: 0
