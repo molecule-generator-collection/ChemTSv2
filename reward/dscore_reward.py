@@ -9,6 +9,7 @@ import numpy as np
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
+from misc.scaler import minmax, max_gauss, min_gauss
 
 EGFR_MODEL_PATH = 'data/model/lgb_egfr.pickle'
 BACE1_MODEL_PATH = 'data/model/lgb_bace1.pickle'
@@ -19,24 +20,6 @@ with open(EGFR_MODEL_PATH, mode='rb') as f1, \
         print(f"[INFO] loaded model from {EGFR_MODEL_PATH}")
         lgb_bace1 = pickle.load(f2)
         print(f"[INFO] loaded model from {BACE1_MODEL_PATH}")
-
-
-def minmax(x, min, max):
-    return (x - min)/(max - min)
-
-
-def max_gauss(x, a=1, mu=8, sigma=2):
-    if x > mu:
-        return 1
-    else :
-        return a * np.exp(-(x-mu)**2 / (2*sigma**2))
-
-
-def min_gauss(x, a=1, mu=2, sigma=2):
-    if x < mu:
-        return 1
-    else :
-        return a * np.exp(-(x-mu)**2 / (2*sigma**2))
 
 
 def calc_objective_values(smiles, conf):
