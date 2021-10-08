@@ -9,14 +9,14 @@ use_lipinski_filter: True
 use_radical_filter: True
 use_hashimoto_filter: True
 use_sascore_filter: True
-#sa_threshold: 10.
+#sa_threshold: 3.5
 use_ring_size_filter: True
 #ring_size_threshold: 6
 
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
-reward_calculator: reward.logP_reward
+reward_calculator: reward.dscore_reward
 
 # Select "max_gauss" to activate, or "min_gauss" to deactivate.
 scaling_function: {"egfr": "max_gauss", "bace1": "min_gauss"}
