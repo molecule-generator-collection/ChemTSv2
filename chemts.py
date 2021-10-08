@@ -5,7 +5,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from utils.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
+from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
     evaluate_node, node_to_add, expanded_node, back_propagation
 
 

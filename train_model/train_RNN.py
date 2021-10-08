@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import yaml
 
 sys.path.append("../")
-from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
+from misc.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket
 
 
 def get_parser():

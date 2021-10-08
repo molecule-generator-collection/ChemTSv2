@@ -7,9 +7,9 @@ import yaml
 from rdkit import RDLogger
 
 from chemts import MCTS, State
-from utils.load_model import loaded_model
-from utils.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket, smi_tokenizer
-from utils.filter import HashimotoFilter
+from misc.load_model import loaded_model
+from misc.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket, smi_tokenizer
+from misc.filter import HashimotoFilter
 
 
 def get_parser():

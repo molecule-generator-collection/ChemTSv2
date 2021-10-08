@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing import sequence
 import numpy as np
 from rdkit.Chem import MolFromSmiles
 
-from utils.filter import has_passed_through_filters
+from misc.filter import has_passed_through_filters
 
 
 def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):

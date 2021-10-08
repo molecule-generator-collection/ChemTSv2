@@ -7,7 +7,7 @@ from rdkit.Chem import AllChem, Descriptors, rdMolDescriptors, RDConfig
 sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
 import sascorer
 
-from utils import metadata
+from misc import metadata
 
 
 def has_passed_through_filters(smiles, conf, logger):
