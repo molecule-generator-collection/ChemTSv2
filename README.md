@@ -70,6 +70,12 @@ If you want to pass any value to `calc_reward_from_objective_values` (e.g., weig
 python run_chemts.py -c config/setting.yaml
 ```
 
+If you want to use GPU, run ChemTS with `--gpu GPU_ID` argument as follows.
+
+```bash
+python run_chemts.py -c config/setting.yaml --gpu 0
+```
+
 ## Advanced usege
 
 ### Extend user-specified SMILES
