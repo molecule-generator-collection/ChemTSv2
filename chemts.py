@@ -87,10 +87,10 @@ class MCTS:
         self.generated_id_list = []
 
     def search(self):
+        gid = 0
         while time.time() <= self.run_time:
             node = self.rootnode  # important! This node is different with state / node is the tree node
             state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
-            gid = 0
 
             """selection step"""
             node_pool = []
