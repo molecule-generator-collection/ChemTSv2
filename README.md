@@ -25,7 +25,7 @@ conda install -c conda-forge matplotlib pyyaml
 1. Clone this repository and move into it.
 
 ```bash
-git clone git@github.com:ycu-iil/ChemTS_dev.git
+git clone git@github.com:molecule-generator-collection/ChemTSv2.git
 cd ChemTS_dev
 ```
 
