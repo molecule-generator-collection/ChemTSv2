@@ -2,6 +2,7 @@ import itertools
 
 from tensorflow.keras.preprocessing import sequence
 import numpy as np
+from rdkit import Chem
 from rdkit.Chem import MolFromSmiles
 
 from misc.filter import has_passed_through_filters
@@ -114,7 +115,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         if not has_passed_through_filters(new_compound[i], conf, logger):
             continue
 
-        values = reward_calculator.calc_objective_values(new_compound[i], conf)
+        values = [f(Chem.MolFromSmiles(new_compound[i])) for f in reward_calculator.get_objective_functions(conf)]
         node_index.append(i)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)

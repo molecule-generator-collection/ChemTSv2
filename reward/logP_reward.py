@@ -3,10 +3,10 @@ from rdkit.Chem import Descriptors
 import numpy as np
 
 
-def calc_objective_values(smiles, conf):
-    mol = Chem.MolFromSmiles(smiles)
-    score = Descriptors.MolLogP(mol)
-    return [score]
+def get_objective_functions(conf):
+    def LogP(mol):
+        return Descriptors.MolLogP(mol)
+    return [LogP]
 
 
 def calc_reward_from_objective_values(values, conf):

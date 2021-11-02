@@ -178,8 +178,11 @@ class MCTS:
         df = pd.DataFrame({
             "generated_id": self.generated_id_list,
             "smiles": self.valid_smiles_list,
-            "objective_value": self.objective_values_list,
             "depth": self.depth_list,
             "elapsed_time": self.elapsed_time_list,
         })
+        obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
+        df_obj = pd.DataFrame(self.objective_values_list, columns=obj_column_names)
+        df = pd.concat([df, df_obj], axis=1)
+
         return df

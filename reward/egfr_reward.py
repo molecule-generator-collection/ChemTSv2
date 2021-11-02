@@ -10,13 +10,14 @@ with open(EGFR_MODEL_PATH, mode='rb') as f:
     lgb_egfr = pickle.load(f)
     print(f"[INFO] loaded model from {EGFR_MODEL_PATH}")
 
-
-def calc_objective_values(smiles, conf):
-    mol = Chem.MolFromSmiles(smiles)
-    fp = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, 2048)]
-    score = lgb_egfr.predict(fp)[0]
-    return [score]
+def get_objective_functions(conf):
+    def EGFR(mol):
+        if mol is None:
+            return None
+        fp = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, 2048)]
+        return lgb_egfr.predict(fp)[0]
+    return [EGFR]
 
 
 def calc_reward_from_objective_values(values, conf):
-    return np.tanh(values[0]/10)
+    return np.tanh(values[0]/10) if None not in values else -1

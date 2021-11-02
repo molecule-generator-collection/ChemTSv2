@@ -91,14 +91,14 @@ python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 
 ### How to define your own reward function
 
-This ChemTS frexibly accept user-defined reward function. 
+This ChemTS frexibly accept user-defined reward function.
 You only need to define two functions: `calc_objective_values()` and `calc_reward_from_objective_values()`.
-If you want to use your own reward function, follow the instructions below.
+If you want to use your own reward function, follow the instructions below and refer to `reward/Jscore_reward.py`.
 
 1. Create a python file in `reward` (e.g., `reward/logP_reward.py`).
-2. Define `calc_objective_values(smiles: str, conf: Dict[Any]) -> List[float]` and `calc_reward_from_objective_values(values: List[float], conf: Dict[Any]) -> float`.  
-   2.1. `calc_objective_values()` takes an SMILES string as an input and returns raw objective values in the format of `List`.  
-   2.2. `calc_reward_from_objective_values()` takes the objective values as `List` type and return a `float` value.  
+2. Define `get_objective_functions(conf: Dict[Any]) -> List[func]` and `calc_reward_from_objective_values(values: List[float], conf: Dict[Any]) -> float`.  
+   1. `get_objective_functions()` takes an config dict as an input and returns raw objective values in the format of `List`.  
+   2. `calc_reward_from_objective_values()` takes the objective values and config dict as `List` and `Dict` types, respectively, and return a `float` value.  
 3. Set `reward_calculator` to a dot path of the created file (e.g., reward.logP_reward).
 4. Run ChemTS (e.g, python run_chemts.py -c `PATH_TO_YOUR_CONFIG_FILE`).
 
@@ -107,4 +107,5 @@ If you want to use your own reward function, follow the instructions below.
 This package is distributed under the MIT License.
 
 ## Contact
+
 Shoichi Ishida (ishida.sho.nm@yokohama-cu.ac.jp) and Kei Terayama (terayama@yokohama-cu.ac.jp).

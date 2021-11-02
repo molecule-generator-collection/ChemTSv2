@@ -22,22 +22,29 @@ with open(EGFR_MODEL_PATH, mode='rb') as f1, \
         print(f"[INFO] loaded model from {BACE1_MODEL_PATH}")
 
 
-def calc_objective_values(smiles, conf):
-    egfr = None
-    bace1 = None
-    sascore = None
-    qed = None
-    mol = Chem.MolFromSmiles(smiles)
-    if mol is not None:
+def get_objective_functions(conf):
+    def EGFR(mol):
+        if mol is None:
+            return None
         fp = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, 2048)]
-        egfr = lgb_egfr.predict(fp)[0]
-        bace1 = lgb_bace1.predict(fp)[0]
-        sascore = sascorer.calculateScore(mol)
+        return lgb_egfr.predict(fp)[0]
+    
+    def BACE1(mol):
+        if mol is None:
+            return None
+        fp = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, 2048)]
+        return lgb_bace1.predict(fp)[0]
+
+    def SAScore(mol):
+        return sascorer.calculateScore(mol)
+
+    def QED(mol):
         try:
-            qed = Chem.QED.qed(mol)
+            return Chem.QED.qed(mol)
         except Chem.rdchem.AtomValenceException:
-            traceback.print_exc()
-    return [egfr, bace1, sascore, qed]
+            return None
+
+    return [EGFR, BACE1, SAScore, QED]
 
 
 def calc_reward_from_objective_values(values, conf):
