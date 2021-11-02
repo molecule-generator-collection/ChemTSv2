@@ -26,7 +26,7 @@ conda install -c conda-forge matplotlib pyyaml
 
 ```bash
 git clone git@github.com:molecule-generator-collection/ChemTSv2.git
-cd ChemTS_dev
+cd ChemTSv2
 ```
 
 2. (Optional) Train the RNN model.
