@@ -1,4 +1,6 @@
+from functools import wraps
 import itertools
+import time
 
 from tensorflow.keras.preprocessing import sequence
 import numpy as np
@@ -8,6 +10,16 @@ from rdkit.Chem import MolFromSmiles
 from misc.filter import has_passed_through_filters
 
 
+def calc_execution_time(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = f(*args, **kwargs)
+        elapsed_time = time.time() - start
+        print(f"Execution time of {f.__name__}: {elapsed_time} sec")
+        return result
+    return wrapper
+        
 def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
@@ -40,7 +52,6 @@ def back_propagation(node, reward):
     while node != None:
         node.Update(reward)
         node = node.parentNode
-
 
 def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
     all_posible = []
