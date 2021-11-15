@@ -94,7 +94,8 @@ def main():
 
     model = loaded_model(conf['model_json'], conf['model_weight'], logger)  #WM300 not tested  
     reward_calculator = importlib.import_module(conf["reward_calculator"])
-    conf["max_len"] = model.input_shape[1]
+    #conf["max_len"] = model.input_shape[1]
+    conf["max_len"] = 82
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
