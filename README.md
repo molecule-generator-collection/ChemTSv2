@@ -1,6 +1,6 @@
 # ChemTSv2
 
-This repository is an extended and refined version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424). The original implementation is available at https://github.com/tsudalab/ChemTS.
+This repository is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424). The original implementation is available at https://github.com/tsudalab/ChemTS.
 
 [1] X. Yang, J. Zhang, K. Yoshizoe, K. Terayama, and K. Tsuda, "ChemTS: An Efficient Python Library for de novo Molecular Generation", Science and Technology of Advanced Materials, Vol.18, No.1, pp.972-976, 2017.
 
