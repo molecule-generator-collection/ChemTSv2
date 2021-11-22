@@ -19,6 +19,31 @@ output_dir: result/example01
 reward_calculator: reward.dscore_reward
 
 # Select "max_gauss" to activate, or "min_gauss" to deactivate.
-scaling_function: {"egfr": "max_gauss", "bace1": "min_gauss"}
+scaling_function:
+  EGFR: min_gauss
+  BACE1: max_gauss
+  ERBB2: min_gauss
+  ABL: min_gauss
+  SRC: min_gauss
+  LCK: min_gauss
+  PDGFRbeta: min_gauss
+  VEGFR2: min_gauss
+  FGFR1: min_gauss
+  EPHB4: min_gauss
 # Set the weight for each indicator.
-weight: {"egfr": 5, "bace1": 3, "sascore": 1, "qed": 1} 
+weight:
+  EGFR: 8
+  BACE1: 5
+  ERBB2: 1
+  ABL: 1
+  SRC: 1
+  LCK: 1
+  PDGFRbeta: 1
+  VEGFR2: 1
+  FGFR1: 1
+  EPHB4: 1
+  Solubility: 1
+  Permeability: 1
+  Toxicity: 1
+  SAscore: 1
+  QED: 1
