@@ -20,18 +20,12 @@ def calc_execution_time(f):
         return result
     return wrapper
         
-def expanded_node(model, state, val, smiles_max_len, logger, threshold=0.995):
+def expanded_node(model, state, val, logger, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
-    x_pad = sequence.pad_sequences(
-        x,
-        maxlen=smiles_max_len,
-        dtype='int32',
-        padding='post',
-        truncating='pre',
-        value=0.)
-    preds = model.predict_on_batch(x_pad)  # the sum of preds is equal to the `conf['max_len']`
-    state_preds = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
+    model.reset_states()
+    preds = model.predict_on_batch(x)
+    state_preds = np.squeeze(preds)  # the sum of state_pred is equal to 1
     sorted_idxs = np.argsort(state_preds)[::-1]
     sorted_preds = state_preds[sorted_idxs]
     for i, v in enumerate(itertools.accumulate(sorted_preds)):
@@ -53,6 +47,7 @@ def back_propagation(node, reward):
         node.Update(reward)
         node = node.parentNode
 
+
 def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
     all_posible = []
     end = "\n"
@@ -60,34 +55,19 @@ def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
         position = []
         position.extend(state)
         position.append(added_nodes[i])
-        total_generated = []
         get_int = [val.index(position[j]) for j in range(len(position))]
         x = np.reshape(get_int, (1, len(get_int)))
-        x_pad = sequence.pad_sequences(
-            x,
-            maxlen=smiles_max_len,
-            dtype='int32',
-            padding='post',
-            truncating='pre',
-            value=0.)
+        model.reset_states()
 
         while not get_int[-1] == val.index(end):
-            preds = model.predict_on_batch(x_pad)  # the sum of preds is equal to the `conf['max_len']` 
-            state_pred = np.squeeze(preds)[len(get_int)-1]  # the sum of state_pred is equal to 1
+            preds = model.predict_on_batch(x)
+            state_pred = np.squeeze(preds)
             next_int = np.random.choice(range(len(state_pred)), p=state_pred)
             get_int.append(next_int)
-            x = np.reshape(get_int, (1, len(get_int)))
-            x_pad = sequence.pad_sequences(
-                x,
-                maxlen=smiles_max_len,
-                dtype='int32',
-                padding='post',
-                truncating='pre',
-                value=0.)
+            x = np.reshape([next_int], (1, 1))
             if len(get_int) > smiles_max_len:
                 break
-        total_generated.append(get_int)
-        all_posible.extend(total_generated)
+        all_posible.append(get_int)
     return all_posible
 
 

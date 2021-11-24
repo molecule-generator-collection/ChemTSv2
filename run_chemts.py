@@ -7,7 +7,7 @@ import yaml
 from rdkit import RDLogger
 
 from chemts import MCTS, State
-from misc.load_model import loaded_model
+from misc.load_model import loaded_model, loaded_model_struct
 from misc.make_smiles import zinc_data_with_bracket_original, zinc_processed_with_bracket, smi_tokenizer
 from misc.filter import HashimotoFilter
 
@@ -92,9 +92,10 @@ def main():
     if not args.debug:
         RDLogger.DisableLog("rdApp.*")
 
-    model = loaded_model(conf['model_json'], conf['model_weight'], logger)  #WM300 not tested  
+    model = loaded_model(conf['model_weight'], logger)  #WM300 not tested  
     reward_calculator = importlib.import_module(conf["reward_calculator"])
-    conf["max_len"] = model.input_shape[1]
+    model_struct = loaded_model_struct(conf['model_json'], logger)
+    conf["max_len"] = model_struct.input_shape[1]
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles

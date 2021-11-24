@@ -104,7 +104,7 @@ class MCTS:
                 continue
 
             """expansion step"""
-            expanded = expanded_node(self.model, state.position, self.val, self.conf['max_len'], self.logger, threshold=self.conf['expansion_threshold'])
+            expanded = expanded_node(self.model, state.position, self.val, self.logger, threshold=self.conf['expansion_threshold'])
 
             new_compound = []
             nodeadded = []

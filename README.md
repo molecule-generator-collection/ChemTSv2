@@ -36,6 +36,8 @@ cd train_RNN
 python train_RNN.py -c model_setting.yaml
 ```
 
+If you want to use your trained model, please update `misc.load_model.loaded_model()` based on your model architecture.
+
 3. (Optional) Create a config file for chemts.
 
 Please refer to the sample file `config/setting.yaml` and you will see the following content:
