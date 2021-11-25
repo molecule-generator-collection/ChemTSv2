@@ -14,14 +14,18 @@ with open(LGB_MODELS_PATH, mode='rb') as f:
     lgb_models = pickle.load(f)
 
 
-def scale_objective_values(target_name, value, conf):
-    scaling = conf["scaling_function"]
-    if scaling[target_name] == "max_gauss":
-        return max_gauss(value)
-    elif scaling[target_name] == "min_gauss":
-        return min_gauss(value)
+def scale_objective_value(params, value):
+    scaling = params["type"]
+    if scaling == "max_gauss":
+        return max_gauss(value, params["alpha"], params["mu"], params["sigma"])
+    elif scaling == "min_gauss":
+        return min_gauss(value, params["alpha"], params["mu"], params["sigma"])
+    elif scaling == "minmax":
+        return minmax(value, params["min"], params["max"])
+    elif scaling == "identity":
+        return value
     else:
-        return None
+        raise ValueError("Set the scaling function from one of 'max_gauss', 'min_gauss', 'minimax', or 'identity'")
 
 
 def get_objective_functions(conf):
@@ -30,7 +34,7 @@ def get_objective_functions(conf):
             return None
         fp = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, 2048)]
         return lgb_models["EGFR"].predict(fp, num_iteration=lgb_models["EGFR"].best_iteration)[0]
-    
+
     def BACE1(mol):
         if mol is None:
             return None
@@ -115,25 +119,31 @@ def get_objective_functions(conf):
     return [EGFR, BACE1, ERBB2, ABL, SRC, LCK, PDGFRbeta, VEGFR2, FGFR1, EPHB4, Solubility, Permeability, Toxicity, SAScore, QED]
 
 
-def calc_reward_from_objective_values(values, conf):    
+def calc_reward_from_objective_values(values, conf):
     if None in values:
         return -1
+    egfr, bace1, erbb2, abl, src, lck, pdgfrbeta, vegfr2, fgfr1, ephb4, solubility, permeability, toxicity, sascore, qed = values
+    dscore_params = conf["Dscore_parameters"]
     scaled_values = []
-    target_names = list(conf['scaling_function'].keys())
-    affinity_values = values[:len(target_names)]
-    for n, v in zip(target_names, affinity_values):
-        scaled_values.append(scale_objective_values(n, v, conf))
-    solubility, permeability, toxicity, sascore, qed = values[len(affinity_values):]
-    scaled_values.append(max_gauss(solubility, a=1, mu=-2, sigma=0.6))
-    scaled_values.append(max_gauss(permeability, a=1, mu=-4.5, sigma=0.5))
-    scaled_values.append(min_gauss(toxicity, a=1, mu=5.5, sigma=0.5))
-    # SA score is made negative when scaling because a smaller value is more desirable.
-    scaled_values.append(minmax(-1 * sascore, -10, -1))
-    # Since QED is a value between 0 and 1, there is no need to scale it.
-    scaled_values.append(qed)
-    weight = conf["weight"]
+    scaled_values.append(scale_objective_value(dscore_params["EGFR"], egfr))
+    scaled_values.append(scale_objective_value(dscore_params["BACE1"], bace1))
+    scaled_values.append(scale_objective_value(dscore_params["ERBB2"], erbb2))
+    scaled_values.append(scale_objective_value(dscore_params["ABL"], abl))
+    scaled_values.append(scale_objective_value(dscore_params["SRC"], src))
+    scaled_values.append(scale_objective_value(dscore_params["LCK"], lck))
+    scaled_values.append(scale_objective_value(dscore_params["PDGFRbeta"], pdgfrbeta))
+    scaled_values.append(scale_objective_value(dscore_params["VEGFR2"], vegfr2))
+    scaled_values.append(scale_objective_value(dscore_params["FGFR1"], fgfr1))
+    scaled_values.append(scale_objective_value(dscore_params["EPHB4"], ephb4))
+    scaled_values.append(scale_objective_value(dscore_params["Solubility"], solubility))
+    scaled_values.append(scale_objective_value(dscore_params["Permeability"], permeability))
+    scaled_values.append(scale_objective_value(dscore_params["Toxicity"], toxicity))
+    # SAscore is made negative when scaling because a smaller value is more desirable.
+    scaled_values.append(scale_objective_value(dscore_params["SAscore"], -1 * sascore))
+    scaled_values.append(scale_objective_value(dscore_params["QED"], qed))
+    weight = [v["weight"] for v in dscore_params.values()]
     multiplication_value = 1
-    for v, w in zip(scaled_values, weight.values()):
+    for v, w in zip(scaled_values, weight):
         multiplication_value *= v**w
-    dscore = multiplication_value ** (1/sum(weight.values()))
+    dscore = multiplication_value ** (1/sum(weight))
     return dscore
