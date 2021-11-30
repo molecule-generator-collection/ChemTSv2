@@ -1,4 +1,3 @@
-import csv
 import re
 
 
@@ -55,23 +54,10 @@ def zinc_processed_with_bracket(sen_space):
     return val, all_smiles
 
 
-def zinc_data_with_bracket_original(file_dir):
-    sen_space = []
-    f = open(file_dir, 'r')
-
-    reader = csv.reader(f)
-    for row in reader:
-        sen_space.append(row)
-    f.close()
-
-    word1 = sen_space[0]
-
-    zinc_processed = []
-    for i in range(len(sen_space)):
-        word1 = sen_space[i]
-        zinc_processed.append(word1[0])
-
-    return zinc_processed
+def read_smiles_dataset(filepath):
+    with open(filepath, 'r') as f:
+        smiles_list = [l.strip('\n') for l in f.readlines()]
+    return smiles_list
 
 
 def smi_tokenizer(smi):
