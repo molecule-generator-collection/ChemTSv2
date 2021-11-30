@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import yaml
 
 sys.path.append("../")
-from misc.make_smiles import read_smiles_dataset, zinc_processed_with_bracket
+from misc.make_smiles import read_smiles_dataset, tokenize_smiles
 
 
 def get_parser():
@@ -101,7 +101,7 @@ def main():
 
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
-    vocabulary, all_smiles = zinc_processed_with_bracket(original_smiles)
+    vocabulary, all_smiles = tokenize_smiles(original_smiles)
     print(f"vocabulary:\n{vocabulary}\n"
           f"size of SMILES list: {len(all_smiles)}")
     X_train, y_train = prepare_data(vocabulary, all_smiles) 

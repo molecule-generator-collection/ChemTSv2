@@ -1,57 +1,15 @@
 import re
 
 
-def zinc_processed_with_bracket(sen_space):
-    all_smiles = []
-    length = []
-    end = "\n"
-    element_table = ["C", "N", "B", "O", "P", "S", "F", "Cl", "Br", "I", "(", ")", "=", "#"]
-
-    for i in range(len(sen_space)):
-        word_space = sen_space[i]
-        word = []
-        j = 0
-        while j < len(word_space):
-            word_space1 = []
-            if word_space[j] == "[":
-                word_space1.append(word_space[j])
-                j = j + 1
-                while word_space[j] != "]":
-                    word_space1.append(word_space[j])
-                    j = j + 1
-                word_space1.append(word_space[j])
-                word_space2 = ''.join(word_space1)
-                word.append(word_space2)
-                j = j + 1
-            else:
-                word_space1.append(word_space[j])
-
-                if j + 1 < len(word_space):
-                    word_space1.append(word_space[j+1])
-                    word_space2 = ''.join(word_space1)
-                else:
-                    word_space1.insert(0, word_space[j-1])
-                    word_space2 = ''.join(word_space1)
-
-                if word_space2 not in element_table:
-                    word.append(word_space[j])
-                    j = j + 1
-                else:
-                    word.append(word_space2)
-                    j = j + 2
-
-        word.append(end)
-        word.insert(0, "&")
-        len1 = len(word)
-        length.append(len1)
-        all_smiles.append(list(word))
-    val = ["\n"]
-    for i in range(len(all_smiles)):
-        for j in range(len(all_smiles[i])):
-            if all_smiles[i][j] not in val:
-                val.append(all_smiles[i][j])
-
-    return val, all_smiles
+def tokenize_smiles(smiles_list):
+    tokenized_smiles_list = []
+    unique_token_set = set()
+    for smi in smiles_list:
+        tokenized_smiles = smi_tokenizer(smi)
+        tokenized_smiles.append('\n')
+        unique_token_set |= set(tokenized_smiles)
+        tokenized_smiles_list.append(tokenized_smiles)
+    return sorted(list(unique_token_set)), tokenized_smiles_list
 
 
 def read_smiles_dataset(filepath):

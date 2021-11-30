@@ -8,7 +8,7 @@ from rdkit import RDLogger
 
 from chemts import MCTS, State
 from misc.load_model import loaded_model, loaded_model_struct
-from misc.make_smiles import read_smiles_dataset, zinc_processed_with_bracket, smi_tokenizer
+from misc.make_smiles import read_smiles_dataset, smi_tokenizer, tokenize_smiles
 from misc.filter import HashimotoFilter
 
 
@@ -109,7 +109,7 @@ def main():
             
     conf["hashimoto_filter"] = HashimotoFilter()
     original_smiles_list = read_smiles_dataset('data/250k_rndm_zinc_drugs_clean.smi')
-    val, _ = zinc_processed_with_bracket(original_smiles_list)
+    val, _ = tokenize_smiles(original_smiles_list)
     logger.debug(f"val is {val}")
 
     state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
