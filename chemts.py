@@ -85,6 +85,7 @@ class MCTS:
         self.elapsed_time_list = []
         self.generated_dict = {}  # dictionary of generated compounds
         self.generated_id_list = []
+        self.filter_check_list = []
 
     def search(self):
         gid = 0
@@ -124,7 +125,7 @@ class MCTS:
             self.logger.debug(f"generated_dict {self.generated_dict}") 
             if self.conf["debug"]:
                 self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
-            node_index, objective_values, valid_smiles, generated_id_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
+            node_index, objective_values, valid_smiles, generated_id_list, filter_check_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
             self.valid_smiles_list.extend(valid_smiles)
             depth = len(state.position)
@@ -133,6 +134,7 @@ class MCTS:
             self.elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
             self.objective_values_list.extend(objective_values)
             self.generated_id_list.extend(generated_id_list)
+            self.filter_check_list.extend(filter_check_list)
 
             self.logger.info(f"Number of valid SMILES: {len(self.valid_smiles_list)}")
             self.logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
@@ -158,6 +160,9 @@ class MCTS:
                     self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.childNodes]))
 
                 re = -1 if atom == '\n' else self.reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=self.conf)
+                if self.conf['include_filter_result_in_reward']:
+                    re *= filter_check_list[i]
+                    
                 re_list.append(re)
                 self.logger.debug(f"atom: {atom} re_list: {re_list}")
 
@@ -180,6 +185,7 @@ class MCTS:
             "smiles": self.valid_smiles_list,
             "depth": self.depth_list,
             "elapsed_time": self.elapsed_time_list,
+            "is_through_filter": self.filter_check_list,
         })
         obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
         df_obj = pd.DataFrame(self.objective_values_list, columns=obj_column_names)

@@ -12,6 +12,7 @@ use_sascore_filter: True
 #sa_threshold: 10.
 use_ring_size_filter: True
 #ring_size_threshold: 6
+include_filter_result_in_reward: False
 
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5

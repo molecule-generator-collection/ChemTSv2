@@ -95,23 +95,37 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     valid_compound = []
     objective_values_list = []
     generated_ids = []
+    filter_check_list = []
     for i in range(len(new_compound)):
+
+        mol = Chem.MolFromSmiles(new_compound[i])
+        if mol is None:
+            continue
+
         if new_compound[i] in generated_dict:
             node_index.append(i)
             valid_compound.append(new_compound[i])
-            objective_values_list.append(generated_dict[new_compound[i]])
+            objective_values_list.append(generated_dict[new_compound[i]][0])
             generated_ids.append(gids[i])
+            filter_check_list.append(generated_dict[new_compound[i]][1])
             continue
-        
-        if not has_passed_through_filters(new_compound[i], conf, logger):
-            continue
+
+        if has_passed_through_filters(new_compound[i], conf, logger):
+            filter_check_value = 1
+            filter_check_list.append(filter_check_value)
+        else:
+            if conf['include_filter_result_in_reward']:
+                filter_check_value = 0
+                filter_check_list.append(filter_check_value)
+            else:
+                continue
 
         values = [f(Chem.MolFromSmiles(new_compound[i])) for f in reward_calculator.get_objective_functions(conf)]
         node_index.append(i)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)
-        generated_dict[new_compound[i]] = values
+        generated_dict[new_compound[i]] = [values, filter_check_value]
         generated_ids.append(gids[i])
     logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
-    return node_index, objective_values_list, valid_compound, generated_ids
+    return node_index, objective_values_list, valid_compound, generated_ids, filter_check_list

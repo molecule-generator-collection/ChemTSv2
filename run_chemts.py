@@ -70,6 +70,7 @@ def set_default_config(conf):
     conf.setdefault('sa_threshold', 3.5)
     conf.setdefault('use_ring_size_filter', True)
     conf.setdefault('ring_size_threshold', 6)
+    conf.setdefault('include_filter_result_in_reward', False)
 
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
