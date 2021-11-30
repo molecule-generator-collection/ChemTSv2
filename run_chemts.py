@@ -8,7 +8,7 @@ from rdkit import RDLogger
 
 from chemts import MCTS, State
 from misc.load_model import loaded_model, loaded_model_struct
-from misc.make_smiles import read_smiles_dataset, smi_tokenizer, tokenize_smiles
+from misc.preprocessing import read_smiles_dataset, smi_tokenizer, tokenize_smiles
 from misc.filter import HashimotoFilter
 
 
