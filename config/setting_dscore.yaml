@@ -18,7 +18,24 @@ model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
 reward_calculator: reward.dscore_reward
 
-# Select "max_gauss" to activate, or "min_gauss" to deactivate.
-scaling_function: {"egfr": "max_gauss", "bace1": "min_gauss"}
-# Set the weight for each indicator.
-weight: {"egfr": 5, "bace1": 3, "sascore": 1, "qed": 1} 
+# Set the scaling functions and weights for each objective.
+# When using min_gauss or max_gauss, set the gaussian parameters alpha, mu, and sigma.
+# When using minmax, set the maximum and minimum values.
+Dscore_parameters:
+  EGFR: {type: max_gauss, alpha: 1, mu: 8, sigma: 2, weight: 1}
+  BACE1: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  ERBB2: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  ABL: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  SRC: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  LCK: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  PDGFRbeta: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  VEGFR2: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  FGFR1: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  EPHB4: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
+  Solubility: {type: max_gauss, alpha: 1, mu: -2, sigma: 0.6, weight: 1}
+  Permeability: {type: max_gauss, alpha: 1, mu: -4.5, sigma: 0.5, weight: 1}
+  Toxicity: {type: min_gauss, alpha: 1, mu: 5.5, sigma: 0.5, weight: 1}
+  # SAscore is made negative when scaling because a smaller value is more desirable.
+  SAscore: {type: minmax, min: -10, max: -1, weight: 1}
+  # Since QED is a value between 0 and 1, there is no need to scale it.
+  QED: {type: identity, weight: 1}
