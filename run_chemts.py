@@ -75,6 +75,7 @@ def set_default_config(conf):
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
     conf.setdefault('reward_calculator', 'reward.logP_reward')
+    conf.setdefault('dataset', 'data/250k_rndm_zinc_drugs_clean.smi')
 
 
 def main():
@@ -108,7 +109,7 @@ def main():
     logger.info(f"===================================")
             
     conf["hashimoto_filter"] = HashimotoFilter()
-    original_smiles_list = read_smiles_dataset('data/250k_rndm_zinc_drugs_clean.smi')
+    original_smiles_list = read_smiles_dataset(conf['dataset'])
     val, _ = tokenize_smiles(original_smiles_list)
     logger.debug(f"val is {val}")
 

@@ -17,6 +17,8 @@ model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
 reward_calculator: reward.dscore_reward
+# Need to set the same dataset used in the RNN model training.
+dataset: data/250k_rndm_zinc_drugs_clean.smi
 
 # Set the scaling functions and weights for each objective.
 # When using min_gauss or max_gauss, set the gaussian parameters alpha, mu, and sigma.
