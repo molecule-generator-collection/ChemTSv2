@@ -114,4 +114,4 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         generated_ids.append(gids[i])
     logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
-    return node_index, objective_values_list, valid_compound, generated_dict, generated_ids
+    return node_index, objective_values_list, valid_compound, generated_ids

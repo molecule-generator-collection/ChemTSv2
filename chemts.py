@@ -124,7 +124,7 @@ class MCTS:
             self.logger.debug(f"generated_dict {self.generated_dict}") 
             if self.conf["debug"]:
                 self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
-            node_index, objective_values, valid_smiles, self.generated_dict, generated_id_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
+            node_index, objective_values, valid_smiles, generated_id_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
             self.valid_smiles_list.extend(valid_smiles)
             depth = len(state.position)
