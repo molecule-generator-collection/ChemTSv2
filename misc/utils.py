@@ -1,3 +1,4 @@
+import copy
 from functools import wraps
 import itertools
 import time
@@ -97,9 +98,11 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     generated_ids = []
     filter_check_list = []
     for i in range(len(new_compound)):
-
         mol = Chem.MolFromSmiles(new_compound[i])
         if mol is None:
+            continue
+        _mol = copy.deepcopy(mol)  # Chem.SanitizeMol() modifies `mol` in place
+        if Chem.SanitizeMol(_mol, catchErrors=True).name != 'SANITIZE_NONE':
             continue
 
         if new_compound[i] in generated_dict:
