@@ -1,5 +1,6 @@
 from math import sqrt, log
 import random
+import sys
 import time
 
 import numpy as np
@@ -70,7 +71,6 @@ class Node:
 class MCTS:
     def __init__(self, root_state, conf, val, model, reward_calculator, logger):
         self.start_time = time.time()
-        self.run_time = time.time() + 3600 * conf['hours']
         self.rootnode = Node(state=root_state, conf=conf)
         self.root_state = root_state
         self.conf = conf
@@ -87,9 +87,16 @@ class MCTS:
         self.generated_id_list = []
         self.filter_check_list = []
 
+        if conf['threshold_type'] == "time":
+            self.threshold = time.time() + 3600 * conf['hours']
+        elif conf['threshold_type'] == "generation_num":
+            self.threshold = conf['generation_num']
+        else:
+            sys.exit("[ERROR] Specify 'threshold_type': [time, generation_num]")
+
     def search(self):
         gid = 0
-        while time.time() <= self.run_time:
+        while (time.time() if self.conf['threshold_type']=="time" else len(self.valid_smiles_list)) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
             state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
 

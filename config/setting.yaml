@@ -1,6 +1,9 @@
 trial: 1
 c_val: 1.0
+# threshold_type: [time, generation_num]
+threshold_type: generation_num
 hours: 0.01
+# generation_num: 100
 expansion_threshold: 0.995
 simulation_num: 3
 

@@ -58,7 +58,9 @@ def get_logger(level, save_dir):
 def set_default_config(conf):
     conf.setdefault('trial', 1)
     conf.setdefault('c_val', 1.0)
+    conf.setdefault('threshold_type', 'time')
     conf.setdefault('hours', 1) 
+    conf.setdefault('generation_num', 1000)
     conf.setdefault('simulation_num', 3)
     conf.setdefault('expansion_threshold', 0.995)
 
@@ -102,6 +104,11 @@ def main():
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
         conf["tokenized_smiles"] = smi_tokenizer(conf["input_smiles"])
+
+    if conf['threshold_type'] == 'time':  # To avoid user confusion
+        conf.pop('generation_num')
+    elif conf['threshold_type'] == 'generation_num':
+        conf.pop('hours')
 
     logger.info(f"========== Configuration ==========")
     for k, v in conf.items():
