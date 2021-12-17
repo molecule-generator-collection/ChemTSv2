@@ -47,21 +47,22 @@ def prepare_data(smiles, all_smiles):
     return X_train, y_train
 
 
-def save_model(model, output, output_weight=None):
+def save_model(model, output_dir):
+    output_json = os.path.join(output_dir, "model.tf25.json")
+    output_weight = os.path.join(output_dir, "model.tf25.h5")
     model_json = model.to_json()
-    with open(output, "w") as json_file:
+
+    with open(output_json, "w") as json_file:
         json_file.write(model_json)
-    print(f"Saved model to {output}")
-    if output_weight is not None:
-        model.save_weights(output_weight)
-        print(f"Saved model weights to {output_weight}")
+    print(f"Saved model structure to {output_json}")
+
+    model.save_weights(output_weight)
+    print(f"Saved model weights to {output_weight}")
 
 
 def update_config(conf):
     conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
     conf.setdefault('output_model_dir', "../model")
-    conf.setdefault('output_json', "../model/model.json")
-    conf.setdefault('output_weight', "../model/model.h5")
     conf.setdefault('dropout_rate', 0.2)
     conf.setdefault('learning_rate', 0.01)
     conf.setdefault('epoch', 100)
@@ -150,7 +151,7 @@ def main():
         callbacks=callbacks,
         validation_split=conf['validation_split'],
         shuffle=True,)
-    save_model(model, conf["output_json"], conf["output_weight"])
+    save_model(model, conf["output_model_dir"])
     plot_training_curve(result, conf)
 
 
