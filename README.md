@@ -45,7 +45,10 @@ Please refer to the sample file `config/setting.yaml` and you will see the follo
 ```yaml
 trial: 1
 c_val: 1.0
+# threshold_type: [time, generation_num]
+threshold_type: time
 hours: 0.01
+# generation_num: 100
 expansion_threshold: 0.995
 simulation_num: 3
 
@@ -57,11 +60,13 @@ use_sascore_filter: True
 #sa_threshold: 3.5
 use_ring_size_filter: True
 #ring_size_threshold: 6
+include_filter_result_in_reward: False
 
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
 reward_calculator: reward.logP_reward
+token: model/tokens.pkl
 ```
 
 If you want to pass any value to `calc_reward_from_objective_values` (e.g., weights for each value), add it in the config file.
@@ -110,4 +115,5 @@ This package is distributed under the MIT License.
 
 ## Contact
 
-Shoichi Ishida (ishida.sho.nm@yokohama-cu.ac.jp) and Kei Terayama (terayama@yokohama-cu.ac.jp).
+- Shoichi Ishida (ishida.sho.nm@yokohama-cu.ac.jp)
+- Kei Terayama (terayama@yokohama-cu.ac.jp).
