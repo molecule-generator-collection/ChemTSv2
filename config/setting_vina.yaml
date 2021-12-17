@@ -18,8 +18,7 @@ model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
 reward_calculator: reward.Vina_reward
-# Need to set the same dataset used in the RNN model training.
-dataset: data/250k_rndm_zinc_drugs_clean.smi
+token: model/tokens.pkl
 
 vina_sf_name: vina
 vina_cpus: 8

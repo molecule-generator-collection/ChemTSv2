@@ -1,5 +1,6 @@
 import argparse
 import os
+import pickle
 import sys
 
 from tensorflow.keras.models import Sequential
@@ -63,6 +64,7 @@ def save_model(model, output_dir):
 def update_config(conf):
     conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
     conf.setdefault('output_model_dir', "../model")
+    conf.setdefault('output_token', "../model/tokens.pkl")
     conf.setdefault('dropout_rate', 0.2)
     conf.setdefault('learning_rate', 0.01)
     conf.setdefault('epoch', 100)
@@ -103,6 +105,10 @@ def main():
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
     vocabulary, all_smiles = tokenize_smiles(original_smiles)
+    with open(conf['output_token'], 'wb') as f:
+        pickle.dump(vocabulary, f)
+    print(f"Saved tokens to {conf['output_token']}")
+        
     print(f"vocabulary:\n{vocabulary}\n"
           f"size of SMILES list: {len(all_smiles)}")
     X_train, y_train = prepare_data(vocabulary, all_smiles) 

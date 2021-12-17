@@ -2,13 +2,14 @@ import argparse
 from logging import getLogger, StreamHandler, FileHandler, Formatter, INFO, DEBUG
 import importlib
 import os
+import pickle
 import yaml
 
 from rdkit import RDLogger
 
 from chemts import MCTS, State
 from misc.load_model import loaded_model, loaded_model_struct
-from misc.preprocessing import read_smiles_dataset, smi_tokenizer, tokenize_smiles
+from misc.preprocessing import smi_tokenizer
 from misc.filter import HashimotoFilter
 
 
@@ -78,7 +79,7 @@ def set_default_config(conf):
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
     conf.setdefault('reward_calculator', 'reward.logP_reward')
-    conf.setdefault('dataset', 'data/250k_rndm_zinc_drugs_clean.smi')
+    conf.setdefault('token', 'model/tokens.pkl')
 
 
 def main():
@@ -117,8 +118,8 @@ def main():
     logger.info(f"===================================")
             
     conf["hashimoto_filter"] = HashimotoFilter()
-    original_smiles_list = read_smiles_dataset(conf['dataset'])
-    val, _ = tokenize_smiles(original_smiles_list)
+    with open(conf['token'], 'rb') as f:
+        val = pickle.load(f)
     logger.debug(f"val is {val}")
 
     state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])

@@ -1,5 +1,6 @@
 dataset: ../data/250k_rndm_zinc_drugs_clean.smi
 output_model_dir: ../model
+output_token: ../model/tokens.pkl
 
 dropout_rate: 0.3
 rec_dropout_rate: 0
