@@ -123,7 +123,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
             else:
                 continue
 
-        values = [f(Chem.MolFromSmiles(new_compound[i])) for f in reward_calculator.get_objective_functions(conf)]
+        values = [f(mol) for f in reward_calculator.get_objective_functions(conf)]
         node_index.append(i)
         valid_compound.append(new_compound[i])
         objective_values_list.append(values)
