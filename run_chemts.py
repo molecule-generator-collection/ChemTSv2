@@ -64,6 +64,7 @@ def set_default_config(conf):
     conf.setdefault('generation_num', 1000)
     conf.setdefault('simulation_num', 3)
     conf.setdefault('expansion_threshold', 0.995)
+    conf.setdefault('flush_threshold', -1)
 
     conf.setdefault('use_lipinski_filter', True)
     conf.setdefault('lipinski_filter_type', 'rule_of_5')
@@ -124,10 +125,8 @@ def main():
 
     state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
     mcts = MCTS(root_state=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, logger=logger)
-    df = mcts.search()
-    output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.pkl")
-    logger.info(f"save results at {output_path}")
-    df.to_pickle(output_path)
+    mcts.search()
+    logger.info("Finished!")
 
 
 if __name__ == "__main__":

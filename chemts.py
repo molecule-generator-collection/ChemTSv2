@@ -1,4 +1,5 @@
 from math import sqrt, log
+import os
 import random
 import sys
 import time
@@ -86,6 +87,12 @@ class MCTS:
         self.generated_dict = {}  # dictionary of generated compounds
         self.generated_id_list = []
         self.filter_check_list = []
+        self.total_valid_num = 0
+
+        self.obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
+        self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.csv")
+        if os.path.exists(self.output_path):
+            sys.exit(f"[ERROR] {self.output_path} already exists. Please specify a different file name.")
 
         if conf['threshold_type'] == "time":
             self.threshold = time.time() + 3600 * conf['hours']
@@ -94,9 +101,32 @@ class MCTS:
         else:
             sys.exit("[ERROR] Specify 'threshold_type': [time, generation_num]")
 
+    def flush(self):
+        df = pd.DataFrame({
+            "generated_id": self.generated_id_list,
+            "smiles": self.valid_smiles_list,
+            "depth": self.depth_list,
+            "elapsed_time": self.elapsed_time_list,
+            "is_through_filter": self.filter_check_list,
+        })
+        df_obj = pd.DataFrame(self.objective_values_list, columns=self.obj_column_names)
+        df = pd.concat([df, df_obj], axis=1)
+        if os.path.exists(self.output_path):
+            df.to_csv(self.output_path, mode='a', index=False, header=False)
+        else:
+            df.to_csv(self.output_path, mode='w', index=False)
+        self.logger.info(f"save results at {self.output_path}")
+
+        self.generated_id_list.clear()
+        self.valid_smiles_list.clear()
+        self.depth_list.clear()
+        self.elapsed_time_list.clear()
+        self.filter_check_list.clear()
+        self.objective_values_list.clear()
+
     def search(self):
         gid = 0
-        while (time.time() if self.conf['threshold_type']=="time" else len(self.valid_smiles_list)) <= self.threshold:
+        while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
             state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
 
@@ -134,16 +164,18 @@ class MCTS:
                 self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
             node_index, objective_values, valid_smiles, generated_id_list, filter_check_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
+            valid_num = len(valid_smiles)
+            self.total_valid_num += valid_num
             self.valid_smiles_list.extend(valid_smiles)
             depth = len(state.position)
-            self.depth_list.extend([depth for _ in range(len(valid_smiles))])
+            self.depth_list.extend([depth for _ in range(valid_num)])
             elapsed_time = round(time.time()-self.start_time, 1)
-            self.elapsed_time_list.extend([elapsed_time for _ in range(len(valid_smiles))])
+            self.elapsed_time_list.extend([elapsed_time for _ in range(valid_num)])
             self.objective_values_list.extend(objective_values)
             self.generated_id_list.extend(generated_id_list)
             self.filter_check_list.extend(filter_check_list)
 
-            self.logger.info(f"Number of valid SMILES: {len(self.valid_smiles_list)}")
+            self.logger.info(f"Number of valid SMILES: {self.total_valid_num}")
             self.logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
 
             if len(node_index) == 0:
@@ -181,21 +213,7 @@ class MCTS:
             if self.conf['debug']:
                 self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, wins: {c.wins}, visits: {c.visits}" for c in node_pool]))
 
-        """check if found the desired compound"""
-        self.logger.debug(f"\nnum valid_smiles: {len(self.valid_smiles_list)}\n\n"
-                    f"valid smiles:\n {self.valid_smiles_list}\n\n"
-                    f"depth:\n {self.depth_list}\n\n"
-                    f"objective value:\n {self.objective_values_list}\n\n"
-                    f"time:\n {self.elapsed_time_list}")
-        df = pd.DataFrame({
-            "generated_id": self.generated_id_list,
-            "smiles": self.valid_smiles_list,
-            "depth": self.depth_list,
-            "elapsed_time": self.elapsed_time_list,
-            "is_through_filter": self.filter_check_list,
-        })
-        obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
-        df_obj = pd.DataFrame(self.objective_values_list, columns=obj_column_names)
-        df = pd.concat([df, df_obj], axis=1)
-
-        return df
+            if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
+                self.flush()
+        if len(self.valid_smiles_list) > 0:
+            self.flush()
