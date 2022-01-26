@@ -6,6 +6,7 @@ hours: 0.01
 # generation_num: 100
 expansion_threshold: 0.995
 simulation_num: 3
+flush_threshold: -1
 
 use_lipinski_filter: True
 #lipinski_filter_type: rule_of_5
