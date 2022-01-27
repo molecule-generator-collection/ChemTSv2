@@ -126,6 +126,10 @@ class MCTS:
 
     def search(self):
         gid = 0
+        infinite_loop_counter_for_selection = 0
+        infinite_loop_counter_for_expansion = 0
+        expanded_before = {}
+        
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
             state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
@@ -137,12 +141,28 @@ class MCTS:
                 state.SelectPosition(node.position)
             self.logger.info(f"state position: {state.position}")
 
+            self.logger.debug(f"infinite loop counter (selection): {infinite_loop_counter_for_selection}")
             if len(state.position) >= 70 or node.position == '\n':
                 back_propagation(node, reward=-1.0)
+                infinite_loop_counter_for_selection += 1
+                if infinite_loop_counter_for_selection > self.conf['infinite_loop_threshold_for_selection']:
+                    self.flush()
+                    sys.exit('[WARN] Infinite loop is detected in the selection step. Change hyperparameters or RNN model.')
                 continue
+            else:
+                infinite_loop_counter_for_selection = 0
 
             """expansion step"""
             expanded = expanded_node(self.model, state.position, self.val, self.logger, threshold=self.conf['expansion_threshold'])
+            self.logger.debug(f"infinite loop counter (expansion): {infinite_loop_counter_for_expansion}")
+            if set(expanded) == expanded_before:
+                infinite_loop_counter_for_expansion += 1
+                if infinite_loop_counter_for_expansion > self.conf['infinite_loop_threshold_for_expansion']:
+                    self.flush()
+                    sys.exit('[WARN] Infinite loop is detected in the expansion step. Change hyperparameters or RNN model.')
+            else:
+                infinite_loop_counter_for_expansion = 0
+            expanded_before = set(expanded)
 
             new_compound = []
             nodeadded = []
