@@ -82,6 +82,7 @@ def set_default_config(conf):
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
     conf.setdefault('reward_calculator', 'reward.logP_reward')
+    conf.setdefault('policy', 'policy.ucb1')
     conf.setdefault('token', 'model/tokens.pkl')
 
 
@@ -102,6 +103,7 @@ def main():
 
     model = loaded_model(conf['model_weight'], logger)  #WM300 not tested  
     reward_calculator = importlib.import_module(conf["reward_calculator"])
+    policy_evaluator = importlib.import_module(conf['policy'])
     model_struct = loaded_model_struct(conf['model_json'], logger)
     conf["max_len"] = model_struct.input_shape[1]
     if args.input_smiles is not None:
@@ -126,7 +128,7 @@ def main():
     logger.debug(f"val is {val}")
 
     state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
-    mcts = MCTS(root_state=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, logger=logger)
+    mcts = MCTS(root_state=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, policy_evaluator=policy_evaluator, logger=logger)
     mcts.search()
     logger.info("Finished!")
 

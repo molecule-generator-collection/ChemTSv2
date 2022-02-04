@@ -29,7 +29,7 @@ class State:
 
 
 class Node:
-    def __init__(self, position=None, parent=None, state=None, conf=None):
+    def __init__(self, policy_evaluator, position=None, parent=None, state=None, conf=None):
         self.position = position
         self.parentNode = parent
         self.childNodes = []
@@ -39,26 +39,26 @@ class Node:
         self.nonvisited_atom = state.Getatom()  # no longer used?
         self.type_node = []
         self.depth = 0
+        self.policy_evaluator = policy_evaluator
         self.conf = conf
 
     def Selectnode(self, logger):
-        ucb=[]
+        score_list = []
         logger.debug('UCB:')
         for i in range(len(self.childNodes)):
-            ucb_tmp = (self.childNodes[i].wins / self.childNodes[i].visits
-                + self.conf['c_val'] * sqrt(2 * log(self.visits) / self.childNodes[i].visits)
-                )
-            ucb.append(ucb_tmp)
-            logger.debug(f"{self.childNodes[i].position} {ucb_tmp}") 
-        m = np.amax(ucb)
-        indices = np.nonzero(ucb == m)[0]
+            score = self.policy_evaluator.evaluate(
+                self.childNodes[i].wins, self.conf['c_val'], self.visits, self.childNodes[i].visits)
+            score_list.append(score)
+            logger.debug(f"{self.childNodes[i].position} {score}") 
+        m = np.amax(score_list)
+        indices = np.nonzero(score_list == m)[0]
         ind = random.choice(indices)
         s = self.childNodes[ind]
         logger.debug(f"\nindex {ind} {self.position} {m}") 
         return s
 
-    def Addnode(self, m, s):
-        n = Node(position=m, parent=self, state=s, conf=self.conf)
+    def Addnode(self, m, s, policy_evaluator):
+        n = Node(policy_evaluator, position=m, parent=self, state=s, conf=self.conf)
         self.childNodes.append(n)
 
     def simulation(self):
@@ -70,14 +70,15 @@ class Node:
 
 
 class MCTS:
-    def __init__(self, root_state, conf, val, model, reward_calculator, logger):
+    def __init__(self, root_state, conf, val, model, reward_calculator, policy_evaluator, logger):
         self.start_time = time.time()
-        self.rootnode = Node(state=root_state, conf=conf)
+        self.rootnode = Node(policy_evaluator, state=root_state, conf=conf)
         self.root_state = root_state
         self.conf = conf
         self.val = val
         self.model = model
         self.reward_calculator = reward_calculator
+        self.policy_evaluator = policy_evaluator
         self.logger = logger
 
         self.valid_smiles_list = []
@@ -209,7 +210,7 @@ class MCTS:
                 atom = nodeadded[m]
 
                 if atom not in atom_checked: 
-                    node.Addnode(atom, state)
+                    node.Addnode(atom, state, self.policy_evaluator)
                     node_pool.append(node.childNodes[len(atom_checked)])
                     atom_checked.append(atom)
                 else:
