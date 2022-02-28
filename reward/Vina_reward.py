@@ -3,7 +3,8 @@ import pprint
 from vina import Vina
 from oddt.toolkits.extras import rdkit as ordkit
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, rdMolTransforms
+from rdkit.Geometry import Point3D
 
 
 def get_objective_functions(conf):
@@ -14,6 +15,11 @@ def get_objective_functions(conf):
 
         mol = Chem.AddHs(mol)
         AllChem.EmbedMolecule(mol)
+        mol_conf = mol.GetConformer(-1)
+        centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
+        tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
+        for i, p in enumerate(mol_conf.GetPositions()):
+            mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
         mol_pdbqt = ordkit.MolToPDBQTBlock(mol, computeCharges=True)
         v.set_ligand_from_string(mol_pdbqt)
 
