@@ -3,8 +3,8 @@ import sys
 
 import pandas as pd
 from rdkit import Chem
-from rdkit.Chem import AllChem, Descriptors, rdMolDescriptors, RDConfig
-sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+from rdkit.Chem import AllChem, Descriptors, rdMolDescriptors
+sys.path.append("./data/")
 import sascorer
 
 from misc import metadata

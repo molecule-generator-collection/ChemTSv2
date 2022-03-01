@@ -6,18 +6,20 @@ This repository is a refined and extended version of [ChemTS[1]](https://www.tan
 
 ## Requirements
 
-1. python: 3.6
+1. python: 3.7
 2. rdkit: 2021.03.5
 3. tensorflow: 2.5.0
-4. pyyaml: 5.4.1
 
 ### How to setup (example)
 
 ```bash
-conda create -n chemts -c conda-forge rdkit python=3.6
+conda create -n chemts -c conda-forge python=3.7
 # switch a python virtual environment to `chemts`
 pip install --upgrade tensorflow==2.5
-conda install -c conda-forge matplotlib pyyaml
+pip install rdkit-pypi==2021.03.5
+pip install matplotlib pyyaml pandas
+# retrieve files for SAscore calculations
+wget -P data https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/{fpscores.pkl.gz,sascorer.py}
 ```
 
 ## How to run ChemTS
