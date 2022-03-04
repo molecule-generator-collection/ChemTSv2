@@ -14,12 +14,12 @@ use_ring_size_filter: True
 #ring_size_threshold: 6
 include_filter_result_in_reward: False
 
-model_json: model/model.tf25.json
-model_weight: model/model.tf25.best.ckpt.h5
+model_json: model/model_chembl220k.tf25.json
+model_weight: model/model_chembl220k.tf25.best.ckpt.h5
 output_dir: result/example01
 reward_calculator: reward.Vina_reward
 policy: policy.ucb1
-token: model/tokens.pkl
+token: model/tokens_chembl220k.pkl
 
 vina_sf_name: vina
 vina_cpus: 8
