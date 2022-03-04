@@ -8,7 +8,7 @@ import yaml
 from rdkit import RDLogger
 
 from chemts import MCTS, State
-from misc.load_model import loaded_model, loaded_model_struct
+from misc.load_model import loaded_model, get_model_structure_info
 from misc.preprocessing import smi_tokenizer
 from misc.filter import HashimotoFilter
 
@@ -101,11 +101,10 @@ def main():
     if not args.debug:
         RDLogger.DisableLog("rdApp.*")
 
-    model = loaded_model(conf['model_weight'], logger)  #WM300 not tested  
     reward_calculator = importlib.import_module(conf["reward_calculator"])
     policy_evaluator = importlib.import_module(conf['policy'])
-    model_struct = loaded_model_struct(conf['model_json'], logger)
-    conf["max_len"] = model_struct.input_shape[1]
+    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_json'], logger)
+    model = loaded_model(conf['model_weight'], logger, conf)  #WM300 not tested  
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
