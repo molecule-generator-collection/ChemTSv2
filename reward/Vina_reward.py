@@ -45,7 +45,7 @@ def get_objective_functions(conf):
         except Exception as e:
             print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
             print(e)
-            return [None]
+            return None
     return [VinaScore]
 
 
