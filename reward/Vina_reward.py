@@ -3,7 +3,8 @@ import pprint
 from vina import Vina
 from oddt.toolkits.extras import rdkit as ordkit
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, rdMolTransforms
+from rdkit.Geometry import Point3D
 
 
 def get_objective_functions(conf):
@@ -13,44 +14,53 @@ def get_objective_functions(conf):
         v.set_receptor(rigid_pdbqt_filename=conf['vina_receptor'])
 
         mol = Chem.AddHs(mol)
-        AllChem.EmbedMolecule(mol)
-        mol_pdbqt = ordkit.MolToPDBQTBlock(mol, computeCharges=True)
-        v.set_ligand_from_string(mol_pdbqt)
+        try:
+            AllChem.EmbedMolecule(mol)
+            mol_conf = mol.GetConformer(-1)
+            centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
+            tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
+            for i, p in enumerate(mol_conf.GetPositions()):
+                mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
+            mol_pdbqt = ordkit.MolToPDBQTBlock(mol, computeCharges=True)
+            v.set_ligand_from_string(mol_pdbqt)
 
-        v.compute_vina_maps(
-            center=conf['vina_center'],
-            box_size=conf['vina_box_size'],
-            spacing=conf['vina_spacing'])
+            v.compute_vina_maps(
+                center=conf['vina_center'],
+                box_size=conf['vina_box_size'],
+                spacing=conf['vina_spacing'])
 
-        _ = v.optimize()
+            _ = v.optimize()
 
-        if conf['debug']:
-            pprint.pprint(v.info())
+            if conf['debug']:
+                pprint.pprint(v.info())
 
-        v.dock(
-            exhaustiveness=conf['vina_exhaustiveness'],
-            n_poses=conf['vina_n_poses'],
-            min_rmsd=conf['vina_min_rmsd'],
-            max_evals=conf['vina_max_evals'])
-        if conf['debug']:
-            print(f"Vina Docking energies: {v.energies()}")
-        
-        # get the best inter score, because v.energies()[0][1] is not the best inter_score.
-        scores=v.energies()
-        min_inter_score = 0
-        best_mode = 1
-        for m, ene in enumerate(scores):
-            if ene[1] < min_inter_score:
-                min_inter_score = ene[1]
-                best_mode = m + 1
-            
-        if conf['debug']:
-            print("min_inter_score: %s, best mode is %s " % (min_inter_score,best_mode))
-        return min_inter_score
+            v.dock(
+                exhaustiveness=conf['vina_exhaustiveness'],
+                n_poses=conf['vina_n_poses'],
+                min_rmsd=conf['vina_min_rmsd'],
+                max_evals=conf['vina_max_evals'])
+            if conf['debug']:
+                print(f"Vina Docking energies: {v.energies()}")
+            scores=v.energies()
+            min_inter_score = 1000
+            best_mode = 1
+            for m, ene in enumerate(scores):
+                if ene[1] < min_inter_score:
+                    min_inter_score = ene[1]
+                    best_mode = m + 1
+            if conf['debug']:
+                print(f"min_inter_score: {min_inter_score}, best mode is {best_mode}")
+            return min_inter_score
+        except Exception as e:
+            print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
+            print(e)
+            return None
     return [VinaScore]
 
 
 def calc_reward_from_objective_values(values, conf):
     min_inter_score = values[0]
+    if min_inter_score is None:
+        return -1
     score_diff = min_inter_score - conf['vina_base_score']
     return - score_diff * 0.1 / (1 + abs(score_diff) * 0.1)
