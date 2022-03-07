@@ -41,7 +41,17 @@ def get_objective_functions(conf):
                 max_evals=conf['vina_max_evals'])
             if conf['debug']:
                 print(f"Vina Docking energies: {v.energies()}")
-            return v.energies()[0][1]
+            # get the best inter score, because v.energies()[0][1] is not the best inter_score in some case.
+            scores=v.energies()
+            min_inter_score = 1000
+            best_mode = 1
+            for m, ene in enumerate(scores):
+                if ene[1] < min_inter_score:
+                    min_inter_score = ene[1]
+                    best_mode = m + 1
+            if conf['debug']:
+                print(f"min_inter_score: {min_inter_score}, best mode is {best_mode}")
+            return min_inter_score
         except Exception as e:
             print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
             print(e)
