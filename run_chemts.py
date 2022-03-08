@@ -84,7 +84,9 @@ def set_default_config(conf):
     conf.setdefault('reward_setting',
         {'reward_module': 'reward.logP_reward',
          'reward_class': 'LogP_reward'})
-    conf.setdefault('policy', 'policy.ucb1')
+    conf.setdefault('policy_setting',
+        {'policy_module': 'policy.ucb1',
+         'policy_class': 'Ucb1'})
     conf.setdefault('token', 'model/tokens.pkl')
 
 
@@ -105,7 +107,8 @@ def main():
 
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs["reward_module"]), rs["reward_class"])
-    policy_evaluator = import_module(conf['policy'])
+    ps = conf['policy_setting']
+    policy_evaluator = getattr(import_module(ps['policy_module']), ps['policy_class'])
     conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_json'], logger)
     model = loaded_model(conf['model_weight'], logger, conf)  #WM300 not tested  
     if args.input_smiles is not None:
