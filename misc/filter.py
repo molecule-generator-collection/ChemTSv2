@@ -7,7 +7,7 @@ from rdkit.Chem import AllChem, Descriptors, rdMolDescriptors
 sys.path.append("./data/")
 import sascorer
 
-from misc import metadata
+from data import metadata
 
 
 def has_passed_through_filters(smiles, conf, logger):
@@ -117,13 +117,13 @@ class Evaluater:
     dict_atEstate = metadata.atEstate
 
     def __init__(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        dfb = pd.read_csv(current_dir + '/bonds_dict.txt', delimiter='\t')
+        data_dir = os.path.join(os.getcwd(), 'data')
+        dfb = pd.read_csv(os.path.join(data_dir, 'bonds_dict.txt'), delimiter='\t')
         for i, f in dfb.iterrows():
             if f['BondIs'] == 1:
                 self.b_dict[f['ES_Index_Bond']] = f['BondIs']
 
-        dfa = pd.read_csv(current_dir + '/atoms_dict.txt', delimiter='\t')
+        dfa = pd.read_csv(os.path.join(data_dir, 'atoms_dict.txt'), delimiter='\t')
         for i, f in dfa.iterrows():
             if f['AtomIs'] == 1:
                 self.a_dict[f['ES_Index_AtomBond']] = f['AtomIs']
