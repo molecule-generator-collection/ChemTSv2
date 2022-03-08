@@ -24,5 +24,7 @@ output_dir: result/example01
 reward_setting: 
   reward_module: reward.logP_reward
   reward_class: LogP_reward
-policy: policy.ucb1
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
 token: model/tokens.pkl

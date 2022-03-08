@@ -20,7 +20,9 @@ output_dir: result/example01
 reward_setting: 
   reward_module: reward.dscore_reward
   reward_class: Dscore_reward
-policy: policy.ucb1
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
 token: model/tokens.pkl
 
 # Set the scaling functions and weights for each objective.
