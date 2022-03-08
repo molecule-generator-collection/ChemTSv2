@@ -1,6 +1,6 @@
 import argparse
 from logging import getLogger, StreamHandler, FileHandler, Formatter, INFO, DEBUG
-import importlib
+from importlib import import_module
 import os
 import pickle
 import yaml
@@ -81,7 +81,9 @@ def set_default_config(conf):
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
-    conf.setdefault('reward_calculator', 'reward.logP_reward')
+    conf.setdefault('reward_setting',
+        {'reward_module': 'reward.logP_reward',
+         'reward_class': 'LogP_reward'})
     conf.setdefault('policy', 'policy.ucb1')
     conf.setdefault('token', 'model/tokens.pkl')
 
@@ -101,8 +103,9 @@ def main():
     if not args.debug:
         RDLogger.DisableLog("rdApp.*")
 
-    reward_calculator = importlib.import_module(conf["reward_calculator"])
-    policy_evaluator = importlib.import_module(conf['policy'])
+    rs = conf['reward_setting']
+    reward_calculator = getattr(import_module(rs["reward_module"]), rs["reward_class"])
+    policy_evaluator = import_module(conf['policy'])
     conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_json'], logger)
     model = loaded_model(conf['model_weight'], logger, conf)  #WM300 not tested  
     if args.input_smiles is not None:

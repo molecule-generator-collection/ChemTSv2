@@ -21,6 +21,8 @@ include_filter_result_in_reward: False
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/example01
-reward_calculator: reward.logP_reward
+reward_setting: 
+  reward_module: reward.logP_reward
+  reward_class: LogP_reward
 policy: policy.ucb1
 token: model/tokens.pkl
