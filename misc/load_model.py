@@ -1,3 +1,5 @@
+import sys
+
 from tensorflow.keras.models import Sequential, model_from_json
 from tensorflow.keras.layers import Dense, Embedding, GRU
 
@@ -7,6 +9,9 @@ def get_model_structure_info(model_json, logger):
         loaded_model_json = f.read()
     loaded_model = model_from_json(loaded_model_json)
     logger.info(f"Loaded model_json from {model_json}")
+    input_shape = None
+    vocab_size = None
+    output_size = None
     for layer in loaded_model.get_config()['layers']:
         config = layer.get('config')
         if layer.get('class_name') == 'InputLayer':
@@ -15,6 +20,9 @@ def get_model_structure_info(model_json, logger):
             vocab_size = config['input_dim']
         if layer.get('class_name') == 'TimeDistributed':
             output_size = config['layer']['config']['units']
+    if input_shape is None or vocab_size is None or output_size is None:
+        logger.error('Consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`')
+        sys.exit()
             
     return input_shape, vocab_size, output_size
 
