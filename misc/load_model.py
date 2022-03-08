@@ -21,7 +21,7 @@ def get_model_structure_info(model_json, logger):
         if layer.get('class_name') == 'TimeDistributed':
             output_size = config['layer']['config']['units']
     if input_shape is None or vocab_size is None or output_size is None:
-        logger.error('Consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`')
+        logger.error('Confirm if the version of Tensorflow is 2.5. If so, please consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`')
         sys.exit()
             
     return input_shape, vocab_size, output_size
