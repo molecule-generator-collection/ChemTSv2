@@ -97,9 +97,9 @@ In this case, you need to put the atom you want to extend at the end of the stri
 python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ```
 
-### Usage of Autodock Vina as reward function
+### Usage of AutoDock Vina as reward function
 
-1. Install Vina
+1. Install Vina.
 
 ```bash
 pip install vina
