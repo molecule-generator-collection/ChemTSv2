@@ -97,6 +97,18 @@ In this case, you need to put the atom you want to extend at the end of the stri
 python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ```
 
+### Usage of Autodock Vina as reward function
+
+1. Install Vina
+
+```bash
+pip install vina
+pip install meeko 
+```
+
+2. Examples of a reward function using Vina and a setting file are prepared as `reward/Vina_reward.py` and `config/setting.yaml`.
+
+
 ## For developer
 
 ### How to define your own reward function
