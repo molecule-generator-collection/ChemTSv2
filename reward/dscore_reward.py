@@ -3,8 +3,8 @@ import pickle
 import sys
 
 from rdkit import Chem
-from rdkit.Chem import AllChem, RDConfig
-sys.path.append(os.path.join(RDConfig.RDContribDir, 'SA_Score'))
+from rdkit.Chem import AllChem
+sys.path.append("./data/")
 import sascorer
 
 from misc.scaler import minmax, max_gauss, min_gauss
