@@ -6,5 +6,5 @@
 
 ```bash
 pip install vina
-conda install -c conda-forge oddt
+pip install meeko 
 ```

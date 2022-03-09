@@ -1,7 +1,7 @@
 import pprint
 
 from vina import Vina
-from oddt.toolkits.extras import rdkit as ordkit
+from meeko import MoleculePreparation
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
@@ -24,7 +24,9 @@ class Vina_reward(Reward):
                 tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
                 for i, p in enumerate(mol_conf.GetPositions()):
                     mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
-                mol_pdbqt = ordkit.MolToPDBQTBlock(mol, computeCharges=True)
+                mol_prep = MoleculePreparation()
+                mol_prep.prepare(mol)
+                mol_pdbqt = mol_prep.write_pdbqt_string()
                 v.set_ligand_from_string(mol_pdbqt)
     
                 v.compute_vina_maps(
