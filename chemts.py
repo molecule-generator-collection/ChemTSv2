@@ -84,6 +84,7 @@ class MCTS:
         self.valid_smiles_list = []
         self.depth_list = []
         self.objective_values_list = []
+        self.reward_values_list = []
         self.elapsed_time_list = []
         self.generated_dict = {}  # dictionary of generated compounds
         self.generated_id_list = []
@@ -106,6 +107,7 @@ class MCTS:
         df = pd.DataFrame({
             "generated_id": self.generated_id_list,
             "smiles": self.valid_smiles_list,
+            "reward": self.reward_values_list,
             "depth": self.depth_list,
             "elapsed_time": self.elapsed_time_list,
             "is_through_filter": self.filter_check_list,
@@ -120,6 +122,7 @@ class MCTS:
 
         self.generated_id_list.clear()
         self.valid_smiles_list.clear()
+        self.reward_values_list.clear()
         self.depth_list.clear()
         self.elapsed_time_list.clear()
         self.filter_check_list.clear()
@@ -225,6 +228,7 @@ class MCTS:
                     
                 re_list.append(re)
                 self.logger.debug(f"atom: {atom} re_list: {re_list}")
+            self.reward_values_list.extend(re_list)
 
             """backpropation step"""
             for i in range(len(node_pool)):
