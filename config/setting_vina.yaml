@@ -1,18 +1,33 @@
 trial: 1
 c_val: 1.0
-hours: 24
+hours: 0.05
 expansion_threshold: 0.995
 simulation_num: 3
 flush_threshold: 1
 
 use_lipinski_filter: False
-#lipinski_filter_type: rule_of_5
+lipinski_filter:
+  module: filter.lipinski_filter
+  class: LipinskiFilter
+  type: rule_of_5
 use_radical_filter: False
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
 use_hashimoto_filter: False
+hashimoto_filter:
+  module: filter.hashimoto_filter
+  class: HashimotoFilter
 use_sascore_filter: False
-#sa_threshold: 10.
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 3.5
 use_ring_size_filter: False
-#ring_size_threshold: 6
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  threshold: 6
 include_filter_result_in_reward: False
 
 model_json: model/model_chembl220k.tf25.json
