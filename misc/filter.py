@@ -16,8 +16,7 @@ def has_passed_through_filters(smiles, conf, logger):
         return False
 
     if conf['use_hashimoto_filter']:
-        hf, _ = conf["hashimoto_filter"].filter([smiles])
-        if hf[0] == 0:
+        if not conf["hashimoto_filter"].check(mol):
             return False
 
     if conf['use_sascore_filter']:
@@ -54,38 +53,25 @@ def has_passed_through_filters(smiles, conf, logger):
 
 
 class HashimotoFilter:
-    neutralizer = None
-    evaluater = None
-
     def __init__(self):
         self.neutralizer = Neutralizer()
         self.evaluater = Evaluater()
 
-    def filter(self, smiles):
-        '''
-        input   list of str     smiles
-        return  list of int     1: OK, 0: NG
-        '''
-        results = []
-        mols = []  # debug用
-        for smi in smiles:
-            result = 0
-            try:
-                mol = Chem.MolFromSmiles(smi)  # check SMILES validity
-                mol1 = self.neutralizer.NeutraliseCharges(mol)
+    def check(self, mol):
+        try:
+            mol1 = self.neutralizer.NeutraliseCharges(mol)
 
-                neutralized = mol1.GetProp('neutralized')
-                mol1 = Chem.MolFromSmiles(Chem.MolToSmiles(mol1))  # Got an error in Evaluate() for some reason if not re-generating Mol object from SMILES.
-                mol1.SetProp('neutralized', neutralized)
+            neutralized = mol1.GetProp('neutralized')
+            mol1 = Chem.MolFromSmiles(Chem.MolToSmiles(mol1))  # Got an error in Evaluate() for some reason if not re-generating Mol object from SMILES.
+            mol1.SetProp('neutralized', neutralized)
 
-                mol2 = self.evaluater.Evaluate(mol1)
-                if mol2 and int(mol2.GetProp('ErrorIs')) == 0:
-                    result = 1
-            except:
-                mol2 = mol
-            results.append(result)
-            mols.append(mol2)
-        return (results, mols)
+            mol2 = self.evaluater.Evaluate(mol1)
+            if mol2 and int(mol2.GetProp('ErrorIs')) == 0:
+                return True
+            else:
+                return False
+        except:
+            return False
 
 
 class Neutralizer:
