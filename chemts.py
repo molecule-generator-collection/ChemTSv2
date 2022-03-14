@@ -6,6 +6,7 @@ import time
 
 import numpy as np
 import pandas as pd
+import pickle
 
 from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
     evaluate_node, node_to_add, expanded_node, back_propagation
@@ -126,10 +127,16 @@ class MCTS:
         self.objective_values_list.clear()
 
     def search(self):
-        gid = 0
-        infinite_loop_counter_for_selection = 0
-        infinite_loop_counter_for_expansion = 0
-        expanded_before = {}
+        """initialization of search tree"""
+        if self.conf['restart'] and os.path.exists(os.path.join(self.conf['output_dir'], self.conf['checkpoint_file'])):
+            self.logger.info("Load restart data from checkpoint file")
+            counter_list = self.load_checkpoint()
+            gid, infinite_loop_counter_for_selection, infinite_loop_counter_for_expansion, expanded_before = counter_list
+        else:
+            gid = 0
+            infinite_loop_counter_for_selection = 0
+            infinite_loop_counter_for_expansion = 0
+            expanded_before = {}
         
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
@@ -236,5 +243,67 @@ class MCTS:
 
             if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
                 self.flush()
+            
+            """save checkpoint file"""
+            if self.conf['save_checkpoint']:
+                counter_list = [gid, infinite_loop_counter_for_selection, infinite_loop_counter_for_expansion, expanded_before]
+                self.save_checkpoint(counter_list)
+
         if len(self.valid_smiles_list) > 0:
             self.flush()
+            
+    def load_checkpoint(self):
+        with open(os.path.join(self.conf['output_dir'], self.conf['checkpoint_file']), mode='rb') as f:
+            gid = pickle.load(f)
+            self.start_time = pickle.load(f)
+            self.rootnode = pickle.load(f)
+            self.root_state = pickle.load(f)
+            self.conf = pickle.load(f)
+            self.val = pickle.load(f)
+            #self.model = pickle.load(f)
+            self.reward_calculator = pickle.load(f)
+            self.policy_evaluator = pickle.load(f)
+            self.logger = pickle.load(f)
+            self.valid_smiles_list = pickle.load(f)
+            self.depth_list = pickle.load(f)
+            self.objective_values_list = pickle.load(f)
+            self.elapsed_time_list = pickle.load(f)
+            self.generated_dict = pickle.load(f)
+            self.generated_id_list = pickle.load(f) 
+            self.filter_check_list = pickle.load(f)
+            self.total_valid_num = pickle.load(f)
+            self.obj_column_names = pickle.load(f)
+            self.output_path = pickle.load(f)
+
+        return gid
+
+    def save_checkpoint(self, counter_list):
+        cp_filename = self.conf['checkpoint_file']
+        if os.path.exists(os.path.join(self.conf['output_dir'], f'{cp_filename}.1')):
+            os.rename(os.path.join(self.conf['output_dir'], f'{cp_filename}.1'), os.path.join(self.conf['output_dir'], f'{cp_filename}.2'))
+        if os.path.exists(os.path.join(self.conf['output_dir'], cp_filename)):
+            os.rename(os.path.join(self.conf['output_dir'], f'{cp_filename}'), os.path.join(self.conf['output_dir'], f'{cp_filename}.1'))
+        
+        with open(os.path.join(self.conf['output_dir'], cp_filename), mode='wb') as f:
+            pickle.dump(counter_list, f)
+            pickle.dump(self.start_time, f)
+            pickle.dump(self.rootnode, f)
+            pickle.dump(self.root_state, f)
+            pickle.dump(self.conf, f)
+            pickle.dump(self.val, f)
+            #pickle.dump(self.model, f)
+            pickle.dump(self.reward_calculator, f)
+            pickle.dump(self.policy_evaluator, f)
+            pickle.dump(self.logger, f)
+            pickle.dump(self.valid_smiles_list, f)
+            pickle.dump(self.depth_list, f)
+            pickle.dump(self.objective_values_list, f)
+            pickle.dump(self.elapsed_time_list, f)
+            pickle.dump(self.generated_dict, f)
+            pickle.dump(self.generated_id_list, f)
+            pickle.dump(self.filter_check_list, f)
+            pickle.dump(self.total_valid_num, f)
+            pickle.dump(self.obj_column_names, f)
+            pickle.dump(self.output_path, f)
+
+

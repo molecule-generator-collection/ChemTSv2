@@ -89,6 +89,8 @@ def set_default_config(conf):
          'policy_class': 'Ucb1'})
     conf.setdefault('token', 'model/tokens.pkl')
 
+    conf.setdefault('leaf_parallel', False)
+    conf.setdefault('qsub_parallel', False)
 
 def main():
     args = get_parser()
