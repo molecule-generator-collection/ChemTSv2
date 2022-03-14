@@ -9,13 +9,28 @@ simulation_num: 3
 flush_threshold: -1
 
 use_lipinski_filter: True
-#lipinski_filter_type: rule_of_5
+lipinski_filter:
+  module: filter.lipinski_filter
+  class: LipinskiFilter
+  type: rule_of_5
 use_radical_filter: True
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
 use_hashimoto_filter: True
+hashimoto_filter:
+  module: filter.hashimoto_filter
+  class: HashimotoFilter
 use_sascore_filter: True
-#sa_threshold: 10.
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 3.5
 use_ring_size_filter: True
-#ring_size_threshold: 6
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  threshold: 6
 include_filter_result_in_reward: False
 
 model_json: model/model.tf25.json

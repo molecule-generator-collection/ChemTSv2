@@ -3,6 +3,7 @@ from logging import getLogger, StreamHandler, FileHandler, Formatter, INFO, DEBU
 from importlib import import_module
 import os
 import pickle
+import re
 import yaml
 
 from rdkit import RDLogger
@@ -10,7 +11,6 @@ from rdkit import RDLogger
 from chemts import MCTS, State
 from misc.load_model import loaded_model, get_model_structure_info
 from misc.preprocessing import smi_tokenizer
-from misc.filter import HashimotoFilter
 
 
 def get_parser():
@@ -69,28 +69,55 @@ def set_default_config(conf):
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)
 
     conf.setdefault('use_lipinski_filter', True)
-    conf.setdefault('lipinski_filter_type', 'rule_of_5')
+    conf.setdefault('lipinski_filter', {
+        'module': 'filter.lipinski_filter',
+        'class': 'LipinskiFilter',
+        'type': 'rule_of_5'})
     conf.setdefault('use_radical_filter', True)
+    conf.setdefault('radical_filter', {
+        'module': 'filter.radical_filter',
+        'class': 'RadicalFilter'})
     conf.setdefault('use_hashimoto_filter', True) 
+    conf.setdefault('hashimoto_filter', {
+        'module': 'filter.hashimoto_filter',
+        'class': 'HashimotoFilter'
+    }) 
     conf.setdefault('use_sascore_filter', True)
-    conf.setdefault('sa_threshold', 3.5)
+    conf.setdefault('sascore_filter', {
+        'module': 'filter.sascore_filter',
+        'class': 'SascoreFilter',
+        'threshold': 3.5})
     conf.setdefault('use_ring_size_filter', True)
-    conf.setdefault('ring_size_threshold', 6)
+    conf.setdefault('ring_size_filter', {
+        'module': 'filter.ring_size_filter',
+        'class': 'RingSizeFilter',
+        'threshold': 6})
     conf.setdefault('include_filter_result_in_reward', False)
 
     conf.setdefault('model_json', 'model/model.json')
     conf.setdefault('model_weight', 'model/model.h5')
     conf.setdefault('output_dir', 'result')
-    conf.setdefault('reward_setting',
-        {'reward_module': 'reward.logP_reward',
-         'reward_class': 'LogP_reward'})
-    conf.setdefault('policy_setting',
-        {'policy_module': 'policy.ucb1',
-         'policy_class': 'Ucb1'})
+    conf.setdefault('reward_setting', {
+        'reward_module': 'reward.logP_reward',
+        'reward_class': 'LogP_reward'})
+    conf.setdefault('policy_setting', {
+        'policy_module': 'policy.ucb1',
+        'policy_class': 'Ucb1'})
     conf.setdefault('token', 'model/tokens.pkl')
 
     conf.setdefault('leaf_parallel', False)
     conf.setdefault('qsub_parallel', False)
+
+def get_filter_modules(conf):
+    pat = re.compile(r'^use.*filter$')
+    module_list = []
+    for k, frag in conf.items():
+        if not pat.search(k) or frag != True:
+            continue
+        _k = k.replace('use_', '')
+        module_list.append(getattr(import_module(conf[_k]['module']), conf[_k]['class']))
+    return module_list
+
 
 def main():
     args = get_parser()
@@ -129,7 +156,8 @@ def main():
     logger.info(f"GPU devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
     logger.info(f"===================================")
             
-    conf["hashimoto_filter"] = HashimotoFilter()
+    conf['filter_list'] = get_filter_modules(conf)
+
     with open(conf['token'], 'rb') as f:
         val = pickle.load(f)
     logger.debug(f"val is {val}")

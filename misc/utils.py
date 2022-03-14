@@ -8,8 +8,6 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import MolFromSmiles
 
-from misc.filter import has_passed_through_filters
-
 
 def calc_execution_time(f):
     @wraps(f)
@@ -89,6 +87,14 @@ def make_input_smiles(generate_smiles):
         com = ''.join(middle)
         new_compound.append(com)
     return new_compound
+
+
+def has_passed_through_filters(smiles, conf, logger):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:  # default check
+        return False
+    checks = [f.check(mol, conf) for f in conf['filter_list']]
+    return all(checks)
 
 
 def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, gids):
