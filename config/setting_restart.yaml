@@ -1,0 +1,35 @@
+trial: 1
+c_val: 1.0
+# threshold_type: [time, generation_num]
+threshold_type: time
+hours: 0.01
+# generation_num: 100
+expansion_threshold: 0.995
+simulation_num: 3
+flush_threshold: -1
+
+#save and restart
+save_checkpoint: True
+restart: True
+checkpoint_file: checkpiont.pickle
+
+use_lipinski_filter: True
+#lipinski_filter_type: rule_of_5
+use_radical_filter: True
+use_hashimoto_filter: True
+use_sascore_filter: True
+#sa_threshold: 10.
+use_ring_size_filter: True
+#ring_size_threshold: 6
+include_filter_result_in_reward: False
+
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.best.ckpt.h5
+output_dir: result/example01
+reward_setting: 
+  reward_module: reward.logP_reward
+  reward_class: LogP_reward
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
+token: model/tokens.pkl
