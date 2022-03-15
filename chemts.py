@@ -94,7 +94,7 @@ class MCTS:
 
         self.obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
         self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.csv")
-        if os.path.exists(self.output_path):
+        if os.path.exists(self.output_path) and not conf['restart']:
             sys.exit(f"[ERROR] {self.output_path} already exists. Please specify a different file name.")
 
         if conf['threshold_type'] == "time":
@@ -105,6 +105,7 @@ class MCTS:
             sys.exit("[ERROR] Specify 'threshold_type': [time, generation_num]")
 
     def flush(self):
+        
         df = pd.DataFrame({
             "generated_id": self.generated_id_list,
             "smiles": self.valid_smiles_list,
@@ -271,6 +272,7 @@ class MCTS:
             self.valid_smiles_list = pickle.load(f)
             self.depth_list = pickle.load(f)
             self.objective_values_list = pickle.load(f)
+            self.reward_values_list = pickle.load(f)
             self.elapsed_time_list = pickle.load(f)
             self.generated_dict = pickle.load(f)
             self.generated_id_list = pickle.load(f) 
@@ -302,6 +304,7 @@ class MCTS:
             pickle.dump(self.valid_smiles_list, f)
             pickle.dump(self.depth_list, f)
             pickle.dump(self.objective_values_list, f)
+            pickle.dump(self.reward_values_list, f)
             pickle.dump(self.elapsed_time_list, f)
             pickle.dump(self.generated_dict, f)
             pickle.dump(self.generated_id_list, f)

@@ -14,18 +14,35 @@ restart: True
 checkpoint_file: checkpiont.pickle
 
 use_lipinski_filter: True
+lipinski_filter:
+  module: filter.lipinski_filter
+  class: LipinskiFilter
+  type: rule_of_5
 #lipinski_filter_type: rule_of_5
 use_radical_filter: True
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
 use_hashimoto_filter: True
+hashimoto_filter:
+  module: filter.hashimoto_filter
+  class: HashimotoFilter
 use_sascore_filter: True
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 3.5
 #sa_threshold: 10.
 use_ring_size_filter: True
-#ring_size_threshold: 6
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  threshold: 6
 include_filter_result_in_reward: False
 
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result/example01
+output_dir: result/restart_example01
 reward_setting: 
   reward_module: reward.logP_reward
   reward_class: LogP_reward
