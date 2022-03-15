@@ -107,6 +107,10 @@ def set_default_config(conf):
 
     conf.setdefault('leaf_parallel', False)
     conf.setdefault('qsub_parallel', False)
+    
+    conf.setdefault('save_checkpoint', False)
+    conf.setdefault('restart', False)
+    conf.setdefault('checkpoint_file', False)
 
 def get_filter_modules(conf):
     pat = re.compile(r'^use.*filter$')
