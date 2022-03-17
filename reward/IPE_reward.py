@@ -72,10 +72,15 @@ class IPE_reward(Reward):
             print('outdic', outdic)
 
             #Post-processing
+            #If Gaussian failed and did not make calc_dir, calc_dir for gaussian is required for the later process.
+            calc_dir = SDFinput_opt.split('.')[0]
+            if not os.path.exists(calc_dir):
+                os.mkdir(calc_dir)
+                
             result_dir = os.path.join(conf['output_dir'], 'gaussian_result')
             if not os.path.isdir(result_dir):
                 os.mkdir(result_dir)
-            calc_dir = SDFinput_opt.split('.')[0]
+            
             if os.path.isdir(os.path.join(result_dir, calc_dir)):
                 shutil.rmtree(os.path.join(result_dir, calc_dir))
             shutil.move(calc_dir, result_dir)
