@@ -1,3 +1,4 @@
+from doctest import OutputChecker
 from math import sqrt, log
 import os
 import random
@@ -259,29 +260,29 @@ class MCTS:
             
     def load_checkpoint(self):
         with open(os.path.join(self.conf['output_dir'], self.conf['checkpoint_file']), mode='rb') as f:
-            gid = pickle.load(f)
-            self.start_time = pickle.load(f)
-            self.rootnode = pickle.load(f)
-            self.root_state = pickle.load(f)
-            self.conf = pickle.load(f)
-            self.val = pickle.load(f)
-            #self.model = pickle.load(f)
-            self.reward_calculator = pickle.load(f)
-            self.policy_evaluator = pickle.load(f)
-            self.logger = pickle.load(f)
-            self.valid_smiles_list = pickle.load(f)
-            self.depth_list = pickle.load(f)
-            self.objective_values_list = pickle.load(f)
-            self.reward_values_list = pickle.load(f)
-            self.elapsed_time_list = pickle.load(f)
-            self.generated_dict = pickle.load(f)
-            self.generated_id_list = pickle.load(f) 
-            self.filter_check_list = pickle.load(f)
-            self.total_valid_num = pickle.load(f)
-            self.obj_column_names = pickle.load(f)
-            self.output_path = pickle.load(f)
+            cp_obj = pickle.load(f)
+            counter_list = cp_obj['counter_list']
+            self.start_time = cp_obj['start_time']
+            self.rootnode = cp_obj['rootnode']
+            self.root_state = cp_obj['root_state']
+            self.conf = cp_obj['conf']
+            self.val = cp_obj['val']
+            self.reward_calculator = cp_obj['reward_calculator']
+            self.policy_evaluator = cp_obj['policy_evaluator']
+            self.logger = cp_obj['logger']
+            self.valid_smiles_list = cp_obj['valid_smiles_list']
+            self.depth_list = cp_obj['depth_list']
+            self.objective_values_list = cp_obj['objective_values_list']
+            self.reward_values_list = cp_obj['reward_values_list']
+            self.elapsed_time_list = cp_obj['elapsed_time_list']
+            self.generated_dict = cp_obj['generated_dict']
+            self.generated_id_list = cp_obj['generated_id_list']
+            self.filter_check_list = cp_obj['filter_check_list']
+            self.total_valid_num = cp_obj['total_valid_num']
+            self.obj_column_names = cp_obj['obj_column_names']
+            self.output_path = cp_obj['output_path']
 
-        return gid
+        return counter_list
 
     def save_checkpoint(self, counter_list):
         cp_filename = self.conf['checkpoint_file']
@@ -291,26 +292,39 @@ class MCTS:
             os.rename(os.path.join(self.conf['output_dir'], f'{cp_filename}'), os.path.join(self.conf['output_dir'], f'{cp_filename}.1'))
         
         with open(os.path.join(self.conf['output_dir'], cp_filename), mode='wb') as f:
-            pickle.dump(counter_list, f)
-            pickle.dump(self.start_time, f)
-            pickle.dump(self.rootnode, f)
-            pickle.dump(self.root_state, f)
-            pickle.dump(self.conf, f)
-            pickle.dump(self.val, f)
+            cp_obj = {'counter_list':counter_list, 
+                'start_time':self.start_time, 'root_state':self.root_state, 'conf':self.conf, 
+                'val':self.val, 'reward_calculator':self.reward_calculator, 'policy_evaluator':self.policy_evaluator,
+                'logger':self.logger, 'rootnode':self.rootnode, 'valid_smiles_list':self.valid_smiles_list,
+                'depth_list':self.depth_list, 'objective_values_list':self.objective_values_list, 
+                'reward_values_list':self.reward_values_list, 'elapsed_time_list':self.elapsed_time_list,
+                'generated_dict':self.generated_dict, 'generated_id_list':self.generated_id_list, 
+                'filter_check_list':self.filter_check_list, 'total_valid_num':self.total_valid_num,
+                'obj_column_names':self.obj_column_names, 'output_path':self.output_path}
+            pickle.dump(cp_obj, f)
+            self.flush()
+            
+            #pickle.dump({'mcts_obj':cp_mcts_obj, 'counter_list':counter_list}, f)
+            #pickle.dump(counter_list, f)
+            #pickle.dump(self.start_time, f)
+            #pickle.dump(self.rootnode, f)
+            #pickle.dump(self.root_state, f)
+            #pickle.dump(self.conf, f)
+            #pickle.dump(self.val, f)
             #pickle.dump(self.model, f)
-            pickle.dump(self.reward_calculator, f)
-            pickle.dump(self.policy_evaluator, f)
-            pickle.dump(self.logger, f)
-            pickle.dump(self.valid_smiles_list, f)
-            pickle.dump(self.depth_list, f)
-            pickle.dump(self.objective_values_list, f)
-            pickle.dump(self.reward_values_list, f)
-            pickle.dump(self.elapsed_time_list, f)
-            pickle.dump(self.generated_dict, f)
-            pickle.dump(self.generated_id_list, f)
-            pickle.dump(self.filter_check_list, f)
-            pickle.dump(self.total_valid_num, f)
-            pickle.dump(self.obj_column_names, f)
-            pickle.dump(self.output_path, f)
+            #pickle.dump(self.reward_calculator, f)
+            #pickle.dump(self.policy_evaluator, f)
+            #pickle.dump(self.logger, f)
+            #pickle.dump(self.valid_smiles_list, f)
+            #pickle.dump(self.depth_list, f)
+            #pickle.dump(self.objective_values_list, f)
+            #pickle.dump(self.reward_values_list, f)
+            #pickle.dump(self.elapsed_time_list, f)
+            #pickle.dump(self.generated_dict, f)
+            #pickle.dump(self.generated_id_list, f)
+            #pickle.dump(self.filter_check_list, f)
+            #pickle.dump(self.total_valid_num, f)
+            #pickle.dump(self.obj_column_names, f)
+            #pickle.dump(self.output_path, f)
 
 
