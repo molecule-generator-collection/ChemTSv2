@@ -303,28 +303,3 @@ class MCTS:
                 'obj_column_names':self.obj_column_names, 'output_path':self.output_path}
             pickle.dump(cp_obj, f)
             self.flush()
-            
-            #pickle.dump({'mcts_obj':cp_mcts_obj, 'counter_list':counter_list}, f)
-            #pickle.dump(counter_list, f)
-            #pickle.dump(self.start_time, f)
-            #pickle.dump(self.rootnode, f)
-            #pickle.dump(self.root_state, f)
-            #pickle.dump(self.conf, f)
-            #pickle.dump(self.val, f)
-            #pickle.dump(self.model, f)
-            #pickle.dump(self.reward_calculator, f)
-            #pickle.dump(self.policy_evaluator, f)
-            #pickle.dump(self.logger, f)
-            #pickle.dump(self.valid_smiles_list, f)
-            #pickle.dump(self.depth_list, f)
-            #pickle.dump(self.objective_values_list, f)
-            #pickle.dump(self.reward_values_list, f)
-            #pickle.dump(self.elapsed_time_list, f)
-            #pickle.dump(self.generated_dict, f)
-            #pickle.dump(self.generated_id_list, f)
-            #pickle.dump(self.filter_check_list, f)
-            #pickle.dump(self.total_valid_num, f)
-            #pickle.dump(self.obj_column_names, f)
-            #pickle.dump(self.output_path, f)
-
-
