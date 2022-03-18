@@ -1,0 +1,48 @@
+trial: 1
+c_val: 0.2
+# threshold_type: [time, generation_num]
+threshold_type: time
+hours: 0.01
+# generation_num: 100
+expansion_threshold: 0.995
+simulation_num: 3
+flush_threshold: -1
+
+use_lipinski_filter: False
+use_radical_filter: True
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
+use_hashimoto_filter: True
+hashimoto_filter:
+  module: filter.hashimoto_filter
+  class: HashimotoFilter
+use_sascore_filter: True
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 3.5
+use_ring_size_filter: False
+include_filter_result_in_reward: False
+
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.best.ckpt.h5
+output_dir: result/example01
+reward_setting: 
+  reward_module: reward.IPE_reward
+  reward_class: IPE_reward
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
+token: model/tokens.pkl
+
+#parallelization strategy
+leaf_parallel: False
+
+#Gaussian setting
+gau_functional: BLYP
+gau_basis: STO-3G
+gau_core_num: 40
+gau_option: ipe
+gau_solvent: 0
+gau_error: 0

@@ -1,3 +1,4 @@
+from doctest import OutputChecker
 from math import sqrt, log
 import os
 import random
@@ -6,6 +7,7 @@ import time
 
 import numpy as np
 import pandas as pd
+import pickle
 
 from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
     evaluate_node, node_to_add, expanded_node, back_propagation
@@ -93,7 +95,7 @@ class MCTS:
 
         self.obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
         self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.csv")
-        if os.path.exists(self.output_path):
+        if os.path.exists(self.output_path) and not conf['restart']:
             sys.exit(f"[ERROR] {self.output_path} already exists. Please specify a different file name.")
 
         if conf['threshold_type'] == "time":
@@ -104,6 +106,7 @@ class MCTS:
             sys.exit("[ERROR] Specify 'threshold_type': [time, generation_num]")
 
     def flush(self):
+        
         df = pd.DataFrame({
             "generated_id": self.generated_id_list,
             "smiles": self.valid_smiles_list,
@@ -129,10 +132,16 @@ class MCTS:
         self.objective_values_list.clear()
 
     def search(self):
-        gid = 0
-        infinite_loop_counter_for_selection = 0
-        infinite_loop_counter_for_expansion = 0
-        expanded_before = {}
+        """initialization of search tree"""
+        if self.conf['restart'] and os.path.exists(os.path.join(self.conf['output_dir'], self.conf['checkpoint_file'])):
+            self.logger.info("Load restart data from checkpoint file")
+            counter_list = self.load_checkpoint()
+            gid, infinite_loop_counter_for_selection, infinite_loop_counter_for_expansion, expanded_before = counter_list
+        else:
+            gid = 0
+            infinite_loop_counter_for_selection = 0
+            infinite_loop_counter_for_expansion = 0
+            expanded_before = {}
         
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
@@ -240,5 +249,57 @@ class MCTS:
 
             if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
                 self.flush()
+            
+            """save checkpoint file"""
+            if self.conf['save_checkpoint']:
+                counter_list = [gid, infinite_loop_counter_for_selection, infinite_loop_counter_for_expansion, expanded_before]
+                self.save_checkpoint(counter_list)
+
         if len(self.valid_smiles_list) > 0:
+            self.flush()
+            
+    def load_checkpoint(self):
+        with open(os.path.join(self.conf['output_dir'], self.conf['checkpoint_file']), mode='rb') as f:
+            cp_obj = pickle.load(f)
+            counter_list = cp_obj['counter_list']
+            self.start_time = cp_obj['start_time']
+            self.rootnode = cp_obj['rootnode']
+            self.root_state = cp_obj['root_state']
+            self.conf = cp_obj['conf']
+            self.val = cp_obj['val']
+            self.reward_calculator = cp_obj['reward_calculator']
+            self.policy_evaluator = cp_obj['policy_evaluator']
+            self.logger = cp_obj['logger']
+            self.valid_smiles_list = cp_obj['valid_smiles_list']
+            self.depth_list = cp_obj['depth_list']
+            self.objective_values_list = cp_obj['objective_values_list']
+            self.reward_values_list = cp_obj['reward_values_list']
+            self.elapsed_time_list = cp_obj['elapsed_time_list']
+            self.generated_dict = cp_obj['generated_dict']
+            self.generated_id_list = cp_obj['generated_id_list']
+            self.filter_check_list = cp_obj['filter_check_list']
+            self.total_valid_num = cp_obj['total_valid_num']
+            self.obj_column_names = cp_obj['obj_column_names']
+            self.output_path = cp_obj['output_path']
+
+        return counter_list
+
+    def save_checkpoint(self, counter_list):
+        cp_filename = self.conf['checkpoint_file']
+        if os.path.exists(os.path.join(self.conf['output_dir'], f'{cp_filename}.1')):
+            os.rename(os.path.join(self.conf['output_dir'], f'{cp_filename}.1'), os.path.join(self.conf['output_dir'], f'{cp_filename}.2'))
+        if os.path.exists(os.path.join(self.conf['output_dir'], cp_filename)):
+            os.rename(os.path.join(self.conf['output_dir'], f'{cp_filename}'), os.path.join(self.conf['output_dir'], f'{cp_filename}.1'))
+        
+        with open(os.path.join(self.conf['output_dir'], cp_filename), mode='wb') as f:
+            cp_obj = {'counter_list':counter_list, 
+                'start_time':self.start_time, 'root_state':self.root_state, 'conf':self.conf, 
+                'val':self.val, 'reward_calculator':self.reward_calculator, 'policy_evaluator':self.policy_evaluator,
+                'logger':self.logger, 'rootnode':self.rootnode, 'valid_smiles_list':self.valid_smiles_list,
+                'depth_list':self.depth_list, 'objective_values_list':self.objective_values_list, 
+                'reward_values_list':self.reward_values_list, 'elapsed_time_list':self.elapsed_time_list,
+                'generated_dict':self.generated_dict, 'generated_id_list':self.generated_id_list, 
+                'filter_check_list':self.filter_check_list, 'total_valid_num':self.total_valid_num,
+                'obj_column_names':self.obj_column_names, 'output_path':self.output_path}
+            pickle.dump(cp_obj, f)
             self.flush()

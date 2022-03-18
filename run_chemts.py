@@ -105,6 +105,12 @@ def set_default_config(conf):
         'policy_class': 'Ucb1'})
     conf.setdefault('token', 'model/tokens.pkl')
 
+    conf.setdefault('leaf_parallel', False)
+    conf.setdefault('qsub_parallel', False)
+    
+    conf.setdefault('save_checkpoint', False)
+    conf.setdefault('restart', False)
+    conf.setdefault('checkpoint_file', False)
 
 def get_filter_modules(conf):
     pat = re.compile(r'^use.*filter$')

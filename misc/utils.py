@@ -8,6 +8,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import MolFromSmiles
 
+from misc.manage_qsub_parallel import run_qsub_parallel
 
 def calc_execution_time(f):
     @wraps(f)
@@ -103,11 +104,18 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     objective_values_list = []
     generated_ids = []
     filter_check_list = []
+
+    valid_conf_list = []
+    valid_mol_list = []
+    valid_filter_check_value_list = []
+
+    #check valid smiles
     for i in range(len(new_compound)):
         mol = Chem.MolFromSmiles(new_compound[i])
         if mol is None:
             continue
         _mol = copy.deepcopy(mol)  # Chem.SanitizeMol() modifies `mol` in place
+        
         if Chem.SanitizeMol(_mol, catchErrors=True).name != 'SANITIZE_NONE':
             continue
 
@@ -129,13 +137,34 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
             else:
                 continue
 
-        conf['gid'] = gids[i]
-        values = [f(mol) for f in reward_calculator.get_objective_functions(conf)]
+        _conf = copy.deepcopy(conf)
+        _conf['gid'] = gids[i]
         node_index.append(i)
         valid_compound.append(new_compound[i])
-        objective_values_list.append(values)
-        generated_dict[new_compound[i]] = [values, filter_check_value]
         generated_ids.append(gids[i])
+
+        valid_conf_list.append(_conf)
+        valid_mol_list.append(mol)
+        valid_filter_check_value_list.append(filter_check_value)
+    
+    #calculation rewards of valid molecules
+    if conf['leaf_parallel']:
+        if conf['qsub_parallel']:
+            if len(valid_mol_list) > 0:
+                values_list = run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list)
+        else:
+            #standard parallelization
+            pass
+    else:
+        values_list = [[f(mol) for f in reward_calculator.get_objective_functions(conf)] for mol, conf in zip(valid_mol_list, valid_conf_list)]
+
+    #record values and other data
+    for i in range(len(valid_mol_list)):
+        values = values_list[i]
+        filter_check_value = valid_filter_check_value_list[i]
+        objective_values_list.append(values)
+        generated_dict[valid_compound[i]] = [values, filter_check_value]
+
     logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
     return node_index, objective_values_list, valid_compound, generated_ids, filter_check_list
