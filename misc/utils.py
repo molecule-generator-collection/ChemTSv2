@@ -7,6 +7,7 @@ from tensorflow.keras.preprocessing import sequence
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import MolFromSmiles
+from rdkit.Chem.MolStandardize import rdMolStandardize
 
 from misc.manage_qsub_parallel import run_qsub_parallel
 
@@ -97,6 +98,21 @@ def has_passed_through_filters(smiles, conf, logger):
     checks = [f.check(mol, conf) for f in conf['filter_list']]
     return all(checks)
 
+#https://baoilleach.blogspot.com/2019/12/no-charge-simple-approach-to.html
+#https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules
+def neutralize_atoms(mol):
+    pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
+    at_matches = mol.GetSubstructMatches(pattern)
+    at_matches_list = [y[0] for y in at_matches]
+    if len(at_matches_list) > 0:
+        for at_idx in at_matches_list:
+            atom = mol.GetAtomWithIdx(at_idx)
+            chg = atom.GetFormalCharge()
+            hcount = atom.GetTotalNumHs()
+            atom.SetFormalCharge(0)
+            atom.SetNumExplicitHs(hcount - chg)
+            atom.UpdatePropertyCache()
+    return mol
 
 def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, gids):
     node_index = []
@@ -119,6 +135,15 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         if Chem.SanitizeMol(_mol, catchErrors=True).name != 'SANITIZE_NONE':
             continue
 
+        #Neutralize
+        if conf['neutralization']:
+            if conf['neutralization_strategy'] == 'Uncharger':
+                un = rdMolStandardize.Uncharger()
+                un.uncharge(mol)
+            elif conf['neutralization_strategy'] == 'nocharge':
+                neutralize_atoms(mol)
+            new_compound[i] = Chem.MolToSmiles(mol)
+
         if new_compound[i] in generated_dict:
             node_index.append(i)
             valid_compound.append(new_compound[i])
@@ -136,6 +161,8 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
                 filter_check_list.append(filter_check_value)
             else:
                 continue
+        
+        
 
         _conf = copy.deepcopy(conf)
         _conf['gid'] = gids[i]
