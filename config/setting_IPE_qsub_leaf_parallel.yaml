@@ -1,5 +1,5 @@
 trial: 1
-c_val: 0.2
+c_val: 0.1
 # threshold_type: [time, generation_num]
 threshold_type: time
 hours: 72
@@ -8,26 +8,51 @@ expansion_threshold: 0.995
 simulation_num: 3
 flush_threshold: 100
 
-use_lipinski_filter: False
+#neutralization
+neutralization: True
+# neutralization_strategy: [Uncharger, nocharge] nocharge is Noel O’Boyle’s algorithm
+neutralization_strategy: nocharge
+
+#output dir
+output_dir: result/IPE_C01_IPE_72h
+
+#save and restart
+save_checkpoint: True
+checkpoint_file: checkpiont.pickle
+restart: False
+
+#filter
 use_radical_filter: True
 radical_filter:
   module: filter.radical_filter
   class: RadicalFilter
+use_no_charge_filter: True
+no_charge_filter:
+  module: filter.no_charge_filter
+  class: NoChargeFilter
+use_aromatic_ring_filter: True
+aromatic_ring_filter:
+  module: filter.aromatic_ring_filter
+  class: AromaticRingFilter
 use_hashimoto_filter: True
 hashimoto_filter:
   module: filter.hashimoto_filter
   class: HashimotoFilter
-use_sascore_filter: True
-sascore_filter:
-  module: filter.sascore_filter
-  class: SascoreFilter
-  threshold: 3.5
-use_ring_size_filter: False
+use_ring_size_filter: True
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  min_threshold: 5
+  max_threshold: 7
+
+
+use_lipinski_filter: False
+use_sascore_filter: False
 include_filter_result_in_reward: False
 
+#model and search
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result/IPE_C02_IPE01_72h
 reward_setting: 
   reward_module: reward.IPE_reward
   reward_class: IPE_reward
@@ -39,12 +64,12 @@ token: model/tokens.pkl
 #parallelization strategy
 leaf_parallel: True
 qsub_parallel: True
-cpu_cluster: pcc-normal # pcc-skl or pcc-normal
+cpu_cluster: pcc-skl # pcc-skl or pcc-normal
 
 #Gaussian setting
 gau_functional: B3LYP
 gau_basis: 3-21G*
-gau_total_core_num: 560
+gau_total_core_num: 600
 gau_option: ipe
 gau_solvent: 0
 gau_error: 0
