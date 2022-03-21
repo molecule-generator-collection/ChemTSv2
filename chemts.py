@@ -292,10 +292,11 @@ class MCTS:
             os.rename(os.path.join(self.conf['output_dir'], f'{cp_filename}'), os.path.join(self.conf['output_dir'], f'{cp_filename}.1'))
         
         with open(os.path.join(self.conf['output_dir'], cp_filename), mode='wb') as f:
-            cp_obj = {'counter_list':counter_list, 
-                'start_time':self.start_time, 'root_state':self.root_state, 'conf':self.conf, 
-                'val':self.val, 'reward_calculator':self.reward_calculator, 'policy_evaluator':self.policy_evaluator,
-                'logger':self.logger, 'rootnode':self.rootnode, 'valid_smiles_list':self.valid_smiles_list,
+            cp_obj = {'counter_list':counter_list, 'start_time':self.start_time, 
+                'root_state':self.root_state, 'conf':self.conf, 
+                'val':self.val, 'reward_calculator':self.reward_calculator, 
+                'policy_evaluator':self.policy_evaluator,'logger':self.logger, 
+                'rootnode':self.rootnode, 'valid_smiles_list':self.valid_smiles_list,
                 'depth_list':self.depth_list, 'objective_values_list':self.objective_values_list, 
                 'reward_values_list':self.reward_values_list, 'elapsed_time_list':self.elapsed_time_list,
                 'generated_dict':self.generated_dict, 'generated_id_list':self.generated_id_list, 
