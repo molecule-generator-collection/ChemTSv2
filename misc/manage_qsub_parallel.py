@@ -14,11 +14,27 @@ def get_jobID(submitted_jobID_list):
     
     return pooled_jobID_list
 
+def check_values(valid_conf_list):
+    conf = valid_conf_list[0]
+    result_dir = os.path.join(conf['output_dir'], 'gaussian_result')
+    
+    for i, mol in enumerate(valid_conf_list):
+        conf = valid_conf_list[i]
+        gid = conf['gid']
+        calc_dir = f'InputMolopt{gid}'
+        if not os.path.exists(os.path.join(result_dir, calc_dir, 'values.pickle')):
+            return True
+    return False
+    
+
 def run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list):
     conf = valid_conf_list[0]
     n_cpus_qsub_parallel = conf['gau_total_core_num']
     cpu_cluster = conf['cpu_cluster']
    
+    result_dir = os.path.join(conf['output_dir'], 'gaussian_result')
+    if not os.path.exists(result_dir):
+        os.mkdir(result_dir)
     
     if cpu_cluster == 'pcc-skl':
         gaussian_cores = 40
@@ -33,7 +49,6 @@ def run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list):
         conf['gau_core_num'] = gaussian_cores
         gid = conf['gid']
 
-        print('conf', conf)
         calc_obj = [mol, conf]
         with open(f'calc_obj_{gid}.pickle', mode='wb') as f:
             pickle.dump(calc_obj, f)
@@ -43,7 +58,6 @@ def run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list):
         elif cpu_cluster == 'pcc-normal':
             cp = subprocess.run(f'qsub misc/qsub_parallel_job_pcc-normal.sh calc_obj_{gid}.pickle' , shell=True, encoding='utf-8', stdout=subprocess.PIPE)
         jobID = cp.stdout.split(' ')[2]
-        print('jobID', jobID)
         submitted_jobID_list.append(jobID)
         pooled_jobID_list = get_jobID(submitted_jobID_list)
 
@@ -51,13 +65,12 @@ def run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list):
             time.sleep(0.5)
             pooled_jobID_list = get_jobID(submitted_jobID_list)
     
-    while(len(pooled_jobID_list) > 0):
+    while(len(pooled_jobID_list) > 0 or check_values(valid_conf_list)):
+        print(len(pooled_jobID_list) > 0, check_values(valid_conf_list))
         time.sleep(0.5)
         pooled_jobID_list = get_jobID(submitted_jobID_list)
     
     objective_values_list = []
-    result_dir = result_dir = os.path.join(conf['output_dir'], 'gaussian_result')
-    calc_dir = f'InputMolopt{gid}'
     for i, mol in enumerate(valid_mol_list):
         conf = valid_conf_list[i]
         gid = conf['gid']
@@ -72,7 +85,9 @@ def run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list):
         elif cpu_cluster == 'pcc-normal':
             shutil.move('qsub_parallel_job_pcc-normal.sh.o'+submitted_jobID_list[i], os.path.join(result_dir, calc_dir))
             shutil.move('qsub_parallel_job_pcc-normal.sh.e'+submitted_jobID_list[i], os.path.join(result_dir, calc_dir))
+    
     return objective_values_list
+    
     
 
 

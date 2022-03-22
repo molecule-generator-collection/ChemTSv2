@@ -112,6 +112,10 @@ def set_default_config(conf):
     conf.setdefault('restart', False)
     conf.setdefault('checkpoint_file', False)
 
+    conf.setdefault('neutralization', False)
+    
+    
+
 def get_filter_modules(conf):
     pat = re.compile(r'^use.*filter$')
     module_list = []

@@ -14,7 +14,7 @@ neutralization: True
 neutralization_strategy: nocharge
 
 #output dir
-output_dir: result/IPE_C01_IPE_72h
+output_dir: result/IPE_opt_C01_72h
 
 #save and restart
 save_checkpoint: True
@@ -70,6 +70,6 @@ cpu_cluster: pcc-skl # pcc-skl or pcc-normal
 gau_functional: B3LYP
 gau_basis: 3-21G*
 gau_total_core_num: 600
-gau_option: ipe
+gau_option: opt ipe
 gau_solvent: 0
 gau_error: 0
