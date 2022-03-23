@@ -31,7 +31,6 @@ class Node:
         self.position = position
         self.parentNode = parent
         self.childNodes = []
-        self.child = None
         self.total_reward = 0
         self.visits = 0
         self.depth = 0
