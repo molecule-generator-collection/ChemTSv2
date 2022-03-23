@@ -32,7 +32,7 @@ class Node:
         self.parentNode = parent
         self.childNodes = []
         self.child = None
-        self.wins = 0
+        self.total_reward = 0
         self.visits = 0
         self.depth = 0
         self.policy_evaluator = policy_evaluator
@@ -43,7 +43,7 @@ class Node:
         logger.debug('UCB:')
         for i in range(len(self.childNodes)):
             score = self.policy_evaluator.evaluate(
-                self.childNodes[i].wins, self.conf['c_val'], self.visits, self.childNodes[i].visits)
+                self.childNodes[i].total_reward, self.conf['c_val'], self.visits, self.childNodes[i].visits)
             score_list.append(score)
             logger.debug(f"{self.childNodes[i].position} {score}") 
         m = np.amax(score_list)
@@ -60,9 +60,9 @@ class Node:
     def simulation(self):
         raise SystemExit("[ERROR] Do NOT use this method")
 
-    def Update(self, result):
+    def Update(self, reward):
         self.visits += 1
-        self.wins += result
+        self.total_reward += reward
 
 
 class MCTS:
@@ -239,7 +239,7 @@ class MCTS:
                 back_propagation(node, reward=re_list[i])
 
             if self.conf['debug']:
-                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, wins: {c.wins}, visits: {c.visits}" for c in node_pool]))
+                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, total_reward: {c.total_reward}, visits: {c.visits}" for c in node_pool]))
 
             if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
                 self.flush()
