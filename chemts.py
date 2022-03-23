@@ -16,7 +16,6 @@ from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
 class State:
     def __init__(self, position=['&']):
         self.position = position
-        self.num_atom = 8  # no longer used?
         
     def Clone(self):
         st = State()
@@ -25,9 +24,6 @@ class State:
 
     def SelectPosition(self, m):
         self.position.append(m)
-
-    def Getatom(self):
-        return [i for i in range(self.num_atom)]
 
 
 class Node:
@@ -38,8 +34,6 @@ class Node:
         self.child = None
         self.wins = 0
         self.visits = 0
-        self.nonvisited_atom = state.Getatom()  # no longer used?
-        self.type_node = []
         self.depth = 0
         self.policy_evaluator = policy_evaluator
         self.conf = conf
