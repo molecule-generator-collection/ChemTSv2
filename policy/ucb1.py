@@ -3,7 +3,7 @@ from math import log, sqrt
 from policy.policy import Policy
 
 class Ucb1(Policy):
-    def evaluate(total_reward, constant, parent_visits, child_visits):
-        ucb1 = ((total_reward / child_visits)
-                + constant * sqrt(2 * log(parent_visits) / child_visits))
+    def evaluate(child_state, conf):
+        ucb1 = ((child_state.total_reward / child_state.visits)
+                + conf['c_val'] * sqrt(2 * log(child_state.parentNode.state.visits) / child_state.visits))
         return ucb1

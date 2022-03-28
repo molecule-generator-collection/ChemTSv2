@@ -44,8 +44,7 @@ class Node:
         score_list = []
         logger.debug('UCB:')
         for i in range(len(self.state.childNodes)):
-            score = self.policy_evaluator.evaluate(
-                self.state.childNodes[i].state.total_reward, self.conf['c_val'], self.state.visits, self.state.childNodes[i].state.visits)
+            score = self.policy_evaluator.evaluate(self.state.childNodes[i].state, self.conf)
             score_list.append(score)
             logger.debug(f"{self.state.childNodes[i].position} {score}") 
         m = np.amax(score_list)
