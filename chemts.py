@@ -34,7 +34,6 @@ class Node:
         self.childNodes = []
         self.state = state
         self.total_reward = 0
-        self.depth = 0
         self.policy_evaluator = policy_evaluator
         self.conf = conf
 
