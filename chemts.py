@@ -1,7 +1,6 @@
 from doctest import OutputChecker
 from math import sqrt, log
 import os
-import random
 import sys
 import time
 
@@ -47,7 +46,7 @@ class Node:
             logger.debug(f"{self.childNodes[i].position} {score}") 
         m = np.amax(score_list)
         indices = np.nonzero(score_list == m)[0]
-        ind = random.choice(indices)
+        ind = int(self.conf['random_generator'].choice(indices))
         s = self.childNodes[ind]
         logger.debug(f"\nindex {ind} {self.position} {m}") 
         return s
@@ -174,7 +173,7 @@ class MCTS:
             nodeadded = []
             for _ in range(self.conf['simulation_num']):
                 nodeadded_tmp = node_to_add(expanded, self.val, self.logger)
-                all_posible = chem_kn_simulation(self.model, state.position, self.val, nodeadded_tmp, self.conf['max_len'])
+                all_posible = chem_kn_simulation(self.model, state.position, self.val, nodeadded_tmp, self.conf)
                 generate_smiles = predict_smiles(all_posible, self.val)
                 new_compound_tmp = make_input_smiles(generate_smiles)
                 nodeadded.extend(nodeadded_tmp)

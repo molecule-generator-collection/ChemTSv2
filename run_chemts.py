@@ -6,6 +6,7 @@ import pickle
 import re
 import yaml
 
+from numpy.random import default_rng
 from rdkit import RDLogger
 
 from chemts import MCTS, State
@@ -67,6 +68,7 @@ def set_default_config(conf):
     conf.setdefault('flush_threshold', -1)
     conf.setdefault('infinite_loop_threshold_for_selection', 1000)
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)
+    conf.setdefault('fix_random_seed', False)
 
     conf.setdefault('use_lipinski_filter', True)
     conf.setdefault('lipinski_filter', {
@@ -80,8 +82,7 @@ def set_default_config(conf):
     conf.setdefault('use_hashimoto_filter', True) 
     conf.setdefault('hashimoto_filter', {
         'module': 'filter.hashimoto_filter',
-        'class': 'HashimotoFilter'
-    }) 
+        'class': 'HashimotoFilter'}) 
     conf.setdefault('use_sascore_filter', True)
     conf.setdefault('sascore_filter', {
         'module': 'filter.sascore_filter',
@@ -142,6 +143,9 @@ def main():
     if not args.debug:
         RDLogger.DisableLog("rdApp.*")
 
+    if args.debug:
+        conf['fix_random_seed'] = True
+
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs["reward_module"]), rs["reward_class"])
     ps = conf['policy_setting']
@@ -165,6 +169,8 @@ def main():
     logger.info(f"===================================")
             
     conf['filter_list'] = get_filter_modules(conf)
+
+    conf['random_generator'] = default_rng(1234) if conf['fix_random_seed'] else default_rng()
 
     with open(conf['token'], 'rb') as f:
         val = pickle.load(f)

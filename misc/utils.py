@@ -49,7 +49,7 @@ def back_propagation(node, reward):
         node = node.parentNode
 
 
-def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
+def chem_kn_simulation(model, state, val, added_nodes, conf):
     all_posible = []
     end = "\n"
     for i in range(len(added_nodes)):
@@ -63,10 +63,10 @@ def chem_kn_simulation(model, state, val, added_nodes, smiles_max_len):
         while not get_int[-1] == val.index(end):
             preds = model.predict_on_batch(x)
             state_pred = np.squeeze(preds)
-            next_int = np.random.choice(range(len(state_pred)), p=state_pred)
+            next_int = conf['random_generator'].choice(range(len(state_pred)), p=state_pred)
             get_int.append(next_int)
             x = np.reshape([next_int], (1, 1))
-            if len(get_int) > smiles_max_len:
+            if len(get_int) > conf['max_len']:
                 break
         all_posible.append(get_int)
     return all_posible
