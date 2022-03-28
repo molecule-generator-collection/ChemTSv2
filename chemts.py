@@ -16,11 +16,13 @@ class State:
     def __init__(self, position=['&']):
         self.position = position
         self.visits = 0
+        self.total_reward = 0
         
-    def Clone(self, include_visit=False):
+    def Clone(self, include_visit=False, include_total_reward=False):
         st = State()
         st.position = self.position[:]
         st.visits = self.visits if include_visit else 0
+        st.total_reward = self.total_reward if include_total_reward else 0
         return st
 
     def SelectPosition(self, m):
@@ -33,7 +35,6 @@ class Node:
         self.parentNode = parent
         self.childNodes = []
         self.state = state
-        self.total_reward = 0
         self.policy_evaluator = policy_evaluator
         self.conf = conf
 
@@ -42,7 +43,7 @@ class Node:
         logger.debug('UCB:')
         for i in range(len(self.childNodes)):
             score = self.policy_evaluator.evaluate(
-                self.childNodes[i].total_reward, self.conf['c_val'], self.state.visits, self.childNodes[i].state.visits)
+                self.childNodes[i].state.total_reward, self.conf['c_val'], self.state.visits, self.childNodes[i].state.visits)
             score_list.append(score)
             logger.debug(f"{self.childNodes[i].position} {score}") 
         m = np.amax(score_list)
@@ -61,7 +62,7 @@ class Node:
 
     def Update(self, reward):
         self.state.visits += 1
-        self.total_reward += reward
+        self.state.total_reward += reward
 
 
 class MCTS:
@@ -213,7 +214,7 @@ class MCTS:
             for i in range(len(node_index)):
                 m = node_index[i]
                 atom = nodeadded[m]
-                state_clone = state.Clone(include_visit=True)
+                state_clone = state.Clone(include_visit=True, include_total_reward=True)
 
                 if atom not in atom_checked: 
                     node.Addnode(atom, state_clone, self.policy_evaluator)
@@ -239,7 +240,7 @@ class MCTS:
                 back_propagation(node, reward=re_list[i])
 
             if self.conf['debug']:
-                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, total_reward: {c.total_reward}, visits: {c.state.visits}" for c in node_pool]))
+                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, total_reward: {c.state.total_reward}, visits: {c.state.visits}" for c in node_pool]))
 
             if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
                 self.flush()
