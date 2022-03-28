@@ -13,16 +13,20 @@ from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
 
 
 class State:
-    def __init__(self, position=['&']):
+    def __init__(self, position=['&'], parent=None):
         self.position = position
         self.visits = 0
         self.total_reward = 0
+        self.parentNode = parent
+        self.childNodes = []
         
-    def Clone(self, include_visit=False, include_total_reward=False):
+    def Clone(self, include_visit=False, include_total_reward=False, include_parentNode=False, include_childNode=False):
         st = State()
         st.position = self.position[:]
         st.visits = self.visits if include_visit else 0
         st.total_reward = self.total_reward if include_total_reward else 0
+        st.parentNode = self.parentNode if include_parentNode else None
+        st.childNodes = self.childNodes if include_childNode else []
         return st
 
     def SelectPosition(self, m):
@@ -30,10 +34,8 @@ class State:
 
 
 class Node:
-    def __init__(self, policy_evaluator, position=None, parent=None, state=None, conf=None):
+    def __init__(self, policy_evaluator, position=None, state=None, conf=None):
         self.position = position
-        self.parentNode = parent
-        self.childNodes = []
         self.state = state
         self.policy_evaluator = policy_evaluator
         self.conf = conf
@@ -41,21 +43,22 @@ class Node:
     def Selectnode(self, logger):
         score_list = []
         logger.debug('UCB:')
-        for i in range(len(self.childNodes)):
+        for i in range(len(self.state.childNodes)):
             score = self.policy_evaluator.evaluate(
-                self.childNodes[i].state.total_reward, self.conf['c_val'], self.state.visits, self.childNodes[i].state.visits)
+                self.state.childNodes[i].state.total_reward, self.conf['c_val'], self.state.visits, self.state.childNodes[i].state.visits)
             score_list.append(score)
-            logger.debug(f"{self.childNodes[i].position} {score}") 
+            logger.debug(f"{self.state.childNodes[i].position} {score}") 
         m = np.amax(score_list)
         indices = np.nonzero(score_list == m)[0]
         ind = int(self.conf['random_generator'].choice(indices))
-        s = self.childNodes[ind]
+        s = self.state.childNodes[ind]
         logger.debug(f"\nindex {ind} {self.position} {m}") 
         return s
 
-    def Addnode(self, m, s, policy_evaluator):
-        n = Node(policy_evaluator, position=m, parent=self, state=s, conf=self.conf)
-        self.childNodes.append(n)
+    def Addnode(self, m, state, policy_evaluator):
+        state.parentNode = self
+        node = Node(policy_evaluator, position=m, state=state, conf=self.conf)
+        self.state.childNodes.append(node)
 
     def simulation(self):
         raise SystemExit("[ERROR] Do NOT use this method")
@@ -143,7 +146,7 @@ class MCTS:
 
             """selection step"""
             node_pool = []
-            while node.childNodes!=[]:
+            while node.state.childNodes != []:
                 node = node.Selectnode(self.logger)
                 state.SelectPosition(node.position)
             self.logger.info(f"state position: {state.position}")
@@ -218,13 +221,13 @@ class MCTS:
 
                 if atom not in atom_checked: 
                     node.Addnode(atom, state_clone, self.policy_evaluator)
-                    node_pool.append(node.childNodes[len(atom_checked)])
+                    node_pool.append(node.state.childNodes[len(atom_checked)])
                     atom_checked.append(atom)
                 else:
-                    node_pool.append(node.childNodes[atom_checked.index(atom)])
+                    node_pool.append(node.state.childNodes[atom_checked.index(atom)])
 
                 if self.conf["debug"]:
-                    self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.childNodes]))
+                    self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.state.childNodes]))
 
                 re = -1 if atom == '\n' else self.reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=self.conf)
                 if self.conf['include_filter_result_in_reward']:
