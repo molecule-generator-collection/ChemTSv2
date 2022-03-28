@@ -15,10 +15,12 @@ from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
 class State:
     def __init__(self, position=['&']):
         self.position = position
+        self.visits = 0
         
-    def Clone(self):
+    def Clone(self, include_visit=False):
         st = State()
         st.position = self.position[:]
+        st.visits = self.visits if include_visit else 0
         return st
 
     def SelectPosition(self, m):
@@ -30,8 +32,8 @@ class Node:
         self.position = position
         self.parentNode = parent
         self.childNodes = []
+        self.state = state
         self.total_reward = 0
-        self.visits = 0
         self.depth = 0
         self.policy_evaluator = policy_evaluator
         self.conf = conf
@@ -41,7 +43,7 @@ class Node:
         logger.debug('UCB:')
         for i in range(len(self.childNodes)):
             score = self.policy_evaluator.evaluate(
-                self.childNodes[i].total_reward, self.conf['c_val'], self.visits, self.childNodes[i].visits)
+                self.childNodes[i].total_reward, self.conf['c_val'], self.state.visits, self.childNodes[i].state.visits)
             score_list.append(score)
             logger.debug(f"{self.childNodes[i].position} {score}") 
         m = np.amax(score_list)
@@ -59,7 +61,7 @@ class Node:
         raise SystemExit("[ERROR] Do NOT use this method")
 
     def Update(self, reward):
-        self.visits += 1
+        self.state.visits += 1
         self.total_reward += reward
 
 
@@ -137,7 +139,7 @@ class MCTS:
         
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
-            state = self.root_state.Clone()  # but this state is the state of the initialization. Too important!
+            state = node.state.Clone()  # but this state is the state of the initialization. Too important!
 
             """selection step"""
             node_pool = []
@@ -212,9 +214,10 @@ class MCTS:
             for i in range(len(node_index)):
                 m = node_index[i]
                 atom = nodeadded[m]
+                state_clone = state.Clone(include_visit=True)
 
                 if atom not in atom_checked: 
-                    node.Addnode(atom, state, self.policy_evaluator)
+                    node.Addnode(atom, state_clone, self.policy_evaluator)
                     node_pool.append(node.childNodes[len(atom_checked)])
                     atom_checked.append(atom)
                 else:
@@ -237,7 +240,7 @@ class MCTS:
                 back_propagation(node, reward=re_list[i])
 
             if self.conf['debug']:
-                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, total_reward: {c.total_reward}, visits: {c.visits}" for c in node_pool]))
+                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, total_reward: {c.total_reward}, visits: {c.state.visits}" for c in node_pool]))
 
             if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
                 self.flush()
