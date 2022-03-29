@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pickle
 
-from misc.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
+from utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
     evaluate_node, node_to_add, expanded_node, back_propagation
 
 

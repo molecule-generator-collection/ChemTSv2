@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import yaml
 
 sys.path.append("../")
-from misc.preprocessing import read_smiles_dataset, tokenize_smiles
+from preprocessing import read_smiles_dataset, tokenize_smiles
 
 
 def get_parser():

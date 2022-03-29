@@ -10,8 +10,8 @@ from numpy.random import default_rng
 from rdkit import RDLogger
 
 from chemts import MCTS, State
-from misc.load_model import loaded_model, get_model_structure_info
-from misc.preprocessing import smi_tokenizer
+from utils import loaded_model, get_model_structure_info
+from preprocessing import smi_tokenizer
 
 
 def get_parser():

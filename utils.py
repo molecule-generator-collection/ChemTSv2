@@ -1,15 +1,18 @@
 import copy
 from functools import wraps
 import itertools
+import sys
 import time
 
-from tensorflow.keras.preprocessing import sequence
+from tensorflow.keras.models import Sequential, model_from_json
+from tensorflow.keras.layers import Dense, Embedding, GRU
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import MolFromSmiles
 from rdkit.Chem.MolStandardize import rdMolStandardize
 
 from misc.manage_qsub_parallel import run_qsub_parallel
+
 
 def calc_execution_time(f):
     @wraps(f)
@@ -20,7 +23,8 @@ def calc_execution_time(f):
         print(f"Execution time of {f.__name__}: {elapsed_time} sec")
         return result
     return wrapper
-        
+
+
 def expanded_node(model, state, val, logger, threshold=0.995):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
@@ -98,9 +102,10 @@ def has_passed_through_filters(smiles, conf, logger):
     checks = [f.check(mol, conf) for f in conf['filter_list']]
     return all(checks)
 
-#https://baoilleach.blogspot.com/2019/12/no-charge-simple-approach-to.html
-#https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules
+
 def neutralize_atoms(mol):
+    #https://baoilleach.blogspot.com/2019/12/no-charge-simple-approach-to.html
+    #https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules
     pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
     at_matches = mol.GetSubstructMatches(pattern)
     at_matches_list = [y[0] for y in at_matches]
@@ -113,6 +118,44 @@ def neutralize_atoms(mol):
             atom.SetNumExplicitHs(hcount - chg)
             atom.UpdatePropertyCache()
     return mol
+
+
+def get_model_structure_info(model_json, logger):
+    with open(model_json, 'r') as f:
+        loaded_model_json = f.read()
+    loaded_model = model_from_json(loaded_model_json)
+    logger.info(f"Loaded model_json from {model_json}")
+    input_shape = None
+    vocab_size = None
+    output_size = None
+    for layer in loaded_model.get_config()['layers']:
+        config = layer.get('config')
+        if layer.get('class_name') == 'InputLayer':
+            input_shape = config['batch_input_shape'][1]
+        if layer.get('class_name') == 'Embedding':
+            vocab_size = config['input_dim']
+        if layer.get('class_name') == 'TimeDistributed':
+            output_size = config['layer']['config']['units']
+    if input_shape is None or vocab_size is None or output_size is None:
+        logger.error('Confirm if the version of Tensorflow is 2.5. If so, please consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`')
+        sys.exit()
+            
+    return input_shape, vocab_size, output_size
+
+    
+def loaded_model(model_weight, logger, conf):
+    model = Sequential()
+    model.add(Embedding(input_dim=conf['rnn_vocab_size'], output_dim=conf['rnn_vocab_size'],
+                        mask_zero=False, batch_size=1))
+    model.add(GRU(256, batch_input_shape=(1, None, conf['rnn_vocab_size']), activation='tanh',
+                  return_sequences=True, stateful=True))
+    model.add(GRU(256, activation='tanh', return_sequences=False, stateful=True))
+    model.add(Dense(conf['rnn_output_size'], activation='softmax'))
+    model.load_weights(model_weight)
+    logger.info(f"Loaded model_weight from {model_weight}")
+
+    return model
+
 
 def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, gids):
     node_index = []
