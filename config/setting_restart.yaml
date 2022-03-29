@@ -11,7 +11,7 @@ flush_threshold: -1
 #save and restart
 save_checkpoint: True
 restart: True
-checkpoint_file: checkpiont.pickle
+checkpoint_file: chemtsv2.ckpt.pkl
 
 use_lipinski_filter: True
 lipinski_filter:

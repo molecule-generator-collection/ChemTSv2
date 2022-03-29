@@ -18,7 +18,7 @@ output_dir: result/IPE_C01_IPE_72h
 
 #save and restart
 save_checkpoint: True
-checkpoint_file: checkpiont.pickle
+checkpoint_file: chemtsv2.ckpt.pkl
 restart: False
 
 #filter

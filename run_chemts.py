@@ -111,7 +111,7 @@ def set_default_config(conf):
     
     conf.setdefault('save_checkpoint', False)
     conf.setdefault('restart', False)
-    conf.setdefault('checkpoint_file', False)
+    conf.setdefault('checkpoint_file', "chemtsv2.ckpt.pkl")
 
     conf.setdefault('neutralization', False)
     
