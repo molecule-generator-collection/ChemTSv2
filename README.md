@@ -9,17 +9,16 @@ This repository is a refined and extended version of [ChemTS[1]](https://www.tan
 1. python: 3.7
 2. rdkit: 2021.03.5
 3. tensorflow: 2.5.0
+4. matplotlib
+5. pyyaml
+6. pandas
 
 ### How to setup (example)
 
 ```bash
 conda create -n chemts -c conda-forge python=3.7
 # switch a python virtual environment to `chemts`
-pip install --upgrade tensorflow==2.5
-pip install rdkit-pypi==2021.03.5
-pip install matplotlib pyyaml pandas
-# retrieve files for SAscore calculations
-wget -P data https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/{fpscores.pkl.gz,sascorer.py}
+pip install --upgrade git+https://github.com/molecule-generator-collection/ChemTSv2.git
 ```
 
 ## How to run ChemTS
@@ -29,6 +28,8 @@ wget -P data https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Sco
 ```bash
 git clone git@github.com:molecule-generator-collection/ChemTSv2.git
 cd ChemTSv2
+# If you use SAScore filter, please retrieve files for SAscore calculations
+wget -P data https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/{fpscores.pkl.gz,sascorer.py}
 ```
 
 2. (Optional) Train the RNN model.
@@ -42,48 +43,20 @@ If you want to use your trained model, please update `misc.load_model.loaded_mod
 
 3. (Optional) Create a config file for chemts.
 
-Please refer to the sample file `config/setting.yaml` and you will see the following content:
-
-```yaml
-trial: 1
-c_val: 1.0
-# threshold_type: [time, generation_num]
-threshold_type: time
-hours: 0.01
-# generation_num: 100
-expansion_threshold: 0.995
-simulation_num: 3
-flush_threshold: -1
-
-use_lipinski_filter: True
-#lipinski_filter_type: rule_of_5
-use_radical_filter: True
-use_hashimoto_filter: True
-use_sascore_filter: True
-#sa_threshold: 3.5
-use_ring_size_filter: True
-#ring_size_threshold: 6
-include_filter_result_in_reward: False
-
-model_json: model/model.tf25.json
-model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result/example01
-reward_calculator: reward.logP_reward
-token: model/tokens.pkl
-```
+Please refer to the sample file ([config/setting.yaml](config/setting.yaml)).
 
 If you want to pass any value to `calc_reward_from_objective_values` (e.g., weights for each value), add it in the config file.
 
 4. Generate molecules.
 
 ```bash
-python run_chemts.py -c config/setting.yaml
+chemtsv2 -c config/setting.yaml
 ```
 
 If you want to use GPU, run ChemTS with `--gpu GPU_ID` argument as follows.
 
 ```bash
-python run_chemts.py -c config/setting.yaml --gpu 0
+chemtsv2 -c config/setting.yaml --gpu 0
 ```
 
 ## Advanced usege
@@ -94,7 +67,7 @@ You can extend the SMILES string you input.
 In this case, you need to put the atom you want to extend at the end of the string and run ChemTS with `--input_smiles` argument as follows.
 
 ```bash
-python run_chemts.py -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
+chemtsv2 -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ```
 
 ### Usage of AutoDock Vina as reward function
