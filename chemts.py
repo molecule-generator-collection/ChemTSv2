@@ -1,5 +1,3 @@
-from doctest import OutputChecker
-from math import sqrt, log
 import os
 import sys
 import time

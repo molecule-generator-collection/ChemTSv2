@@ -8,7 +8,6 @@ from tensorflow.keras.models import Sequential, model_from_json
 from tensorflow.keras.layers import Dense, Embedding, GRU
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import MolFromSmiles
 from rdkit.Chem.MolStandardize import rdMolStandardize
 
 from misc.manage_qsub_parallel import run_qsub_parallel
