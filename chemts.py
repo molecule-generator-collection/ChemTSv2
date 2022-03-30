@@ -71,7 +71,6 @@ class MCTS:
     def __init__(self, root_state, conf, val, model, reward_calculator, policy_evaluator, logger):
         self.start_time = time.time()
         self.rootnode = Node(policy_evaluator, state=root_state, conf=conf)
-        self.root_state = root_state
         self.conf = conf
         self.val = val
         self.model = model
@@ -263,12 +262,10 @@ class MCTS:
         counter_list = cp_obj['counter_list']
         self.start_time = cp_obj['start_time']
         self.rootnode = cp_obj['rootnode']
-        self.root_state = cp_obj['root_state']
         self.conf = cp_obj['conf']
         self.val = cp_obj['val']
         self.reward_calculator = cp_obj['reward_calculator']
         self.policy_evaluator = cp_obj['policy_evaluator']
-        #self.logger = cp_obj['logger']
         self.valid_smiles_list = cp_obj['valid_smiles_list']
         self.depth_list = cp_obj['depth_list']
         self.objective_values_list = cp_obj['objective_values_list']
@@ -298,12 +295,10 @@ class MCTS:
         cp_obj = {
            'counter_list': counter_list,
            'start_time': self.start_time, 
-           'root_state': self.root_state,
            'conf': self.conf, 
            'val': self.val,
            'reward_calculator': self.reward_calculator,
            'policy_evaluator': self.policy_evaluator,
-           #'logger': self.logger, 
            'rootnode': self.rootnode,
            'valid_smiles_list': self.valid_smiles_list,
            'depth_list': self.depth_list,
