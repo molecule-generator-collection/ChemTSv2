@@ -136,8 +136,7 @@ class MCTS:
         ckpt_path = os.path.join(self.conf['output_dir'], self.conf['checkpoint_file'])
         if self.conf['restart'] and os.path.exists(ckpt_path):
             self.logger.info(f"Load the checkpoint file from {ckpt_path}")
-            counter_list = self.load_checkpoint()
-            self.gid, self.loop_counter_for_selection, self.loop_counter_for_expansion, self.expanded_before = counter_list
+            self.load_checkpoint()
         
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
@@ -249,8 +248,7 @@ class MCTS:
             
             """save checkpoint file"""
             if self.conf['save_checkpoint']:
-                counter_list = [self.gid, self.loop_counter_for_selection, self.loop_counter_for_expansion, self.expanded_before]
-                self.save_checkpoint(counter_list)
+                self.save_checkpoint()
 
         if len(self.valid_smiles_list) > 0:
             self.flush()
@@ -259,7 +257,10 @@ class MCTS:
         ckpt_path = os.path.join(self.conf['output_dir'], self.conf['checkpoint_file'])
         with open(ckpt_path, mode='rb') as f:
             cp_obj = pickle.load(f)
-        counter_list = cp_obj['counter_list']
+        self.gid = cp_obj['gid']
+        self.loop_counter_for_selection = cp_obj['loop_counter_for_selection']
+        self.loop_counter_for_expansion = cp_obj['loop_counter_for_expansion']
+        self.expanded_before = cp_obj['expanded_before']        
         self.start_time = cp_obj['start_time']
         self.rootnode = cp_obj['rootnode']
         self.conf = cp_obj['conf']
@@ -278,9 +279,8 @@ class MCTS:
         self.obj_column_names = cp_obj['obj_column_names']
         self.output_path = cp_obj['output_path']
 
-        return counter_list
 
-    def save_checkpoint(self, counter_list):
+    def save_checkpoint(self):
         ckpt_fname = self.conf['checkpoint_file']
         ckpt_path = os.path.join(self.conf['output_dir'], ckpt_fname)
         stem, ext = ckpt_fname.rsplit('.', 1)
@@ -293,24 +293,27 @@ class MCTS:
             os.rename(ckpt_path, ckpt1_path)
 
         cp_obj = {
-           'counter_list': counter_list,
-           'start_time': self.start_time, 
-           'conf': self.conf, 
-           'val': self.val,
-           'reward_calculator': self.reward_calculator,
-           'policy_evaluator': self.policy_evaluator,
-           'rootnode': self.rootnode,
-           'valid_smiles_list': self.valid_smiles_list,
-           'depth_list': self.depth_list,
-           'objective_values_list': self.objective_values_list, 
-           'reward_values_list': self.reward_values_list,
-           'elapsed_time_list': self.elapsed_time_list,
-           'generated_dict': self.generated_dict,
-           'generated_id_list': self.generated_id_list, 
-           'filter_check_list': self.filter_check_list,
-           'total_valid_num': self.total_valid_num,
-           'obj_column_names': self.obj_column_names,
-           'output_path': self.output_path
+            'gid': self.gid,
+            'loop_counter_for_selection': self.loop_counter_for_selection,
+            'loop_counter_for_expansion': self.loop_counter_for_expansion,
+            'expanded_before': self.expanded_before,
+            'start_time': self.start_time, 
+            'conf': self.conf, 
+            'val': self.val,
+            'reward_calculator': self.reward_calculator,
+            'policy_evaluator': self.policy_evaluator,
+            'rootnode': self.rootnode,
+            'valid_smiles_list': self.valid_smiles_list,
+            'depth_list': self.depth_list,
+            'objective_values_list': self.objective_values_list, 
+            'reward_values_list': self.reward_values_list,
+            'elapsed_time_list': self.elapsed_time_list,
+            'generated_dict': self.generated_dict,
+            'generated_id_list': self.generated_id_list, 
+            'filter_check_list': self.filter_check_list,
+            'total_valid_num': self.total_valid_num,
+            'obj_column_names': self.obj_column_names,
+            'output_path': self.output_path
         }
         
         with open(ckpt_path, mode='wb') as f:
