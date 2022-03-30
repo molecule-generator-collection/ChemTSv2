@@ -94,8 +94,8 @@ class MCTS:
             sys.exit(f"[ERROR] {self.output_path} already exists. Please specify a different file name.")
 
         self.gid = 0
-        self.infinite_loop_counter_for_selection = 0
-        self.infinite_loop_counter_for_expansion = 0
+        self.loop_counter_for_selection = 0
+        self.loop_counter_for_expansion = 0
         self.expanded_before = {}
 
         if conf['threshold_type'] == "time":
@@ -137,7 +137,7 @@ class MCTS:
         if self.conf['restart'] and os.path.exists(ckpt_path):
             self.logger.info(f"Load the checkpoint file from {ckpt_path}")
             counter_list = self.load_checkpoint()
-            self.gid, self.infinite_loop_counter_for_selection, self.infinite_loop_counter_for_expansion, self.expanded_before = counter_list
+            self.gid, self.loop_counter_for_selection, self.loop_counter_for_expansion, self.expanded_before = counter_list
         
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
@@ -150,27 +150,27 @@ class MCTS:
                 state.SelectPosition(node.position)
             self.logger.info(f"state position: {state.position}")
 
-            self.logger.debug(f"infinite loop counter (selection): {self.infinite_loop_counter_for_selection}")
+            self.logger.debug(f"infinite loop counter (selection): {self.loop_counter_for_selection}")
             if len(state.position) >= 70 or node.position == '\n':
                 back_propagation(node, reward=-1.0)
-                self.infinite_loop_counter_for_selection += 1
-                if self.infinite_loop_counter_for_selection > self.conf['infinite_loop_threshold_for_selection']:
+                self.loop_counter_for_selection += 1
+                if self.loop_counter_for_selection > self.conf['infinite_loop_threshold_for_selection']:
                     self.flush()
                     sys.exit('[WARN] Infinite loop is detected in the selection step. Change hyperparameters or RNN model.')
                 continue
             else:
-                self.infinite_loop_counter_for_selection = 0
+                self.loop_counter_for_selection = 0
 
             """expansion step"""
             expanded = expanded_node(self.model, state.position, self.val, self.logger, threshold=self.conf['expansion_threshold'])
-            self.logger.debug(f"infinite loop counter (expansion): {self.infinite_loop_counter_for_expansion}")
+            self.logger.debug(f"infinite loop counter (expansion): {self.loop_counter_for_expansion}")
             if set(expanded) == self.expanded_before:
-                self.infinite_loop_counter_for_expansion += 1
-                if self.infinite_loop_counter_for_expansion > self.conf['infinite_loop_threshold_for_expansion']:
+                self.loop_counter_for_expansion += 1
+                if self.loop_counter_for_expansion > self.conf['infinite_loop_threshold_for_expansion']:
                     self.flush()
                     sys.exit('[WARN] Infinite loop is detected in the expansion step. Change hyperparameters or RNN model.')
             else:
-                self.infinite_loop_counter_for_expansion = 0
+                self.loop_counter_for_expansion = 0
             self.expanded_before = set(expanded)
 
             new_compound = []
@@ -249,7 +249,7 @@ class MCTS:
             
             """save checkpoint file"""
             if self.conf['save_checkpoint']:
-                counter_list = [self.gid, self.infinite_loop_counter_for_selection, self.infinite_loop_counter_for_expansion, self.expanded_before]
+                counter_list = [self.gid, self.loop_counter_for_selection, self.loop_counter_for_expansion, self.expanded_before]
                 self.save_checkpoint(counter_list)
 
         if len(self.valid_smiles_list) > 0:
