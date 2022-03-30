@@ -139,3 +139,10 @@ model/backup/
 *.png
 !img/*.png
 *.pstats
+docs/
+test_/
+Untitled.ipynb
+chemts.yml
+anime.gif
+data/fpscores.pkl.gz
+data/sascorer.py
