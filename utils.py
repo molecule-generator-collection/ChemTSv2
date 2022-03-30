@@ -49,8 +49,8 @@ def node_to_add(all_nodes, val, logger):
 
 def back_propagation(node, reward):
     while node != None:
-        node.Update(reward)
-        node = node.state.parentNode
+        node.update(reward)
+        node = node.state.parent_node
 
 
 def chem_kn_simulation(model, state, val, added_nodes, conf):

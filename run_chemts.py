@@ -173,11 +173,11 @@ def main():
     conf['random_generator'] = default_rng(1234) if conf['fix_random_seed'] else default_rng()
 
     with open(conf['token'], 'rb') as f:
-        val = pickle.load(f)
-    logger.debug(f"val is {val}")
+        tokens = pickle.load(f)
+    logger.debug(f"Loaded tokens are {tokens}")
 
     state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
-    mcts = MCTS(root_state=state, conf=conf, val=val, model=model, reward_calculator=reward_calculator, policy_evaluator=policy_evaluator, logger=logger)
+    mcts = MCTS(root_state=state, conf=conf, tokens=tokens, model=model, reward_calculator=reward_calculator, policy_evaluator=policy_evaluator, logger=logger)
     mcts.search()
     logger.info("Finished!")
 

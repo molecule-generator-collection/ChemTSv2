@@ -17,19 +17,19 @@ class State:
         self.position = position
         self.visits = 0
         self.total_reward = 0
-        self.parentNode = parent
-        self.childNodes = []
+        self.parent_node = parent
+        self.child_nodes = []
         
-    def Clone(self, include_visit=False, include_total_reward=False, include_parentNode=False, include_childNode=False):
+    def clone(self, include_visit=False, include_total_reward=False, include_parent_node=False, include_child_node=False):
         st = State()
         st.position = self.position[:]
         st.visits = self.visits if include_visit else 0
         st.total_reward = self.total_reward if include_total_reward else 0
-        st.parentNode = self.parentNode if include_parentNode else None
-        st.childNodes = self.childNodes if include_childNode else []
+        st.parent_node = self.parent_node if include_parent_node else None
+        st.child_nodes = self.child_nodes if include_child_node else []
         return st
 
-    def SelectPosition(self, m):
+    def add_position(self, m):
         self.position.append(m)
 
 
@@ -40,39 +40,39 @@ class Node:
         self.policy_evaluator = policy_evaluator
         self.conf = conf
 
-    def Selectnode(self, logger):
+    def select_node(self, logger):
         score_list = []
         logger.debug('UCB:')
-        for i in range(len(self.state.childNodes)):
-            score = self.policy_evaluator.evaluate(self.state.childNodes[i].state, self.conf)
+        for i in range(len(self.state.child_nodes)):
+            score = self.policy_evaluator.evaluate(self.state.child_nodes[i].state, self.conf)
             score_list.append(score)
-            logger.debug(f"{self.state.childNodes[i].position} {score}") 
+            logger.debug(f"{self.state.child_nodes[i].position} {score}") 
         m = np.amax(score_list)
         indices = np.nonzero(score_list == m)[0]
         ind = int(self.conf['random_generator'].choice(indices))
-        s = self.state.childNodes[ind]
+        s = self.state.child_nodes[ind]
         logger.debug(f"\nindex {ind} {self.position} {m}") 
         return s
 
-    def Addnode(self, m, state, policy_evaluator):
-        state.parentNode = self
+    def add_node(self, m, state, policy_evaluator):
+        state.parent_node = self
         node = Node(policy_evaluator, position=m, state=state, conf=self.conf)
-        self.state.childNodes.append(node)
+        self.state.child_nodes.append(node)
 
     def simulation(self):
         raise SystemExit("[ERROR] Do NOT use this method")
 
-    def Update(self, reward):
+    def update(self, reward):
         self.state.visits += 1
         self.state.total_reward += reward
 
 
 class MCTS:
-    def __init__(self, root_state, conf, val, model, reward_calculator, policy_evaluator, logger):
+    def __init__(self, root_state, conf, tokens, model, reward_calculator, policy_evaluator, logger):
         self.start_time = time.time()
         self.rootnode = Node(policy_evaluator, state=root_state, conf=conf)
         self.conf = conf
-        self.val = val
+        self.tokens = tokens
         self.model = model
         self.reward_calculator = reward_calculator
         self.policy_evaluator = policy_evaluator
@@ -140,13 +140,13 @@ class MCTS:
         
         while (time.time() if self.conf['threshold_type']=="time" else self.total_valid_num) <= self.threshold:
             node = self.rootnode  # important! This node is different with state / node is the tree node
-            state = node.state.Clone()  # but this state is the state of the initialization. Too important!
+            state = node.state.clone()  # but this state is the state of the initialization. Too important!
 
             """selection step"""
             node_pool = []
-            while node.state.childNodes != []:
-                node = node.Selectnode(self.logger)
-                state.SelectPosition(node.position)
+            while node.state.child_nodes != []:
+                node = node.select_node(self.logger)
+                state.add_position(node.position)
             self.logger.info(f"state position: {state.position}")
 
             self.logger.debug(f"infinite loop counter (selection): {self.loop_counter_for_selection}")
@@ -161,7 +161,7 @@ class MCTS:
                 self.loop_counter_for_selection = 0
 
             """expansion step"""
-            expanded = expanded_node(self.model, state.position, self.val, self.logger, threshold=self.conf['expansion_threshold'])
+            expanded = expanded_node(self.model, state.position, self.tokens, self.logger, threshold=self.conf['expansion_threshold'])
             self.logger.debug(f"infinite loop counter (expansion): {self.loop_counter_for_expansion}")
             if set(expanded) == self.expanded_before:
                 self.loop_counter_for_expansion += 1
@@ -175,9 +175,9 @@ class MCTS:
             new_compound = []
             nodeadded = []
             for _ in range(self.conf['simulation_num']):
-                nodeadded_tmp = node_to_add(expanded, self.val, self.logger)
-                all_posible = chem_kn_simulation(self.model, state.position, self.val, nodeadded_tmp, self.conf)
-                generate_smiles = predict_smiles(all_posible, self.val)
+                nodeadded_tmp = node_to_add(expanded, self.tokens, self.logger)
+                all_posible = chem_kn_simulation(self.model, state.position, self.tokens, nodeadded_tmp, self.conf)
+                generate_smiles = predict_smiles(all_posible, self.tokens)
                 new_compound_tmp = make_input_smiles(generate_smiles)
                 nodeadded.extend(nodeadded_tmp)
                 new_compound.extend(new_compound_tmp)
@@ -215,17 +215,17 @@ class MCTS:
             for i in range(len(node_index)):
                 m = node_index[i]
                 atom = nodeadded[m]
-                state_clone = state.Clone(include_visit=True, include_total_reward=True)
+                state_clone = state.clone(include_visit=True, include_total_reward=True)
 
                 if atom not in atom_checked: 
-                    node.Addnode(atom, state_clone, self.policy_evaluator)
-                    node_pool.append(node.state.childNodes[len(atom_checked)])
+                    node.add_node(atom, state_clone, self.policy_evaluator)
+                    node_pool.append(node.state.child_nodes[len(atom_checked)])
                     atom_checked.append(atom)
                 else:
-                    node_pool.append(node.state.childNodes[atom_checked.index(atom)])
+                    node_pool.append(node.state.child_nodes[atom_checked.index(atom)])
 
                 if self.conf["debug"]:
-                    self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.state.childNodes]))
+                    self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.state.child_nodes]))
 
                 re = -1 if atom == '\n' else self.reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=self.conf)
                 if self.conf['include_filter_result_in_reward']:
