@@ -264,20 +264,8 @@ class MCTS:
         self.start_time = cp_obj['start_time']
         self.rootnode = cp_obj['rootnode']
         self.conf = cp_obj['conf']
-        self.val = cp_obj['val']
-        self.reward_calculator = cp_obj['reward_calculator']
-        self.policy_evaluator = cp_obj['policy_evaluator']
-        self.valid_smiles_list = cp_obj['valid_smiles_list']
-        self.depth_list = cp_obj['depth_list']
-        self.objective_values_list = cp_obj['objective_values_list']
-        self.reward_values_list = cp_obj['reward_values_list']
-        self.elapsed_time_list = cp_obj['elapsed_time_list']
         self.generated_dict = cp_obj['generated_dict']
-        self.generated_id_list = cp_obj['generated_id_list']
-        self.filter_check_list = cp_obj['filter_check_list']
         self.total_valid_num = cp_obj['total_valid_num']
-        self.obj_column_names = cp_obj['obj_column_names']
-        self.output_path = cp_obj['output_path']
 
 
     def save_checkpoint(self):
@@ -299,21 +287,9 @@ class MCTS:
             'expanded_before': self.expanded_before,
             'start_time': self.start_time, 
             'conf': self.conf, 
-            'val': self.val,
-            'reward_calculator': self.reward_calculator,
-            'policy_evaluator': self.policy_evaluator,
             'rootnode': self.rootnode,
-            'valid_smiles_list': self.valid_smiles_list,
-            'depth_list': self.depth_list,
-            'objective_values_list': self.objective_values_list, 
-            'reward_values_list': self.reward_values_list,
-            'elapsed_time_list': self.elapsed_time_list,
             'generated_dict': self.generated_dict,
-            'generated_id_list': self.generated_id_list, 
-            'filter_check_list': self.filter_check_list,
             'total_valid_num': self.total_valid_num,
-            'obj_column_names': self.obj_column_names,
-            'output_path': self.output_path
         }
         
         with open(ckpt_path, mode='wb') as f:
