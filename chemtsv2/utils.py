@@ -10,7 +10,7 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem.MolStandardize import rdMolStandardize
 
-from misc.manage_qsub_parallel import run_qsub_parallel
+from chemtsv2.misc.manage_qsub_parallel import run_qsub_parallel
 
 
 def calc_execution_time(f):

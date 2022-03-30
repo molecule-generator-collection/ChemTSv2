@@ -2,6 +2,8 @@ import argparse
 from logging import getLogger, StreamHandler, FileHandler, Formatter, INFO, DEBUG
 from importlib import import_module
 import os
+import sys
+sys.path.append(os.getcwd())
 import pickle
 import re
 import yaml
@@ -9,9 +11,9 @@ import yaml
 from numpy.random import default_rng
 from rdkit import RDLogger
 
-from chemts import MCTS, State
-from utils import loaded_model, get_model_structure_info
-from preprocessing import smi_tokenizer
+from chemtsv2.mcts import MCTS, State
+from chemtsv2.utils import loaded_model, get_model_structure_info
+from chemtsv2.preprocessing import smi_tokenizer
 
 
 def get_parser():
