@@ -1,7 +1,8 @@
 import pprint
-
+import os
 from vina import Vina
 from meeko import MoleculePreparation
+from meeko import PDBQTMolecule
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
@@ -49,13 +50,24 @@ class Vina_reward(Reward):
                 # get the best inter score, because v.energies()[0][1] is not the best inter_score in some case.
                 scores=v.energies()
                 min_inter_score = 1000
-                best_mode = 1
+                best_model = 1
                 for m, ene in enumerate(scores):
                     if ene[1] < min_inter_score:
                         min_inter_score = ene[1]
-                        best_mode = m + 1
+                        best_model = m + 1
+                # save best pose
+                pose_dir = f"{conf['output_dir']}/3D_pose"
+                if not os.path.exists(pose_dir):
+                    os.mkdir(pose_dir)
+                pose_file_name = f"{pose_dir}/mol_{conf['gid']}_3D_pose_{best_model}.pdbqt"
+                v.write_poses(f"{pose_dir}/vina_temp_out.pdbqt", n_poses=conf['vina_n_poses'], overwrite=True)
+                pdbqt_mol = PDBQTMolecule.from_file(f"{pose_dir}/vina_temp_out.pdbqt", skip_typing=True)
+                for pose in pdbqt_mol:
+                    if pose.pose_id == best_model - 1:
+                        pose.write_pdbqt_file(pose_file_name)
+
                 if conf['debug']:
-                    print(f"min_inter_score: {min_inter_score}, best mode is {best_mode}")
+                    print(f"min_inter_score: {min_inter_score}, best pose num is {best_model}")
                 return min_inter_score
             except Exception as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
