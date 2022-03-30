@@ -23,7 +23,7 @@ pip install --upgrade git+https://github.com/molecule-generator-collection/ChemT
 
 ## How to run ChemTS
 
-1. Clone this repository and move into it.
+### 1. Clone this repository and move into it.
 
 ```bash
 git clone git@github.com:molecule-generator-collection/ChemTSv2.git
@@ -32,22 +32,21 @@ cd ChemTSv2
 wget -P data https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/{fpscores.pkl.gz,sascorer.py}
 ```
 
-2. (Optional) Train the RNN model.
+### 2. (Optional) Train the RNN model.
 
 ```bash
 cd train_RNN
 python train_RNN.py -c model_setting.yaml
 ```
 
-If you want to use your trained model, please update `misc.load_model.loaded_model()` based on your model architecture.
+If you want to use your trained model, please update `chemtsv2/misc/load_model:loaded_model` based on your model architecture.
 
-3. (Optional) Create a config file for chemts.
+### 3. (Optional) Create a config file for chemts.
 
 Please refer to the sample file ([config/setting.yaml](config/setting.yaml)).
-
 If you want to pass any value to `calc_reward_from_objective_values` (e.g., weights for each value), add it in the config file.
 
-4. Generate molecules.
+### 4. Generate molecules.
 
 ```bash
 chemtsv2 -c config/setting.yaml
