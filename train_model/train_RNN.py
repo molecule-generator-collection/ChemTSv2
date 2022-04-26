@@ -15,7 +15,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import yaml
 
-sys.path.append("../")
+sys.path.append("../chemtsv2")
 from preprocessing import read_smiles_dataset, tokenize_smiles
 
 
