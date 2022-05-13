@@ -174,10 +174,11 @@ class MCTS:
             nodeadded = []
             for _ in range(self.conf['simulation_num']):
                 nodeadded_tmp = node_to_add(expanded, self.tokens, self.logger)
-                all_posible = chem_kn_simulation(self.model, state.position, self.tokens, nodeadded_tmp, self.conf)
-                new_compound_tmp = build_smiles_from_tokens(all_posible, self.tokens)
                 nodeadded.extend(nodeadded_tmp)
-                new_compound.extend(new_compound_tmp)
+                for n in nodeadded_tmp:
+                    position_tmp = state.position + [n]
+                    all_posible = chem_kn_simulation(self.model, position_tmp, self.tokens, self.conf)
+                    new_compound.append(build_smiles_from_tokens(all_posible, self.tokens))
 
             _gids = list(range(self.gid, self.gid+len(new_compound)))
             self.gid += len(new_compound)

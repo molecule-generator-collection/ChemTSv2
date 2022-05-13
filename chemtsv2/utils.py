@@ -52,38 +52,30 @@ def back_propagation(node, reward):
         node = node.state.parent_node
 
 
-def chem_kn_simulation(model, state, val, added_nodes, conf):
-    all_posible = []
+def chem_kn_simulation(model, state, val, conf):
     end = "\n"
-    for i in range(len(added_nodes)):
-        position = []
-        position.extend(state)
-        position.append(added_nodes[i])
-        get_int = [val.index(position[j]) for j in range(len(position))]
-        x = np.reshape(get_int, (1, len(get_int)))
-        model.reset_states()
+    position = []
+    position.extend(state)
+    get_int = [val.index(position[j]) for j in range(len(position))]
+    x = np.reshape(get_int, (1, len(get_int)))
+    model.reset_states()
 
-        while not get_int[-1] == val.index(end):
-            preds = model.predict_on_batch(x)
-            state_pred = np.squeeze(preds)
-            next_int = conf['random_generator'].choice(range(len(state_pred)), p=state_pred)
-            get_int.append(next_int)
-            x = np.reshape([next_int], (1, 1))
-            if len(get_int) > conf['max_len']:
-                break
-        all_posible.append(get_int)
-    return all_posible
+    while not get_int[-1] == val.index(end):
+        preds = model.predict_on_batch(x)
+        state_pred = np.squeeze(preds)
+        next_int = conf['random_generator'].choice(range(len(state_pred)), p=state_pred)
+        get_int.append(next_int)
+        x = np.reshape([next_int], (1, 1))
+        if len(get_int) > conf['max_len']:
+            break
+    return get_int
 
 
 def build_smiles_from_tokens(all_posible, val):
-    new_compound = []
-    for i in range(len(all_posible)):
-        total_generated = all_posible[i]
-        generate_tokens = [val[total_generated[j]] for j in range(len(total_generated) - 1)]
-        generate_tokens.remove("&")
-        generate_smiles = ''.join(generate_tokens)
-        new_compound.append(generate_smiles)
-    return new_compound
+    total_generated = all_posible
+    generate_tokens = [val[total_generated[j]] for j in range(len(total_generated) - 1)]
+    generate_tokens.remove("&")
+    return ''.join(generate_tokens)
 
 
 def has_passed_through_filters(smiles, conf, logger):
