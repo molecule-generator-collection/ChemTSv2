@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pickle
 
-from chemtsv2.utils import chem_kn_simulation, make_input_smiles, predict_smiles, \
+from chemtsv2.utils import chem_kn_simulation, build_smiles_from_tokens,\
     evaluate_node, node_to_add, expanded_node, back_propagation
 
 
@@ -175,8 +175,7 @@ class MCTS:
             for _ in range(self.conf['simulation_num']):
                 nodeadded_tmp = node_to_add(expanded, self.tokens, self.logger)
                 all_posible = chem_kn_simulation(self.model, state.position, self.tokens, nodeadded_tmp, self.conf)
-                generate_smiles = predict_smiles(all_posible, self.tokens)
-                new_compound_tmp = make_input_smiles(generate_smiles)
+                new_compound_tmp = build_smiles_from_tokens(all_posible, self.tokens)
                 nodeadded.extend(nodeadded_tmp)
                 new_compound.extend(new_compound_tmp)
 
