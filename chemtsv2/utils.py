@@ -78,7 +78,7 @@ def build_smiles_from_tokens(all_posible, val):
     return ''.join(generate_tokens)
 
 
-def has_passed_through_filters(smiles, conf, logger):
+def has_passed_through_filters(smiles, conf):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:  # default check
         return False
@@ -178,7 +178,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
             filter_check_list.append(generated_dict[new_compound[i]][1])
             continue
 
-        if has_passed_through_filters(new_compound[i], conf, logger):
+        if has_passed_through_filters(new_compound[i], conf):
             filter_check_value = 1
             filter_check_list.append(filter_check_value)
         else:
