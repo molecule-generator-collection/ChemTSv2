@@ -1,8 +1,12 @@
 trial: 1
 c_val: 1.0
-hours: 0.01
+# threshold_type: [time, generation_num]
+threshold_type: generation_num
+# hours: 0.01
+generation_num: 300
 expansion_threshold: 0.995
 simulation_num: 3
+flush_threshold: -1
 
 use_lipinski_filter: True
 lipinski_filter:
@@ -43,8 +47,9 @@ token: model/tokens.pkl
 # Set the scaling functions and weights for each objective.
 # When using min_gauss or max_gauss, set the gaussian parameters alpha, mu, and sigma.
 # When using minmax, set the maximum and minimum values.
+# When using rectangular, set the minimum and maximum desirable values.
 Dscore_parameters:
-  EGFR: {type: max_gauss, alpha: 1, mu: 8, sigma: 2, weight: 1}
+  EGFR: {type: max_gauss, alpha: 1, mu: 9, sigma: 2, weight: 8}
   BACE1: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   ERBB2: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   ABL: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
@@ -55,9 +60,12 @@ Dscore_parameters:
   FGFR1: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   EPHB4: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   Solubility: {type: max_gauss, alpha: 1, mu: -2, sigma: 0.6, weight: 1}
-  Permeability: {type: max_gauss, alpha: 1, mu: -4.5, sigma: 0.5, weight: 1}
+  Permeability: {type: max_gauss, alpha: 1, mu: 1, sigma: 1, weight: 1}
+  Metabolic_stability: {type: max_gauss, alpha: 1, mu: 75, sigma: 20, weight: 1}
   Toxicity: {type: min_gauss, alpha: 1, mu: 5.5, sigma: 0.5, weight: 1}
   # SAscore is made negative when scaling because a smaller value is more desirable.
-  SAscore: {type: minmax, min: -10, max: -1, weight: 1}
-  # Since QED is a value between 0 and 1, there is no need to scale it.
-  QED: {type: identity, weight: 1}
+  SAscore: {type: max_gauss, alpha: 1, mu: -3, sigma: 2, weight: 1}
+  QED: {type: max_gauss, alpha: 1, mu: 0.8, sigma: 0.25, weight: 1}
+  molecular_weight: {type: rectangular, min: 200, max: 600, weight: 1}
+  tox_alert: {type: identity, weight: 1}
+  has_chembl_substruct: {type: identity, weight: 1}
