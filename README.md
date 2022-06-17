@@ -69,17 +69,11 @@ In this case, you need to put the atom you want to extend at the end of the stri
 chemtsv2 -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ```
 
-### Usage of AutoDock Vina as reward function
+## Usage examples
 
-1. Install Vina.
+### [Multiobjective optimization using Dscore](./doc/multiobjective_optimization_using_dscore.md)
 
-```bash
-pip install vina
-pip install meeko 
-```
-
-2. Examples of a reward function using Vina and a setting file are prepared as `reward/Vina_reward.py` and `config/setting_vina.yaml`.
-
+### [AutoDock Vina as reward function](./doc/autodock_vina.md)
 
 ## For developer
 
