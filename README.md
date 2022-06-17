@@ -71,9 +71,9 @@ chemtsv2 -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 
 ## Usage examples
 
-### [Multiobjective optimization using Dscore](./doc/multiobjective_optimization_using_dscore.md)
+### 1. [Multiobjective optimization using Dscore](./doc/multiobjective_optimization_using_dscore.md)
 
-### [AutoDock Vina as reward function](./doc/autodock_vina.md)
+### 2. [AutoDock Vina as reward function](./doc/autodock_vina.md)
 
 ## For developer
 
