@@ -28,8 +28,6 @@ pip install --upgrade git+https://github.com/molecule-generator-collection/ChemT
 ```bash
 git clone git@github.com:molecule-generator-collection/ChemTSv2.git
 cd ChemTSv2
-# If you use SAScore filter, please retrieve files for SAscore calculations
-wget -P data https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/{fpscores.pkl.gz,sascorer.py}
 ```
 
 ### 2. (Optional) Train the RNN model.

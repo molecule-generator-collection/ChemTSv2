@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.getcwd())
 import pickle
 import re
+import requests
 import yaml
 
 from numpy.random import default_rng
@@ -148,6 +149,16 @@ def main():
     if args.debug:
         conf['fix_random_seed'] = True
 
+    # download additional data if files don't exist
+    if not os.path.exists('data/sascorer.py'):
+        url = 'https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/sascorer.py'
+        with open('data/sascorer.py', 'w') as f:
+            f.write(requests.get(url).text)
+    if not os.path.exists('data/fpscores.pkl.gz'):
+        url = 'https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/fpscores.pkl.gz'
+        with open('data/fpscores.pkl.gz', 'wb') as f:
+            f.write(requests.get(url).content)
+    
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs["reward_module"]), rs["reward_class"])
     ps = conf['policy_setting']
