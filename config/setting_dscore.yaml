@@ -50,7 +50,6 @@ token: model/tokens.pkl
 # When using rectangular, set the minimum and maximum desirable values.
 Dscore_parameters:
   EGFR: {type: max_gauss, alpha: 1, mu: 9, sigma: 2, weight: 8}
-  BACE1: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   ERBB2: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   ABL: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
   SRC: {type: min_gauss, alpha: 1, mu: 2, sigma: 2, weight: 1}
