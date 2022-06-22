@@ -6,8 +6,8 @@ This document describes how to perform multiobjective optimization using Dscore,
 
 ```
 @article{Yoshizawa2022,
-  doi = {10.26434/chemrxiv-2022-hcxx4},
-  url = {https://doi.org/10.26434/chemrxiv-2022-hcxx4},
+  doi = {10.26434/chemrxiv-2022-hcxx4-v2},
+  url = {https://doi.org/10.26434/chemrxiv-2022-hcxx4-v2},
   year = {2022},
   month = jun,
   publisher = {American Chemical Society ({ACS})},
