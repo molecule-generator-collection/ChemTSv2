@@ -12,7 +12,8 @@ INSTALL_REQUIRES = [
     'rdkit-pypi==2021.03.5',
     'matplotlib',
     'pyyaml',
-    'pandas']
+    'pandas',
+    'joblib']
 PACKAGES = [
     'chemtsv2',
     'chemtsv2.misc']

@@ -110,6 +110,7 @@ def set_default_config(conf):
     conf.setdefault('token', 'model/tokens.pkl')
 
     conf.setdefault('leaf_parallel', False)
+    conf.setdefault('leaf_parallel_num', 4)
     conf.setdefault('qsub_parallel', False)
     
     conf.setdefault('save_checkpoint', False)

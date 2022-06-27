@@ -12,6 +12,7 @@ This repository is a refined and extended version of [ChemTS[1]](https://www.tan
 4. matplotlib
 5. pyyaml
 6. pandas
+7. joblib
 
 ### How to setup (example)
 

@@ -4,6 +4,7 @@ import itertools
 import sys
 import time
 
+import joblib
 from tensorflow.keras.models import Sequential, model_from_json
 from tensorflow.keras.layers import Dense, Embedding, GRU
 import numpy as np
@@ -201,15 +202,19 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         valid_filter_check_value_list.append(filter_check_value)
     
     #calculation rewards of valid molecules
+    def _get_objective_values(mol, conf):
+        return [f(mol) for f in reward_calculator.get_objective_functions(conf)]
+
     if conf['leaf_parallel']:
         if conf['qsub_parallel']:
             if len(valid_mol_list) > 0:
                 values_list = run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list)
         else:
-            #standard parallelization
-            pass
+            # standard parallelization
+            values_list = joblib.Parallel(n_jobs=conf['leaf_parallel_num'])(
+                joblib.delayed(_get_objective_values)(m, c) for m, c in zip(valid_mol_list, valid_conf_list))
     else:
-        values_list = [[f(mol) for f in reward_calculator.get_objective_functions(conf)] for mol, conf in zip(valid_mol_list, valid_conf_list)]
+        values_list = [_get_objective_values(m, c) for m, c in zip(valid_mol_list, valid_conf_list)]
 
     #record values and other data
     for i in range(len(valid_mol_list)):
