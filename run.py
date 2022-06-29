@@ -104,6 +104,7 @@ def set_default_config(conf):
     conf.setdefault('reward_setting', {
         'reward_module': 'reward.logP_reward',
         'reward_class': 'LogP_reward'})
+    conf.setdefault('batch_reward_calculation', False)
     conf.setdefault('policy_setting', {
         'policy_module': 'policy.ucb1',
         'policy_class': 'Ucb1'})

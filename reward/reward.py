@@ -14,3 +14,14 @@ class Reward(ABC):
     @abstractmethod
     def calc_reward_from_objective_values(values: List[float], conf: dict) -> float:
         raise NotImplementedError('Please check your reward file')
+
+class BatchReward(ABC):
+    @staticmethod
+    @abstractmethod
+    def get_batch_objective_functions() -> List[Callable[[List[Mol], List[dict]], float]]:
+        raise NotImplementedError('Please check your reward file')
+    
+    @staticmethod
+    @abstractmethod
+    def calc_reward_from_objective_values(values: List[float], conf: dict) -> float:
+        raise NotImplementedError('Please check your reward file')

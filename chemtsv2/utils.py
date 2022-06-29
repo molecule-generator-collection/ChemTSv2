@@ -213,6 +213,9 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
             # standard parallelization
             values_list = joblib.Parallel(n_jobs=conf['leaf_parallel_num'])(
                 joblib.delayed(_get_objective_values)(m, c) for m, c in zip(valid_mol_list, valid_conf_list))
+    elif conf['batch_reward_calculation']:
+        values_list = [f(valid_mol_list, valid_conf_list) for f in reward_calculator.get_batch_objective_functions()]
+        values_list = np.array(values_list).T.tolist()
     else:
         values_list = [_get_objective_values(m, c) for m, c in zip(valid_mol_list, valid_conf_list)]
 

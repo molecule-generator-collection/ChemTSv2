@@ -85,8 +85,11 @@ class MCTS:
         self.generated_id_list = []
         self.filter_check_list = []
         self.total_valid_num = 0
-
-        self.obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
+        
+        if conf['batch_reward_calculation']:
+            self.obj_column_names = [f.__name__ for f in self.reward_calculator.get_batch_objective_functions()]
+        else:
+            self.obj_column_names = [f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)]
         self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.csv")
         if os.path.exists(self.output_path) and not conf['restart']:
             sys.exit(f"[ERROR] {self.output_path} already exists. Please specify a different file name.")
