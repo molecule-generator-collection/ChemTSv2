@@ -41,11 +41,13 @@ policy_setting:
   policy_class: Ucb1
 token: model/tokens_chembl220k.pkl
 
-vina_bin_path: /home/app/autodock_vina_1_1_2_linux_x86/bin/vina
+vina_bin_path: /home/app/vina_1.2.3_linux_x86_64
+vina_sf_name: vina
 vina_cpus: 8
 vina_receptor: data/1iep_receptor.pdbqt
 vina_center: [15.190, 53.903, 16.917]
 vina_box_size: [20, 20, 20]
+vina_spacing: 0.375
 vina_exhaustiveness: 32
 vina_num_modes: 9
 vina_energy_range: 3

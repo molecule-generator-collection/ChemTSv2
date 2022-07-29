@@ -15,6 +15,7 @@ from reward.reward import Reward
 class Vina_reward(Reward):
     def get_objective_functions(conf):
         def VinaScore(mol):
+            verbosity = 1 if conf['debug'] else 0
             temp_dir = tempfile.mkdtemp()
             temp_ligand_fname = os.path.join(temp_dir, 'ligand_temp.pdbqt')
             pose_dir = os.path.join(conf['output_dir'], "3D_pose")
@@ -43,9 +44,13 @@ class Vina_reward(Reward):
                 '--size_z', str(conf['vina_box_size'][2]),
                 '--cpu', str(conf['vina_cpus']),
                 '--exhaustiveness', str(conf['vina_exhaustiveness']),
+                '--max_evals', str(conf['vina_max_evals']),
                 '--num_modes', str(conf['vina_num_modes']),
+                '--min_rmsd', str(conf['vina_min_rmsd']),
                 '--energy_range', str(conf['vina_energy_range']),
-                '--out', output_ligand_fname]
+                '--out', output_ligand_fname,
+                '--spacing', str(conf['vina_spacing']),
+                '--verbosity', str(verbosity)]
             if conf['debug']:
                 print(cmd)
             try:
