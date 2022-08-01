@@ -61,7 +61,6 @@ def get_logger(level, save_dir):
 
 
 def set_default_config(conf):
-    conf.setdefault('trial', 1)
     conf.setdefault('c_val', 1.0)
     conf.setdefault('threshold_type', 'time')
     conf.setdefault('hours', 1) 

@@ -1,4 +1,3 @@
-trial: 1
 c_val: 0.2
 # threshold_type: [time, generation_num]
 threshold_type: time
