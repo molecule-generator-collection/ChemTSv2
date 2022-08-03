@@ -21,10 +21,18 @@ class Vina_reward(Reward):
             pose_dir = os.path.join(conf['output_dir'], "3D_pose")
             os.makedirs(pose_dir, exist_ok=True)
             output_ligand_fname = os.path.join(pose_dir, f"mol_{conf['gid']}_out.pdbqt")
-    
+
             mol = Chem.AddHs(mol)
             AllChem.EmbedMolecule(mol)
-            mol_conf = mol.GetConformer(-1)
+            try:
+                mol_conf = mol.GetConformer(-1)
+            except ValueError as e:
+                print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
+                print(e) 
+                if not conf['debug']:
+                    shutil.rmtree(temp_dir)
+                return None
+
             centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
             tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
             for i, p in enumerate(mol_conf.GetPositions()):
