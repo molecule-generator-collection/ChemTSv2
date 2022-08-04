@@ -144,13 +144,13 @@ def loaded_model(model_weight, logger, conf):
 def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger, gids):
     node_index = []
     valid_compound = []
-    objective_values_list = []
     generated_ids = []
     filter_check_list = []
 
     valid_conf_list = []
     valid_mol_list = []
     valid_filter_check_value_list = []
+    dup_compound_info = {}
 
     #check valid smiles
     for i in range(len(new_compound)):
@@ -172,11 +172,11 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
             new_compound[i] = Chem.MolToSmiles(mol)
 
         if new_compound[i] in generated_dict:
-            node_index.append(i)
-            valid_compound.append(new_compound[i])
-            objective_values_list.append(generated_dict[new_compound[i]][0])
-            generated_ids.append(gids[i])
-            filter_check_list.append(generated_dict[new_compound[i]][1])
+            dup_compound_info[i] = {
+                'valid_compound': new_compound[i],
+                'objective_values': generated_dict[new_compound[i]][0], 
+                'generated_id': gids[i],
+                'filter_check': generated_dict[new_compound[i]][1]}
             continue
 
         if has_passed_through_filters(new_compound[i], conf):
@@ -188,8 +188,6 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
                 filter_check_list.append(filter_check_value)
             else:
                 continue
-        
-        
 
         _conf = copy.deepcopy(conf)
         _conf['gid'] = gids[i]
@@ -223,9 +221,15 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     for i in range(len(valid_mol_list)):
         values = values_list[i]
         filter_check_value = valid_filter_check_value_list[i]
-        objective_values_list.append(values)
         generated_dict[valid_compound[i]] = [values, filter_check_value]
+    # add duplicate compounds' data if duplicated compounds are generated
+    for k, v in sorted(dup_compound_info.items()):
+        node_index.append(k)
+        valid_compound.append(v['valid_compound'])
+        generated_ids.append(v['generated_id'])
+        values_list.append(v['objective_values'])
+        filter_check_list.append(v['filter_check'])
 
     logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
-    return node_index, objective_values_list, valid_compound, generated_ids, filter_check_list
+    return node_index, values_list, valid_compound, generated_ids, filter_check_list
