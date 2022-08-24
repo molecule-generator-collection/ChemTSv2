@@ -84,6 +84,8 @@ def main():
         print(f"{k}: {v}")
     print(f"===================================")
 
+    os.makedirs(conf['output_model_dir'], exist_ok=True)
+
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
     vocabulary, all_smiles = tokenize_smiles(original_smiles)
