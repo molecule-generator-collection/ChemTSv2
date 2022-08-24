@@ -4,7 +4,14 @@
   <img src="https://github.com/molecule-generator-collection/ChemTSv2/blob/master/img/logo.png" width="95%">
 </div>
 
-This repository is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424). The original implementation is available at https://github.com/tsudalab/ChemTS.
+ChemTSv2 is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424).
+The original implementation is available at https://github.com/tsudalab/ChemTS.
+
+It provides:
+
+- easy-to-run interface by using only a configuration file
+- easy-to-define framework for users' any reward function, molecular filter, and tree policy
+- various usage examples in the GitHub repository
 
 [1] X. Yang, J. Zhang, K. Yoshizoe, K. Terayama, and K. Tsuda, "ChemTS: An Efficient Python Library for de novo Molecular Generation", Science and Technology of Advanced Materials, Vol.18, No.1, pp.972-976, 2017.
 
@@ -20,9 +27,9 @@ This repository is a refined and extended version of [ChemTS[1]](https://www.tan
 ### How to setup (example)
 
 ```bash
-conda create -n chemts -c conda-forge python=3.7
-# switch a python virtual environment to `chemts`
-pip install --upgrade git+https://github.com/molecule-generator-collection/ChemTSv2.git
+conda create -n chemtsv2 -c conda-forge python=3.7
+# switch a python virtual environment to `chemtsv2`
+pip install chemtsv2
 ```
 
 ## How to run ChemTSv2
