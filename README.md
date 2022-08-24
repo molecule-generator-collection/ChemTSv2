@@ -1,5 +1,9 @@
 # ChemTSv2
 
+<div align="center">
+  <img src="./img/logo.png" width="60%">
+</div>
+
 This repository is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424). The original implementation is available at https://github.com/tsudalab/ChemTS.
 
 [1] X. Yang, J. Zhang, K. Yoshizoe, K. Terayama, and K. Tsuda, "ChemTS: An Efficient Python Library for de novo Molecular Generation", Science and Technology of Advanced Materials, Vol.18, No.1, pp.972-976, 2017.
@@ -21,7 +25,7 @@ conda create -n chemts -c conda-forge python=3.7
 pip install --upgrade git+https://github.com/molecule-generator-collection/ChemTSv2.git
 ```
 
-## How to run ChemTS
+## How to run ChemTSv2
 
 ### 1. Clone this repository and move into it.
 
@@ -72,21 +76,6 @@ chemtsv2 -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ### 1. [Multiobjective optimization using Dscore](./doc/multiobjective_optimization_using_dscore.md)
 
 ### 2. [AutoDock Vina as reward function](./doc/autodock_vina.md)
-
-## For developer
-
-### How to define your own reward function
-
-This ChemTS frexibly accept user-defined reward function.
-You only need to define two functions: `calc_objective_values()` and `calc_reward_from_objective_values()`.
-If you want to use your own reward function, follow the instructions below and refer to `reward/Jscore_reward.py`.
-
-1. Create a python file in `reward` (e.g., `reward/logP_reward.py`).
-2. Define `get_objective_functions(conf: Dict[Any]) -> List[func]` and `calc_reward_from_objective_values(values: List[float], conf: Dict[Any]) -> float`.  
-   1. `get_objective_functions()` takes an config dict as an input and returns raw objective values in the format of `List`.  
-   2. `calc_reward_from_objective_values()` takes the objective values and config dict as `List` and `Dict` types, respectively, and return a `float` value.  
-3. Set `reward_calculator` to a dot path of the created file (e.g., reward.logP_reward).
-4. Run ChemTS (e.g, python run_chemts.py -c `PATH_TO_YOUR_CONFIG_FILE`).
 
 ## License
 
