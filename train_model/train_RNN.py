@@ -52,10 +52,10 @@ def save_model(model, output_dir):
 
     with open(output_json, "w") as json_file:
         json_file.write(model_json)
-    print(f"Saved model structure to {output_json}")
+    print(f"[INFO] Save a model structure to {output_json}")
 
     model.save_weights(output_weight)
-    print(f"Saved model weights to {output_weight}")
+    print(f"[INFO] Save model weights to {output_weight}")
 
 
 def update_config(conf):
@@ -89,7 +89,7 @@ def main():
     vocabulary, all_smiles = tokenize_smiles(original_smiles)
     with open(conf['output_token'], 'wb') as f:
         pickle.dump(vocabulary, f)
-    print(f"Saved tokens to {conf['output_token']}")
+    print(f"[INFO] Save generated tokens to {conf['output_token']}")
         
     print(f"vocabulary:\n{vocabulary}\n"
           f"size of SMILES list: {len(all_smiles)}")
@@ -140,7 +140,7 @@ def main():
         validation_split=conf['validation_split'],
         shuffle=True,)
     save_model(model, conf["output_model_dir"])
-    print(f"Save a training log to {log_path}")
+    print(f"[INFO] Save a training log to {log_path}")
 
 
 if __name__ == "__main__":
