@@ -10,9 +10,6 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing import sequence
 from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint
 import numpy as np
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
 import yaml
 
 sys.path.append("../chemtsv2")
@@ -75,21 +72,6 @@ def update_config(conf):
     conf.setdefault('maxlen', 82)
 
 
-def plot_training_curve(result, conf):
-    fname = f"learning_curve_GRU_{os.path.basename(conf['dataset']).split('.')[0]}_units{conf['units']}_dropout{conf['dropout_rate']}_recDP{conf['rec_dropout_rate']}_lr{conf['learning_rate']}_batchsize{conf['batch_size']}.png"
-    plt.plot(range(1, len(result.history['accuracy']) + 1), result.history['accuracy'], label="training")
-    plt.plot(range(1, len(result.history['val_accuracy']) + 1), result.history['val_accuracy'], label="validation")
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.savefig(
-        fname,
-        dpi=300,
-        bbox_inches='tight', 
-        pad_inches=0,)
-    print(f"Training curve was saved to {fname}")
-
-
 def main():
     args = get_parser()
     
@@ -125,7 +107,7 @@ def main():
     model.add(TimeDistributed(Dense(len(vocabulary), activation='softmax')))
     model.summary()
     # Create callbacks
-    log_path = os.path.join(conf['output_model_dir'], "train.log")
+    log_path = os.path.join(conf['output_model_dir'], "training_log.csv")
     logger = CSVLogger(log_path)
     early_stopping = EarlyStopping(
         monitor="val_accuracy",
@@ -148,7 +130,7 @@ def main():
         metrics=['accuracy'],)
 
     # Training
-    result = model.fit(
+    _ = model.fit(
         X, 
         y_train_one_hot,
         batch_size=conf['batch_size'],
@@ -158,7 +140,7 @@ def main():
         validation_split=conf['validation_split'],
         shuffle=True,)
     save_model(model, conf["output_model_dir"])
-    plot_training_curve(result, conf)
+    print(f"Save a training log to {log_path}")
 
 
 if __name__ == "__main__":

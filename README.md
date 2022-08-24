@@ -9,10 +9,9 @@ This repository is a refined and extended version of [ChemTS[1]](https://www.tan
 1. python: 3.7
 2. rdkit: 2021.03.5
 3. tensorflow: 2.5.0
-4. matplotlib
-5. pyyaml
-6. pandas
-7. joblib
+4. pyyaml
+5. pandas
+6. joblib
 
 ### How to setup (example)
 

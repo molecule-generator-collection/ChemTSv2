@@ -10,7 +10,6 @@ shutil.copyfile(f"{path}/run.py", f"{path}/chemtsv2/run.py")
 INSTALL_REQUIRES = [
     'tensorflow==2.5',
     'rdkit-pypi==2021.03.5',
-    'matplotlib',
     'pyyaml',
     'pandas',
     'joblib']
