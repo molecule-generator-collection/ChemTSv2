@@ -1,7 +1,7 @@
 # ChemTSv2
 
 <div align="center">
-  <img src="./img/logo.png" width="80%">
+  <img src="./img/logo.png" width="95%">
 </div>
 
 This repository is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424). The original implementation is available at https://github.com/tsudalab/ChemTS.
