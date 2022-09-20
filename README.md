@@ -27,8 +27,9 @@ It provides:
 ### How to setup (example)
 
 ```bash
-conda create -n chemtsv2 -c conda-forge python=3.7
-# switch a python virtual environment to `chemtsv2`
+cd YOUR_WORKSPACE
+python3.7 -m venv .venv
+source .venv/bin/activate
 pip install chemtsv2
 ```
 
