@@ -1,0 +1,37 @@
+c_val: 1.0
+hours: 0.02
+output_dir: result/example_mp01
+token: model/tokens.pkl
+search_type: MP_MCTS
+
+model_json: model/model.tf25.json
+model_weight: model/model.tf25.best.ckpt.h5
+
+reward_setting: 
+  reward_module: reward.logP_reward
+  reward_class: LogP_reward
+
+use_lipinski_filter: True
+lipinski_filter:
+  module: filter.lipinski_filter
+  class: LipinskiFilter
+  type: rule_of_5
+use_radical_filter: True
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
+use_hashimoto_filter: True
+hashimoto_filter:
+  module: filter.hashimoto_filter
+  class: HashimotoFilter
+use_sascore_filter: True
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 3.5
+use_ring_size_filter: True
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  threshold: 6
+
