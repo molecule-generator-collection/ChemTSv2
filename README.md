@@ -33,7 +33,7 @@ It provides:
 cd YOUR_WORKSPACE
 python3.7 -m venv .venv
 source .venv/bin/activate
-pip install chemtsv2
+pip install --upgrade chemtsv2
 ```
 
 ### Case 2: ChemTSv2 with massive parallel mode
@@ -49,7 +49,7 @@ If you can use/prepare a server with MPI environment, please follow the (a) inst
 cd YOUR_WORKSPACE
 python3.7 -m venv .venv
 source .venv/bin/activate
-pip install chemtsv2
+pip install --upgrade chemtsv2
 pip install mpi4py==3.0.3
 ```
 
@@ -59,7 +59,7 @@ pip install mpi4py==3.0.3
 conda create -n mpchem python=3.7
 conda install -c conda-forge openmpi cxx-compiler mpi mpi4py=3.0.3
 # swith to the `mpchem` environment
-pip install chemtsv2
+pip install --upgrade chemtsv2
 ```
 
 ## How to run ChemTSv2
