@@ -18,6 +18,7 @@ from setuptools import setup
 
 path = os.path.dirname(os.path.abspath(__file__))
 shutil.copyfile(f"{path}/run.py", f"{path}/chemtsv2/run.py")
+shutil.copyfile(f"{path}/run_mp.py", f"{path}/chemtsv2/run_mp.py")
 
 DOCLINES = (__doc__ or '').split('\n')
 INSTALL_REQUIRES = [
@@ -35,7 +36,9 @@ CLASSIFIERS = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"]
 CONSOLE_SCRIPTS = [
-    "chemtsv2 = chemtsv2.run:main"]
+    "chemtsv2 = chemtsv2.run:main",
+    "chemtsv2-mp = chemtsv2.run_mp:main"
+    ]
 
 setup(
     name="chemtsv2",
@@ -48,7 +51,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT LIcense",
     url="https://github.com/molecule-generator-collection/ChemTSv2",
-    version="0.8.1",
+    version="0.9.0",
     download_url="https://github.com/molecule-generator-collection/ChemTSv2",
     python_requires=">=3.7",
     install_requires=INSTALL_REQUIRES,
