@@ -24,6 +24,7 @@ DOCLINES = (__doc__ or '').split('\n')
 INSTALL_REQUIRES = [
     'tensorflow==2.5',
     'numpy~=1.19.2',
+    'protobuf~=3.9.2',
     'rdkit-pypi==2021.03.5',
     'pyyaml',
     'pandas',
