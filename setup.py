@@ -23,6 +23,7 @@ shutil.copyfile(f"{path}/run_mp.py", f"{path}/chemtsv2/run_mp.py")
 DOCLINES = (__doc__ or '').split('\n')
 INSTALL_REQUIRES = [
     'tensorflow==2.5',
+    'numpy~=1.19',
     'rdkit-pypi==2021.03.5',
     'pyyaml',
     'pandas',
