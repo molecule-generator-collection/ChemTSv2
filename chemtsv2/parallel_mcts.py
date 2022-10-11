@@ -102,7 +102,7 @@ class Tree_Node():
     def simulation(self, chem_model, state, gen_id, generated_dict):
         filter_flag = 0
 
-        self.conf['gen_id'] = gen_id
+        self.conf['gid'] = gen_id
         all_posible = chem_kn_simulation(chem_model, state, self.val, self.conf)
         smi = build_smiles_from_tokens(all_posible, self.val)
 
