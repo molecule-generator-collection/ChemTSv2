@@ -53,7 +53,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT LIcense",
     url="https://github.com/molecule-generator-collection/ChemTSv2",
-    version="0.9.1",
+    version="0.9.2",
     download_url="https://github.com/molecule-generator-collection/ChemTSv2",
     python_requires=">=3.7",
     install_requires=INSTALL_REQUIRES,
