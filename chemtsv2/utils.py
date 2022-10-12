@@ -198,6 +198,9 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         valid_conf_list.append(_conf)
         valid_mol_list.append(mol)
         valid_filter_check_value_list.append(filter_check_value)
+
+    if len(valid_mol_list) == 0: 
+        return [], [], [], [], []
     
     #calculation rewards of valid molecules
     def _get_objective_values(mol, conf):

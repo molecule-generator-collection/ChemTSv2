@@ -193,6 +193,10 @@ class MCTS:
                 self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
             node_index, objective_values, valid_smiles, generated_id_list, filter_check_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
+            if len(valid_smiles) == 0:
+                back_propagation(node, reward=-1.0)
+                continue
+
             valid_num = len(valid_smiles)
             self.total_valid_num += valid_num
             self.valid_smiles_list.extend(valid_smiles)
@@ -206,10 +210,6 @@ class MCTS:
 
             self.logger.info(f"Number of valid SMILES: {self.total_valid_num}")
             self.logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
-
-            if len(node_index) == 0:
-                back_propagation(node, reward=-1.0)
-                continue
 
             re_list = []
             atom_checked = []
