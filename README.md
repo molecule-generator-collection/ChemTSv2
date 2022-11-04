@@ -57,8 +57,8 @@ pip install mpi4py==3.0.3
 
 ```bash
 conda create -n mpchem python=3.7
-conda install -c conda-forge openmpi cxx-compiler mpi mpi4py=3.0.3
 # swith to the `mpchem` environment
+conda install -c conda-forge openmpi cxx-compiler mpi mpi4py=3.0.3
 pip install --upgrade chemtsv2
 ```
 
