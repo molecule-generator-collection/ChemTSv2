@@ -4,8 +4,8 @@
   <img src="https://github.com/molecule-generator-collection/ChemTSv2/blob/master/img/logo.png" width="95%">
 </div>
 
-ChemTSv2 is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424).
-The original implementation is available at https://github.com/tsudalab/ChemTS.
+ChemTSv2 is a refined and extended version of [ChemTS[1]](https://www.tandfonline.com/doi/full/10.1080/14686996.2017.1401424) and [MPChemTS[2]](https://openreview.net/forum?id=6k7VdojAIK).
+The original implementation is available at https://github.com/tsudalab/ChemTS and https://github.com/yoshizoe/mp-chemts.
 
 It provides:
 
@@ -13,7 +13,9 @@ It provides:
 - easy-to-define framework for users' any reward function, molecular filter, and tree policy
 - various usage examples in the GitHub repository
 
-[1] X. Yang, J. Zhang, K. Yoshizoe, K. Terayama, and K. Tsuda, "ChemTS: An Efficient Python Library for de novo Molecular Generation", Science and Technology of Advanced Materials, Vol.18, No.1, pp.972-976, 2017.
+[1] X. Yang, J. Zhang, K. Yoshizoe, K. Terayama, and K. Tsuda, "ChemTS: An Efficient Python Library for de novo Molecular Generation", Science and Technology of Advanced Materials, Vol.18, No.1, pp.972-976, 2017. 
+
+[2] X. Yang, T. Aasawat, and K. Yoshizoe, "Practical Massively Parallel Monte-Carlo Tree Search Applied to Molecular Design", International Conference on Learning Representations, 2021.
 
 ## Requirements
 
