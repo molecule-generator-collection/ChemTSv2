@@ -151,7 +151,7 @@ class MCTS:
             self.logger.info(f"state position: {state.position}")
 
             self.logger.debug(f"infinite loop counter (selection): {self.loop_counter_for_selection}")
-            if len(state.position) >= 70 or node.position == '\n':
+            if node.position == '\n':
                 back_propagation(node, reward=-1.0)
                 self.loop_counter_for_selection += 1
                 if self.loop_counter_for_selection > self.conf['infinite_loop_threshold_for_selection']:
