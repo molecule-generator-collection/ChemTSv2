@@ -348,7 +348,7 @@ class p_mcts:
                             else:
                                 score = -1
                                 # backpropagation on local memory
-                                node.update_local_node(node, score)
+                                node.update_local_node(score)
                                 self.hsm.insert(Item(node.state, node))
                                 _, dest = self.hsm.hashing(node.state[0:-1])
                                 self.send_backprop(node, dest)
@@ -507,7 +507,7 @@ class p_mcts:
                                 self.send_backprop(node, dest)
                             else:
                                 score = -1
-                                node.update_local_node(node, score)
+                                node.update_local_node(score)
                                 info_table = backtrack_tdsdfuct(
                                     info_table, score)
                                 self.hsm.insert(Item(node.state, node))
@@ -679,7 +679,7 @@ class p_mcts:
                                 self.send_backprop(node, dest)
                             else:
                                 score = -1
-                                node.update_local_node(node, score)
+                                node.update_local_node(score)
                                 self.hsm.insert(Item(node.state, node))
                                 _, dest = self.hsm.hashing(node.state[0:-1])
                                 self.send_backprop(node, dest)
