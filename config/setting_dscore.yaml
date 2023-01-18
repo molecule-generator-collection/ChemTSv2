@@ -2,7 +2,7 @@ c_val: 1.0
 # threshold_type: [time, generation_num]
 threshold_type: generation_num
 # hours: 0.01
-generation_num: 300
+generation_num: 300000
 expansion_threshold: 0.995
 simulation_num: 3
 flush_threshold: -1
@@ -30,11 +30,16 @@ ring_size_filter:
   module: filter.ring_size_filter
   class: RingSizeFilter
   threshold: 6
+use_pains_filter: True
+pains_filter:
+  module: filter.pains_filter
+  class: PainsFilter
+  type: [pains_a]
 include_filter_result_in_reward: False
 
 model_json: model/model.tf25.json
 model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result/example01
+output_dir: result/dscore_c10
 reward_setting: 
   reward_module: reward.dscore_reward
   reward_class: Dscore_reward

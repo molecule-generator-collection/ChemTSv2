@@ -95,6 +95,11 @@ def set_default_config(conf):
         'module': 'filter.ring_size_filter',
         'class': 'RingSizeFilter',
         'threshold': 6})
+    conf.setdefault('use_pains_filter', True)
+    conf.setdefault('pains_filter', {
+        'module': 'filter.pains_filter',
+        'class': 'PainsFilter',
+        'type': 'pains_a'})
     conf.setdefault('include_filter_result_in_reward', False)
 
     conf.setdefault('model_json', 'model/model.json')

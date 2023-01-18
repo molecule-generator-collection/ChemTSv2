@@ -27,6 +27,11 @@ ring_size_filter:
   module: filter.ring_size_filter
   class: RingSizeFilter
   threshold: 6
+use_pains_filter: True
+pains_filter:
+  module: filter.pains_filter
+  class: PainsFilter
+  type: [pains_a]
 include_filter_result_in_reward: False
 
 model_json: model/model_chembl220k.tf25.json
