@@ -61,7 +61,7 @@ def get_logger(level, save_dir):
 def set_default_config(conf):
     conf.setdefault('c_val', 1.0)
     conf.setdefault('hours', 0.02) 
-    conf.setdefault('output_dir', 'result/example01')
+    conf.setdefault('output_dir', 'result/example_mp01')
     conf.setdefault('zobrist_hash_seed', 3)
     conf.setdefault('fix_random_seed', False)
     conf.setdefault('token', 'model/tokens.pkl')
@@ -74,34 +74,34 @@ def set_default_config(conf):
 
     conf.setdefault('search_type', 'MP_MCTS')
 
-    conf.setdefault('use_lipinski_filter', True)
+    conf.setdefault('use_lipinski_filter', False)
     conf.setdefault('lipinski_filter', {
         'module': 'filter.lipinski_filter',
         'class': 'LipinskiFilter',
         'type': 'rule_of_5'})
-    conf.setdefault('use_radical_filter', True)
+    conf.setdefault('use_radical_filter', False)
     conf.setdefault('radical_filter', {
         'module': 'filter.radical_filter',
         'class': 'RadicalFilter'})
-    conf.setdefault('use_hashimoto_filter', True) 
+    conf.setdefault('use_hashimoto_filter', False) 
     conf.setdefault('hashimoto_filter', {
         'module': 'filter.hashimoto_filter',
         'class': 'HashimotoFilter'}) 
-    conf.setdefault('use_sascore_filter', True)
+    conf.setdefault('use_sascore_filter', False)
     conf.setdefault('sascore_filter', {
         'module': 'filter.sascore_filter',
         'class': 'SascoreFilter',
         'threshold': 3.5})
-    conf.setdefault('use_ring_size_filter', True)
+    conf.setdefault('use_ring_size_filter', False)
     conf.setdefault('ring_size_filter', {
         'module': 'filter.ring_size_filter',
         'class': 'RingSizeFilter',
         'threshold': 6})
-    conf.setdefault('use_pains_filter', True)
+    conf.setdefault('use_pains_filter', False)
     conf.setdefault('pains_filter', {
         'module': 'filter.pains_filter',
         'class': 'PainsFilter',
-        'type': 'pains_a'})
+        'type': ['pains_a']})
 
     
 def get_filter_modules(conf):

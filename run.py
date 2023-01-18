@@ -72,34 +72,34 @@ def set_default_config(conf):
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)
     conf.setdefault('fix_random_seed', False)
 
-    conf.setdefault('use_lipinski_filter', True)
+    conf.setdefault('use_lipinski_filter', False)
     conf.setdefault('lipinski_filter', {
         'module': 'filter.lipinski_filter',
         'class': 'LipinskiFilter',
         'type': 'rule_of_5'})
-    conf.setdefault('use_radical_filter', True)
+    conf.setdefault('use_radical_filter', False)
     conf.setdefault('radical_filter', {
         'module': 'filter.radical_filter',
         'class': 'RadicalFilter'})
-    conf.setdefault('use_hashimoto_filter', True) 
+    conf.setdefault('use_hashimoto_filter', False) 
     conf.setdefault('hashimoto_filter', {
         'module': 'filter.hashimoto_filter',
         'class': 'HashimotoFilter'}) 
-    conf.setdefault('use_sascore_filter', True)
+    conf.setdefault('use_sascore_filter', False)
     conf.setdefault('sascore_filter', {
         'module': 'filter.sascore_filter',
         'class': 'SascoreFilter',
         'threshold': 3.5})
-    conf.setdefault('use_ring_size_filter', True)
+    conf.setdefault('use_ring_size_filter', False)
     conf.setdefault('ring_size_filter', {
         'module': 'filter.ring_size_filter',
         'class': 'RingSizeFilter',
         'threshold': 6})
-    conf.setdefault('use_pains_filter', True)
+    conf.setdefault('use_pains_filter', False)
     conf.setdefault('pains_filter', {
         'module': 'filter.pains_filter',
         'class': 'PainsFilter',
-        'type': 'pains_a'})
+        'type': ['pains_a']})
     conf.setdefault('include_filter_result_in_reward', False)
 
     conf.setdefault('model_json', 'model/model.json')
