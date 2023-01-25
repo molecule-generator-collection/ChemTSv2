@@ -50,8 +50,9 @@ use_sascore_filter: False
 include_filter_result_in_reward: False
 
 #model and search
-model_json: model/model.tf25.json
-model_weight: model/model.tf25.best.ckpt.h5
+model_setting:
+  model_json: model/model.tf25.json
+  model_weight: model/model.tf25.best.ckpt.h5
 reward_setting: 
   reward_module: reward.IPE_reward
   reward_class: IPE_reward

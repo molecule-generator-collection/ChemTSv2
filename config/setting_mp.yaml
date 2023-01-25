@@ -4,8 +4,9 @@ output_dir: result/example_mp01
 token: model/tokens.pkl
 search_type: MP_MCTS
 
-model_json: model/model.tf25.json
-model_weight: model/model.tf25.best.ckpt.h5
+model_setting:
+  model_json: model/model.tf25.json
+  model_weight: model/model.tf25.best.ckpt.h5
 
 reward_setting: 
   reward_module: reward.logP_reward

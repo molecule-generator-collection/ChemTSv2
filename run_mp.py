@@ -66,8 +66,9 @@ def set_default_config(conf):
     conf.setdefault('fix_random_seed', False)
     conf.setdefault('token', 'model/tokens.pkl')
 
-    conf.setdefault('model_json', 'model.tf25.json')
-    conf.setdefault('model_weight', 'model/model.tf25.best.ckpt.h5')
+    conf.setdefault('model_setting', {
+        'model_json': 'model/model.tf25.json',
+        'model_weight': 'model/model.tf25.best.ckpt.h5'})
     conf.setdefault('reward_setting', {
         'reward_module': 'reward.logP_reward',
         'reward_class': 'LogP_reward'})
@@ -153,7 +154,7 @@ def main():
     with open(conf['token'], 'rb') as f:
         tokens = pickle.load(f)
     conf['token'] = tokens
-    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_json'], logger)
+    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
 
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs['reward_module']), rs['reward_class'])
@@ -169,7 +170,7 @@ def main():
 
     conf['random_generator'] = default_rng(1234) if conf['fix_random_seed'] else default_rng()
 
-    chem_model = loaded_model(conf['model_weight'], logger, conf)
+    chem_model = loaded_model(conf['model_setting']['model_weight'], logger, conf)
 
     logger.info(f'Run MPChemTS [rank {rank}]')
     comm.barrier()

@@ -102,8 +102,9 @@ def set_default_config(conf):
         'type': ['pains_a']})
     conf.setdefault('include_filter_result_in_reward', False)
 
-    conf.setdefault('model_json', 'model/model.json')
-    conf.setdefault('model_weight', 'model/model.h5')
+    conf.setdefault('model_setting', {
+        'model_json': 'model/model.tf25.json',
+        'model_weight': 'model/model.tf25.best.ckpt.h5'})
     conf.setdefault('output_dir', 'result')
     conf.setdefault('reward_setting', {
         'reward_module': 'reward.logP_reward',
@@ -169,8 +170,8 @@ def main():
     reward_calculator = getattr(import_module(rs["reward_module"]), rs["reward_class"])
     ps = conf['policy_setting']
     policy_evaluator = getattr(import_module(ps['policy_module']), ps['policy_class'])
-    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_json'], logger)
-    model = loaded_model(conf['model_weight'], logger, conf)  #WM300 not tested  
+    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
+    model = loaded_model(conf['model_setting']['model_weight'], logger, conf)  #WM300 not tested  
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles

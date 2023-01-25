@@ -44,8 +44,9 @@ pains_filter:
   type: [pains_a]
 include_filter_result_in_reward: False
 
-model_json: model/model.tf25.json
-model_weight: model/model.tf25.best.ckpt.h5
+model_setting:
+  model_json: model/model.tf25.json
+  model_weight: model/model.tf25.best.ckpt.h5
 output_dir: result/restart_example01
 reward_setting: 
   reward_module: reward.logP_reward
