@@ -126,6 +126,28 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 [^9]: Ma, B., Terayama, K., Matsumoto, S., Isaka, Y., Sasakura, Y., Iwata, H., Araki, M., & Okuno, Y. (2021). Structure-Based de Novo Molecular Generator Combined with Artificial Intelligence and Docking Simulations. Journal of Chemical Information and Modeling, 61(7), 3304–3313. https://doi.org/10.1021/acs.jcim.1c00679
 [^10]: Zhang, J., Terayama, K., Sumita, M., Yoshizoe, K., Ito, K., Kikuchi, J., & Tsuda, K. (2020). NMR-TS: de novo molecule identification from NMR spectra. Science and Technology of Advanced Materials, 21(1), 552–561. https://doi.org/10.1080/14686996.2020.1793382
 
+## Support option/function
+
+|Option|Single process|Massive parallel|Description|
+|---|---|---|---|
+|`c_val`|:white_check_mark:|:white_check_mark:|Exploration parameter to balance the trade-off between exploration and exploitation. A larger value (e.g., 1.0) prioritizes exploration, and a smaller value (e.g., 0.1) prioritizes exploitation.|
+|`threshold_type`|:white_check_mark:|:heavy_check_mark:|Threshold type to select how long (`hours`) or how many (`generation_num`) molecule generation to perform. Massive parallel mode currently supports only the how long (`hours`) option.|
+|`hours`|:white_check_mark:|:white_check_mark:|Time for molecule generation in hours|
+|`generation_num`|:white_check_mark:|:white_large_square:|Number of molecules to be generated. Please note that the specified number is usually exceeded.|
+|`expansion_threshold`|:white_check_mark:|:white_large_square:|(Advanced) Expansion threshold of the cumulative probability. The default is set to 0.995.|
+|`simulation_num`|:white_check_mark:|:white_large_square:|(Advanced) Number of rollout runs in one cycle of MCTS. The default is set to 3.|
+|`flush_threshold`|:white_check_mark:|:white_large_square:|Threshold for saving the progress of a molecule generation. If the number of generated molecules exceeds the threshold value, the result is saved. The default is set to -1, and this represents no progress is to be saved.|
+|Molecule filter|:white_check_mark:|:white_check_mark:|Molecule filter to skip reward calculation of unfavorable generated molecules. Please refer to filter/README.md for details.|
+|RNN model replacement|:white_check_mark:|:white_check_mark:|Users can switch RNN models used in expansion and rollout steps of ChemTSv2. The model needs to be trained using Tensorflow. `model_json` specifies the JSON file that contains the architecture of the RNN model, and `model_weight` specifies the file in H5 format that contains a set of the values of the weights.|
+|Reward replacement|:white_check_mark:|:white_check_mark:|Users can use any reward function as long as they follow the reward base class ([reward/reward.py](reward/reward.py)). Please refer to reward/README.md for details.|
+|Policy replacement|:white_check_mark:|:white_large_square:|(Advanced) Users can use any policy function as long as they follow the policy base class ([policy/policy.py](policy/policy.py)). Please refer to policy/README.md for details.|
+|Restart|:beginner:|:white_large_square:|Users can save the checkpoint file and restart from the file. If users want to save a checkpoint file, set `save_checkpoint` to True and specify the file name in `checkpoint_file`. If users want to restart from the checkpoint, set `restart` to True and specify the checkpoint file in `checkpoint_file`.|
+
+- :white_check_mark: indicates that the option/function is supported.
+- :heavy_check_mark: indicates that the option/function is partially supported.
+- :white_large_square: indicates that the option/function is NOT supported.
+- :beginner: indicates that the option/function is beta version.
+
 ## Advanced usege :pushpin:
 
 ### Extend user-specified SMILES
