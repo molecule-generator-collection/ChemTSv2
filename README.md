@@ -84,11 +84,28 @@ cd ChemTSv2
 ```
 
 ### 2. Prepare a reward file
-Please refer to a sample file ([reward/logP_reward.py](reward/logP_reward.py)).
+Please refer to `reward/README.md`.
+An example of reward definition for LogP maximization task is as follows.
+```python
+from rdkit.Chem import Descriptors
+import numpy as np
+from reward.reward import Reward
+
+class LogP_reward(Reward):
+    def get_objective_functions(conf):
+        def LogP(mol):
+            return Descriptors.MolLogP(mol)
+        return [LogP]
+    
+    def calc_reward_from_objective_values(values, conf):
+        return np.tanh(values[0]/10)
+```
 
 ### 3. Prepare a config file
 
-Please refer to a sample file ([config/setting.yaml](config/setting.yaml).) 
+The explanation of options are described in the [Support option/function](#support-optionfunction-pushpin) section. 
+The prepared reward file needs to be specified in `reward_setting`.
+For details, please refer to a sample file ([config/setting.yaml](config/setting.yaml)). 
 If you want to pass any value to `calc_reward_from_objective_values` (e.g., weights for each value), add it in the config file.
 
 ### 4. Generate molecules
@@ -105,7 +122,7 @@ chemtsv2 -c config/setting.yaml
 mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 ```
 
-## Example usages
+## Example usage :pushpin:
 
 |Target|Reward|Config|Additional requirement|Ref.|
 |---|---|---|---|---|
@@ -126,7 +143,7 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 [^9]: Ma, B., Terayama, K., Matsumoto, S., Isaka, Y., Sasakura, Y., Iwata, H., Araki, M., & Okuno, Y. (2021). Structure-Based de Novo Molecular Generator Combined with Artificial Intelligence and Docking Simulations. Journal of Chemical Information and Modeling, 61(7), 3304–3313. https://doi.org/10.1021/acs.jcim.1c00679
 [^10]: Zhang, J., Terayama, K., Sumita, M., Yoshizoe, K., Ito, K., Kikuchi, J., & Tsuda, K. (2020). NMR-TS: de novo molecule identification from NMR spectra. Science and Technology of Advanced Materials, 21(1), 552–561. https://doi.org/10.1080/14686996.2020.1793382
 
-## Support option/function
+## Support option/function :pushpin:
 
 |Option|Single process|Massive parallel|Description|
 |---|---|---|---|
@@ -145,8 +162,8 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 
 - :white_check_mark: indicates that the option/function is supported.
 - :heavy_check_mark: indicates that the option/function is partially supported.
-- :white_large_square: indicates that the option/function is NOT supported.
 - :beginner: indicates that the option/function is beta version.
+- :white_large_square: indicates that the option/function is NOT supported.
 
 ## Advanced usege :pushpin:
 
