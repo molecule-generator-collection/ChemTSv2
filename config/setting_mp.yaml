@@ -1,17 +1,33 @@
+# Basic setting
 c_val: 1.0
-hours: 0.02
-output_dir: result/example_mp01
-token: model/tokens.pkl
 search_type: MP_MCTS
-
+# threshold_type: [time, generation_num]
+#threshold_type: generation_num
+hours: 0.02
+#generation_num: 300
+output_dir: result/example_mp01
 model_setting:
   model_json: model/model.tf25.json
   model_weight: model/model.tf25.best.ckpt.h5
-
+token: model/tokens.pkl
 reward_setting: 
   reward_module: reward.logP_reward
   reward_class: LogP_reward
 
+# Advanced setting
+#expansion_threshold: 0.995
+#simulation_num: 3
+#flush_threshold: -1
+#policy_setting: 
+#  policy_module: policy.ucb1
+#  policy_class: Ucb1
+
+# Restart setting
+#save_checkpoint: False
+#restart: False
+#checkpoint_file: chemtsv2.ckpt.pkl
+
+# Filter setting
 use_lipinski_filter: True
 lipinski_filter:
   module: filter.lipinski_filter

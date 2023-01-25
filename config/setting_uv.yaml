@@ -1,11 +1,31 @@
+# Basic setting
 c_val: 0.2
 # threshold_type: [time, generation_num]
 threshold_type: time
 hours: 0.5
-# generation_num: 100
+#generation_num: 300
+output_dir: result/example_uv
+model_setting:
+  model_json: model/model.tf25.json
+  model_weight: model/model.tf25.best.ckpt.h5
+token: model/tokens.pkl
+reward_setting: 
+  reward_module: reward.uv_reward
+  reward_class: UV_reward
+
+# Advanced setting
 expansion_threshold: 0.995
 simulation_num: 3
 flush_threshold: -1
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
+
+# Restart setting
+save_checkpoint: False
+restart: False
+checkpoint_file: chemtsv2.ckpt.pkl
+
 
 use_lipinski_filter: False
 use_radical_filter: True
@@ -32,17 +52,7 @@ pains_filter:
   type: [pains_a]
 include_filter_result_in_reward: False
 
-model_setting:
-  model_json: model/model.tf25.json
-  model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result/example_uv
-reward_setting: 
-  reward_module: reward.uv_reward
-  reward_class: UV_reward
-policy_setting: 
-  policy_module: policy.ucb1
-  policy_class: Ucb1
-token: model/tokens.pkl
+# User setting
 
 #parallelization strategy
 leaf_parallel: False

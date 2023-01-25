@@ -1,11 +1,32 @@
+# Basic setting
 c_val: 0.01
 # threshold_type: [time, generation_num]
 threshold_type: time
 hours: 1
+# generation_num: 300
+output_dir: result/jscore_10
+model_setting:
+  model_json: model/model.tf25.json
+  model_weight: model/model.tf25.best.ckpt.h5
+token: model/tokens.pkl
+reward_setting: 
+  reward_module: reward.Jscore_reward
+  reward_class: Jscore_reward
+
+# Advanced setting
 expansion_threshold: 0.995
 simulation_num: 3
 flush_threshold: -1
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
 
+# Restart setting
+save_checkpoint: False
+restart: False
+checkpoint_file: chemtsv2.ckpt.pkl
+
+# Filter setting
 use_lipinski_filter: False
 lipinski_filter:
   module: filter.lipinski_filter
@@ -35,15 +56,3 @@ pains_filter:
   class: PainsFilter
   type: [pains_a]
 include_filter_result_in_reward: False
-
-model_setting:
-  model_json: model/model.tf25.json
-  model_weight: model/model.tf25.best.ckpt.h5
-output_dir: result/jscore_10
-reward_setting: 
-  reward_module: reward.Jscore_reward
-  reward_class: Jscore_reward
-policy_setting: 
-  policy_module: policy.ucb1
-  policy_class: Ucb1
-token: model/tokens.pkl
