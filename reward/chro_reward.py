@@ -65,30 +65,18 @@ class UV_reward(Reward):
                 pickle.dump(result_dict, f)
 
             #Extract values
-            if 'uv' in result_dict.keys():
-                if len(result_dict['uv']) > 0:
-                    uv_abs_wl = result_dict['uv'][0][0]
-                    uv_abs_it = result_dict['uv'][1][0]
-                    gaussian_result = (1/(-np.log10(uv_abs_it))) * (np.tanh(0.003*(uv_abs_wl-400))+1)/2
-                else:
-                    gaussian_result = 0
+            if 'uv' in result_dict:
+                uv_abs_wl = result_dict['uv'][0][0] if len(result_dict['uv']) > 0 else 0
             else:
-                gaussian_result = 0
-            return gaussian_result
+                uv_abs_wl = 0
+            return uv_abs_wl
 
         return [SAScore, UV]
 
 
     def calc_reward_from_objective_values(values, conf):
-        def gauss(x, a=1, mu=0, sigma=1):
-            return a * np.exp(-(x - mu)**2 / (2*sigma**2))
-
-        def sa_scaler(v, sa_threshold=3.5, sigma=1):
-            if v < sa_threshold:
-                return 1
-            else:
-                return gauss(v, mu=sa_threshold, sigma=sigma)
-
-        sascore, uv_val = values
-        score = uv_val * sa_scaler(sascore, sa_threshold=3)
-        return score
+        # https://www.tandfonline.com/doi/pdf/10.1080/14686996.2022.2075240
+        sascore, uv_abs_wl = values
+        f_score = np.tanh(0.003*(uv_abs_wl-400)) / 2
+        g_score = (-np.tanh(sascore-4)+1) / 2
+        return f_score * g_score
