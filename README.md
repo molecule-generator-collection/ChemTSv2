@@ -132,7 +132,6 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 |Upper-absorption & fluorescence wavelength|[fluor_reward.py](reward/fluor_reward.py)|[setting_fluor.yaml](config/setting_fluor.yaml)|Gaussian 16[^3]|[^5]|
 |Kinase inhibitory activities|[dscore_reward.py](reward/dscore_reward.py)|[setting_dscore.yaml](config/setting_dscore.yaml)|LightGBM[^6]|[^7]|
 |Docking score|[Vina_binary_reward.py](reward/Vina_binary_reward.py)|[setting_vina_binary.yaml](config/setting_vina_binary.yaml)|AutoDock Vina[^8]|[^9]|
-|NMR spectrum|[nmr_reward.py](reward/nmr_reward.py)|[setting_nmr.yaml](config/setting_nmr.yaml)|Gaussian 16[^3]|[^10]|
 
 [^3]: Frisch, M. J. et al. Gaussian 16 Revision C.01. 2016; Gaussian Inc. Wallingford CT.
 [^4]: Sumita, M., Yang, X., Ishihara, S., Tamura, R., & Tsuda, K. (2018). Hunting for Organic Molecules with Artificial Intelligence: Molecules Optimized for Desired Excitation Energies. ACS Central Science, 4(9), 1126–1133. https://doi.org/10.1021/acscentsci.8b00213
