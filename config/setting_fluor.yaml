@@ -67,10 +67,10 @@ include_filter_result_in_reward: False
 leaf_parallel: False
 
 #Gaussian setting
-gau_functional: BLYP
-gau_basis: STO-3G
-gau_core_num: 30
-gau_memory: 50GB
+gau_functional: B3LYP
+gau_basis: 3-21G*
+gau_core_num: 20
+gau_memory: 20GB
 gau_option: opt uv fluor
 gau_solvent: 0
 gau_error: 0
