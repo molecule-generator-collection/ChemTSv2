@@ -67,6 +67,6 @@ gau_functional: BLYP
 gau_basis: STO-3G
 gau_core_num: 20
 gau_memory: 10GB
-gau_option: uv
+gau_option: opt uv
 gau_solvent: 0
 gau_error: 0
