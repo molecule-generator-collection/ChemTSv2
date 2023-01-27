@@ -64,9 +64,8 @@ class UV_reward(Reward):
             with open(os.path.join(result_dir, 'gaussian_result.pickle'), mode='wb') as f:
                 pickle.dump(result_dict, f)
 
-            #Extract values
-            if 'uv' in result_dict:
-                uv_abs_wl = result_dict['uv'][0][0] if len(result_dict['uv']) > 0 else 0
+            if 'uv' in result_dict and len(result_dict['uv']) > 0:
+                uv_abs_wl = result_dict['uv'][0][0]
             else:
                 uv_abs_wl = 0
             return uv_abs_wl
