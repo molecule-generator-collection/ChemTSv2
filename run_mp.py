@@ -192,6 +192,7 @@ def main():
     logger.info(f"Done MCTS execution [rank {rank}]")
 
     search.gather_results()
+    comm.barrier()
     if rank==0:
         search.flush()
         logger.info("FINISH!")
