@@ -69,8 +69,8 @@ leaf_parallel: False
 #Gaussian setting
 gau_functional: B3LYP
 gau_basis: 3-21G*
-gau_core_num: 20
-gau_memory: 20GB
+gau_core_num: 10
+gau_memory: 10GB
 gau_option: opt uv fluor
 gau_solvent: 0
 gau_error: 0
