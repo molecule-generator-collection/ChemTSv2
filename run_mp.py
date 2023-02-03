@@ -136,6 +136,8 @@ def main():
     log_level = DEBUG if args.debug else INFO
     logger = get_logger(log_level, conf["output_dir"])
     if not conf['debug']:
+        import warnings
+        warnings.filterwarnings('ignore')
         RDLogger.DisableLog("rdApp.*")
     
     if args.debug:
