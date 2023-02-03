@@ -127,7 +127,7 @@ class Tree_Node():
             else:
                 values_list = [f(mol) for f in self.reward_calculator.get_objective_functions(self.conf)]
                 valid_flag = 1
-            score = -1000 / (1 + 1000)
+            score = 0
             filter_flag = 0
         if valid_flag:
             generated_dict[smi] = [values_list, score, filter_flag]
