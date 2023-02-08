@@ -126,7 +126,7 @@ class Dscore_reward(Reward):
         def QED(mol):
             try:
                 return Chem.QED.qed(mol)
-            except Chem.rdchem.AtomValenceException:
+            except (Chem.rdchem.AtomValenceException, Chem.rdchem.KekulizeException):
                 return None
 
         # The following three functions were taken from　https://github.com/jrwnter/mso.
