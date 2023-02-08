@@ -97,8 +97,9 @@ class LogP_reward(Reward):
             return Descriptors.MolLogP(mol)
         return [LogP]
     
-    def calc_reward_from_objective_values(values, conf):
-        return np.tanh(values[0]/10)
+    def calc_reward_from_objective_values(objective_values, conf):
+        logp = objective_values[0]
+        return np.tanh(logp/10)
 ```
 
 ### 3. Prepare a config file
