@@ -41,10 +41,10 @@ use_radical_filter: True
 radical_filter:
   module: filter.radical_filter
   class: RadicalFilter
-use_hashimoto_filter: True
-hashimoto_filter:
-  module: filter.hashimoto_filter
-  class: HashimotoFilter
+use_pubchem_filter: True
+pubchem_filter:
+  module: filter.pubchem_filter
+  class: PubchemFilter
 use_sascore_filter: False
 sascore_filter:
   module: filter.sascore_filter

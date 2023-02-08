@@ -84,10 +84,10 @@ def set_default_config(conf):
     conf.setdefault('radical_filter', {
         'module': 'filter.radical_filter',
         'class': 'RadicalFilter'})
-    conf.setdefault('use_hashimoto_filter', False) 
-    conf.setdefault('hashimoto_filter', {
-        'module': 'filter.hashimoto_filter',
-        'class': 'HashimotoFilter'}) 
+    conf.setdefault('use_pubchem_filter', False) 
+    conf.setdefault('pubchem_filter', {
+        'module': 'filter.pubchem_filter',
+        'class': 'PubchemFilter'}) 
     conf.setdefault('use_sascore_filter', False)
     conf.setdefault('sascore_filter', {
         'module': 'filter.sascore_filter',

@@ -253,7 +253,7 @@ class Evaluater:
 NEUTRALIZER = Neutralizer()
 EVALUATER = Evaluater()
 
-class HashimotoFilter(Filter):
+class PubchemFilter(Filter):
     def check(mol, conf):
         try:
             mol1 = NEUTRALIZER.NeutraliseCharges(mol)
