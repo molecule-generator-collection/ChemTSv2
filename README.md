@@ -165,6 +165,8 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 - :beginner: indicates that the option/function is beta version.
 - :white_large_square: indicates that the option/function is NOT supported.
 
+Filter functions are described in [filter/README.md](./filter).
+
 ## Advanced usege :pushpin:
 
 ### Extend user-specified SMILES
