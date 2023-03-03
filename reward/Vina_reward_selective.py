@@ -89,7 +89,8 @@ class Vina_reward_selective(Reward):
         if v1 == None or v2 == None:
             return -1
         else:
-            return Sscore = (abs(v1)-abs(v2)) / abs(v1)
+            Sscore = (abs(v1)-abs(v2)) / abs(v1)
+            return Sscore
         
         #score_diff = min_inter_score - conf['vina_base_score']
         #return - score_diff * 0.1 / (1 + abs(score_diff) * 0.1)
