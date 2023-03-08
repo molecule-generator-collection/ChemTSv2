@@ -1,0 +1,61 @@
+# Basic setting
+c_val: 0.2
+# threshold_type: [time, generation_num]
+threshold_type: generation_num
+#hours: 0.01
+generation_num: 30000
+output_dir: result/pharmacophore
+model_setting:
+  model_json: model/model_chembl220k.tf25.json
+  model_weight: model/model_chembl220k.tf25.best.ckpt.h5
+token: model/tokens_chembl220k.pkl
+reward_setting:
+  reward_module: reward.pharmacophore_reward
+  reward_class: Pharmacophore_reward
+
+# Advanced setting
+expansion_threshold: 0.995
+simulation_num: 3
+flush_threshold: -1
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
+
+# Restart setting
+save_checkpoint: False
+restart: False
+checkpoint_file: chemtsv2.ckpt.pkl
+
+# Filter setting
+use_lipinski_filter: False
+lipinski_filter:
+  module: filter.lipinski_filter
+  class: LipinskiFilter
+  type: rule_of_5
+use_radical_filter: True
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
+use_pubchem_filter: False
+pubchem_filter:
+  module: filter.pubchem_filter
+  class: PubchemFilter
+use_sascore_filter: True
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 4.5
+use_ring_size_filter: False
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  threshold: 6
+use_pains_filter: False
+pains_filter:
+  module: filter.pains_filter
+  class: PainsFilter
+  type: [pains_a]
+include_filter_result_in_reward: False
+
+#leaf_parallel: True
+#leaf_parallel_num: 20
