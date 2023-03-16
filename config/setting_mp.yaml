@@ -13,6 +13,8 @@ token: model/tokens.pkl
 reward_setting: 
   reward_module: reward.logP_reward
   reward_class: LogP_reward
+save_checkpoint: True
+checkpoint_load: False
 
 # Advanced setting
 #expansion_threshold: 0.995
