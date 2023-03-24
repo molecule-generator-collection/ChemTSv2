@@ -1,5 +1,6 @@
 from collections import deque
 from copy import deepcopy
+import datetime
 from enum import Enum
 from math import log, sqrt
 import os
@@ -171,7 +172,12 @@ class p_mcts:
         random.seed(conf['zobrist_hash_seed'])
         self.hsm = HashTable(self.nprocs, root_node.val, root_node.max_len, len(root_node.val))
 
-        self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.csv")
+        if self.conf['checkpoint_load']:
+            dt = datetime.datetime.now()
+            stime = dt.strftime("%Y%m%d_%H%M%S")
+            self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}_{stime}.csv")
+        else:
+            self.output_path = os.path.join(conf['output_dir'], f"result_C{conf['c_val']}.csv")
         if self.rank == 0:
             if os.path.exists(self.output_path):
                 print(f"[ERROR] {self.output_path} already exists. Please specify a different file name.", file=sys.stderr, flush=True)
@@ -633,31 +639,34 @@ class p_mcts:
         checkpoint_prepare = False
         checkpoint_saved = False
         checkpoint_ready_count = 0
-        if self.rank == rootdest:
-            if self.conf['checkpoint_load']:
-                for i in range(self.nprocs):
-                    if self.rank == i:
-                        self.comm.barrier()
-                        ckpt_path = os.path.join(self.conf['output_dir'], f"mp_checkpoint_rank{i:04}.pickle")
-                        with open(ckpt_path, mode='rb') as f:
-                            cp_obj = pickle.load(f)
-                        self.generated_id_list = cp_obj['generated_id_list']
-                        self.conf = cp_obj['conf']
-                        self.generated_dict = cp_obj['generated_dict']
-                        self.hsm = cp_obj['hsm']
-                        self.start_time = cp_obj['start_time']
-                        jobq = cp_obj['jobq']
-            else:
-                root_job_message = np.asarray([['&'], None, 0, 0, 0, []])
-                for i in range(3 * self.nprocs):
-                    temp = deepcopy(root_job_message)
-                    root_job = (JobType.SEARCH.value, temp)
-                    jobq.appendleft(root_job)
+        if self.conf['checkpoint_load']:
+            for i in range(self.nprocs):
+                if self.rank == i:
+                    self.comm.barrier()
+                    ckpt_path = os.path.join(self.conf['output_dir'], f"mp_checkpoint_rank{i:04}.pickle")
+                    with open(ckpt_path, mode='rb') as f:
+                        cp_obj = pickle.load(f)
+                    print('Load complete', self.rank)
+            #self.generated_id_list = cp_obj['generated_id_list']
+            self.total_valid_num = cp_obj['total_valid_num']
+            #self.conf = cp_obj['conf']
+            self.generated_dict = cp_obj['generated_dict']
+            self.hsm = cp_obj['hsm']
+            #self.start_time = cp_obj['start_time']
+            jobq = cp_obj['jobq']
+        elif self.rank == rootdest:
+            root_job_message = np.asarray([['&'], None, 0, 0, 0, []])
+            for i in range(3 * self.nprocs):
+                temp = deepcopy(root_job_message)
+                root_job = (JobType.SEARCH.value, temp)
+                jobq.appendleft(root_job)
+
         while not timeup:
             if self.rank == 0:
-                if self.elapsed_time() > self.threshold and self.conf['save_checkpoint']:
+                if self.elapsed_time() > self.threshold and self.conf['save_checkpoint'] and not checkpoint_prepare:
                     checkpoint_prepare = True
                     checkpoint_ready_count = 0
+                    #print('Checkpoint prepare')
                     for dest in range(1, self.nprocs):
                         dummy_data = tag = JobType.CHECKPOINT_PREPARE.value
                         self.comm.bsend(dummy_data, dest=dest, tag=JobType.CHECKPOINT_PREPARE.value)
@@ -681,7 +690,13 @@ class p_mcts:
                     else:
                         jobq.appendleft(job)
             jobq_non_empty = bool(jobq)
-            if jobq_non_empty and not checkpoint_prepare:
+            if jobq_non_empty:
+                if checkpoint_prepare:
+                    (tag, message) = jobq[-1]
+                    if JobType.is_high_priority(tag):
+                        pass
+                    else:
+                        continue
                 (tag, message) = jobq.pop()
                 if tag == JobType.SEARCH.value:
                     if self.hsm.search_table(message[0]) == None:
@@ -794,33 +809,40 @@ class p_mcts:
                             self.send_message(local_node, dest, tag=JobType.SEARCH.value)
 
                 elif tag == JobType.TIMEUP.value:
+                    #print('Timeup', self.rank)
                     timeup = True
                 elif tag == JobType.CHECKPOINT_PREPARE.value:
                     checkpoint_prepare = True
+                    #print('Checkpoint prepare', self.rank)
                     dummy_data = JobType.CHECKPOINT_READY.value
                     self.comm.bsend(dummy_data, dest=0, tag=JobType.CHECKPOINT_READY.value)
                 elif tag == JobType.CHECKPOINT_READY.value:
                     assert self.rank == 0
                     checkpoint_ready_count += 1
+                    #print('Checkpoint ready count', checkpoint_ready_count)
                     if checkpoint_ready_count >= self.nprocs - 1:
+                        #print('Checkpoint ready count', checkpoint_ready_count)
                         for dest in range(0, self.nprocs):
                             dummy_data = tag = JobType.CHECKPOINT_SAVE.value
                             self.comm.bsend(dummy_data, dest=dest, tag=JobType.CHECKPOINT_SAVE.value)
                 elif tag == JobType.CHECKPOINT_SAVE.value:
                     cp_obj = {
-                        'generated_id_list': self.generated_id_list,
+                        #'generated_id_list': self.generated_id_list,
+                        'total_valid_num': self.total_valid_num,
                         'conf': self.conf, 
                         'generated_dict': self.generated_dict,
                         'hsm': self.hsm,
                         'start_time': self.start_time,
                         'jobq': jobq,
                     }
+                    #print('Checkpoint save start')
                     for i in range(self.nprocs):
                         if self.rank == i:
                             self.comm.barrier()
                             ckpt_path = os.path.join(self.conf['output_dir'], f"mp_checkpoint_rank{i:04}.pickle")
                             with open(ckpt_path, mode='wb') as f:
                                 pickle.dump(cp_obj, f)
+                    #print('Checkpoint save finished')
                     checkpoint_saved = True
 
         return
