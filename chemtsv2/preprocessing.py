@@ -86,7 +86,7 @@ def neutralize_atoms(smiles):
 def mod_tautomer_smiles(tautomer_smiles, canon_smiles):
     tmp_smiles = tautomer_smiles
     taut_mol = Chem.MolFromSmiles(tmp_smiles)
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)),'data')
+    data_dir = os.path.join(os.getcwd(), 'data')
     reaction_file = os.path.join(data_dir,'reactions_mod_tautomer.txt') 
     ss_list_file = os.path.join(data_dir,'ss_list_mod_tautomer.txt')
     ss_path = os.path.join(data_dir,'ss_mod_tautomer')
@@ -198,7 +198,7 @@ def mod_charge(smiles, num_plus):
 def calc_protomer(smiles):
     smi_part_list = ["[c,C][-,\+]]", "CH[-,\+]]", "[n,N]-]", "NH-]", "NH2-]", "[o,O]\+]", "OH2[-,\+]]", "OH[-,\+]]"]
 
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)),'data')
+    data_dir = os.path.join(os.getcwd(), 'data')
     reaction_file = os.path.join(data_dir,'reactions_protomer.txt') 
     ss_list_file = os.path.join(data_dir,'ss_list_protomer.txt')
     ss_path = os.path.join(data_dir,'ss_protomer')
@@ -322,8 +322,8 @@ def calc_3dstructure(smiles):
     file_list = []
     threshold_time = 180
 
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)),'data')
-    dest_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)),'tmp')
+    data_dir = os.path.join(os.getcwd(), 'data')
+    dest_dir = os.path.join(os.getcwd(), 'tmp')
     reaction_a_file = os.path.join(data_dir,'reaction_list_stereo_a.txt') 
     reaction_aa_file = os.path.join(data_dir,'reaction_list_stereo_aa.txt') 
     ss_list_file = os.path.join(data_dir,'ss_list_3d.txt')
