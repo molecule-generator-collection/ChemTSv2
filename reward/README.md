@@ -62,3 +62,18 @@ First, you need to install Gaussian 16 software, and then, just run the followin
 pip install --upgrade git+https://github.com/molecule-generator-collection/QCforever.git
 ```
 
+### Vina_use_appropriate_lingand3d_reward.py
+This reward function need AutoDock Vina Python package and openbabel binary.
+Below is the command to install AutoDock Vina Python package.
+```bash
+pip install vina
+pip install meeko 
+```
+Below is the example of command to install openbabel binary.
+```bash
+git clone https://github.com/openbabel/openbabel/
+cd openbabel
+mkdir build; cd build
+cmake ../ -DCMAKE_INSTALL_PREFIX=(/path/to/install/)
+make install
+```
