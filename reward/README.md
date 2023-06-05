@@ -66,14 +66,15 @@ pip install --upgrade git+https://github.com/molecule-generator-collection/QCfor
 This reward function need AutoDock Vina Python package and openbabel binary.
 Below is the command to install AutoDock Vina Python package.
 ```bash
-pip install vina
-pip install meeko 
+pip install vina, meeko, scipy
 ```
-Below is the example of command to install openbabel binary.
+Below is the example of command to install openbabel binary. 
+In detail, please refer to the official instruction (https://openbabel.org/docs/dev/Installation/install.html#basic-build-procedure). 
 ```bash
 git clone https://github.com/openbabel/openbabel/
 cd openbabel
 mkdir build; cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=(/path/to/install/)
+make
 make install
 ```
