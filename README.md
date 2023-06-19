@@ -180,6 +180,22 @@ In this case, you need to put the atom you want to extend at the end of the stri
 chemtsv2 -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ```
 
+#### Specify the last atom of SMILES string using OpenBabel
+
+[OpenBabel](https://github.com/openbabel/openbabel) can be used to rearrange a SMILES string so that the specified atom comes last.
+For example, if you want to rearrange `Br` in `NC1=CC(Br)=CC=C1` to the last position, run the following command:
+
+```bash
+# obabel -:"<SMILES>" -osmi -xl <atom no.>
+# Atom numbers correspond to the order of atoms in an input SMILES string.
+# In this example, `Br` appears fifth, so we specify `5` as a <atom no.>.
+obabel -:"NC1=CC(Br)=CC=C1" -osmi -xl 5
+# output: Nc1cc(ccc1)Br
+```
+
+Please refer to the [official documentation](https://openbabel.org/docs/current/FileFormats/SMILES_format.html) for detailed usage.
+
+
 ### GPU acceleration
 
 If you want to use GPU, run ChemTS with `--gpu GPU_ID` argument as follows.
