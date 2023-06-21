@@ -135,6 +135,7 @@ dmypy.json
 result/
 !result/.gitkeep
 config/*_c*.yaml
+!config/*_chro*.yaml
 model/backup/
 *.png
 !img/*.png
