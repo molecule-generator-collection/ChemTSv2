@@ -158,34 +158,30 @@ class Dscore_reward(Reward):
 
 
     def calc_reward_from_objective_values(values, conf):
+
         if None in values:
             return -1
-        egfr, erbb2, abl, src, lck, pdgfrbeta, vegfr2, fgfr1, ephb4, solubility, permeability, metabolic_stability, \
-        toxicity, sascore, qed, molecular_weight, tox_alert, has_chembl_substruct = values
+
         dscore_params = conf["Dscore_parameters"]
+        objectives = [
+            "EGFR", "ERBB2", "ABL", "SRC", "LCK", "PDGFRbeta", "VEGFR2", "FGFR1", "EPHB4",
+            "Solubility", "Permeability", "Metabolic_stability", "Toxicity", "SAscore",
+            "QED", "molecular_weight", "tox_alert", "has_chembl_substruct"
+            ]
+
         scaled_values = []
-        scaled_values.append(scale_objective_value(dscore_params["EGFR"], egfr))
-        scaled_values.append(scale_objective_value(dscore_params["ERBB2"], erbb2))
-        scaled_values.append(scale_objective_value(dscore_params["ABL"], abl))
-        scaled_values.append(scale_objective_value(dscore_params["SRC"], src))
-        scaled_values.append(scale_objective_value(dscore_params["LCK"], lck))
-        scaled_values.append(scale_objective_value(dscore_params["PDGFRbeta"], pdgfrbeta))
-        scaled_values.append(scale_objective_value(dscore_params["VEGFR2"], vegfr2))
-        scaled_values.append(scale_objective_value(dscore_params["FGFR1"], fgfr1))
-        scaled_values.append(scale_objective_value(dscore_params["EPHB4"], ephb4))
-        scaled_values.append(scale_objective_value(dscore_params["Solubility"], solubility))
-        scaled_values.append(scale_objective_value(dscore_params["Permeability"], permeability))
-        scaled_values.append(scale_objective_value(dscore_params["Metabolic_stability"], metabolic_stability))
-        scaled_values.append(scale_objective_value(dscore_params["Toxicity"], toxicity))
-        # SAscore is made negative when scaling because a smaller value is more desirable.
-        scaled_values.append(scale_objective_value(dscore_params["SAscore"], -1 * sascore))
-        scaled_values.append(scale_objective_value(dscore_params["QED"], qed))
-        scaled_values.append(scale_objective_value(dscore_params["molecular_weight"], molecular_weight))
-        scaled_values.append(scale_objective_value(dscore_params["tox_alert"], tox_alert))
-        scaled_values.append(scale_objective_value(dscore_params["has_chembl_substruct"], has_chembl_substruct))
-        weight = [v["weight"] for v in dscore_params.values()]
+        weights = []
+        for objective, value in zip(objectives, values):
+            if objective == "SAscore":
+                # SAscore is made negative when scaling because a smaller value is more desirable.
+                scaled_values.append(scale_objective_value(dscore_params[objective], -1 * value))
+            else:
+                scaled_values.append(scale_objective_value(dscore_params[objective], value))
+            weights.append(dscore_params[objective]["weight"])
+
         multiplication_value = 1
-        for v, w in zip(scaled_values, weight):
+        for v, w in zip(scaled_values, weights):
             multiplication_value *= v**w
-        dscore = multiplication_value ** (1/sum(weight))
+        dscore = multiplication_value ** (1/sum(weights))
+
         return dscore
