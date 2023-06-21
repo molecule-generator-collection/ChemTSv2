@@ -13,9 +13,9 @@ ChemTSv2 provides:
 - easy-to-define framework for users' any reward function, molecular filter, and tree policy
 - various usage examples in the GitHub repository
 
-[^1]: Yang, X., Zhang, J., Yoshizoe, K., Terayama, K., & Tsuda, K. (2017). ChemTS: an efficient python library for de novo molecular generation. Science and Technology of Advanced Materials, 18(1), 972–976. https://doi.org/10.1080/14686996.2017.1401424
+[^1]: Yang, X., Zhang, J., Yoshizoe, K., Terayama, K., & Tsuda, K. (2017). ChemTS: an efficient python library for de novo molecular generation. <i>Science and Technology of Advanced Materials</i>, 18(1), 972–976. https://doi.org/10.1080/14686996.2017.1401424
 
-[^2]: Yang, X., Aasawat, T., & Yoshizoe, K. (2021). Practical Massively Parallel Monte-Carlo Tree Search Applied to Molecular Design. In International Conference on Learning Representations. https://openreview.net/forum?id=6k7VdojAIK
+[^2]: Yang, X., Aasawat, T., & Yoshizoe, K. (2021). Practical Massively Parallel Monte-Carlo Tree Search Applied to Molecular Design. <i>In International Conference on Learning Representations</i>. https://openreview.net/forum?id=6k7VdojAIK
 
 
 ## How to setup :pushpin:
@@ -130,20 +130,22 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 |LogP|[logP_reward.py](reward/logP_reward.py)|[setting.yaml](config/setting.yaml)|-|-|
 |Jscore|[Jscore_reward.py](reward/Jscore_reward.py)|[setting_jscore.yaml](config/setting_jscore.yaml)|-|[^1]|
 |Absorption wavelength|[chro_reward.py](reward/chro_reward.py)|[setting_chro.yaml](config/setting_chro.yaml)|Gaussian 16[^3]<br> via QCforever[^10]|[^4]|
+||[chro_gamess_reward.py](reward/chro_gamess_reward.py)|[setting_chro_gamess.yaml](config/setting_chro_gamess.yaml)|GAMESS 2022.2[^12] via QCforever[^10]||
 |Upper-absorption & fluorescence<br> wavelength|[fluor_reward.py](reward/fluor_reward.py)|[setting_fluor.yaml](config/setting_fluor.yaml)|Gaussian 16[^3]<br> via QCforever[^10]|[^5]|
 |Kinase inhibitory activities|[dscore_reward.py](reward/dscore_reward.py)|[setting_dscore.yaml](config/setting_dscore.yaml)|LightGBM[^6]|[^7]|
 |Docking score|[Vina_binary_reward.py](reward/Vina_binary_reward.py)|[setting_vina_binary.yaml](config/setting_vina_binary.yaml)|AutoDock Vina[^8]|[^9]|
 |Pharmacophore|[pharmacophore_reward.py](reward/pharmacophore_reward.py)|[setting_pharmacophore.yaml](config/setting_pharmacophore.yaml)|-|[^11]|
 
 [^3]: Frisch, M. J. et al. Gaussian 16 Revision C.01. 2016; Gaussian Inc. Wallingford CT.
-[^4]: Sumita, M., Yang, X., Ishihara, S., Tamura, R., & Tsuda, K. (2018). Hunting for Organic Molecules with Artificial Intelligence: Molecules Optimized for Desired Excitation Energies. ACS Central Science, 4(9), 1126–1133. https://doi.org/10.1021/acscentsci.8b00213
-[^5]: Sumita, M., Terayama, K., Suzuki, N., Ishihara, S., Tamura, R., Chahal, M. K., Payne, D. T., Yoshizoe, K., & Tsuda, K. (2022). De novo creation of a naked eye–detectable fluorescent molecule based on quantum chemical computation and machine learning. Science Advances, 8(10). https://doi.org/10.1126/sciadv.abj3906
-[^6]: Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., … Liu, T.-Y. (2017). Lightgbm: A highly efficient gradient boosting decision tree. Advances in Neural Information Processing Systems, 30, 3146–3154.
-[^7]: Yoshizawa, T., Ishida, S., Sato, T., Ohta, M., Honma, T., & Terayama, K. (2022). Selective Inhibitor Design for Kinase Homologs Using Multiobjective Monte Carlo Tree Search. Journal of Chemical Information and Modeling, 62(22), 5351–5360. https://doi.org/10.1021/acs.jcim.2c00787
-[^8]: Eberhardt, J., Santos-Martins, D., Tillack, A. F., & Forli, S. (2021). AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings. Journal of Chemical Information and Modeling, 61(8), 3891–3898. https://doi.org/10.1021/acs.jcim.1c00203
-[^9]: Ma, B., Terayama, K., Matsumoto, S., Isaka, Y., Sasakura, Y., Iwata, H., Araki, M., & Okuno, Y. (2021). Structure-Based de Novo Molecular Generator Combined with Artificial Intelligence and Docking Simulations. Journal of Chemical Information and Modeling, 61(7), 3304–3313. https://doi.org/10.1021/acs.jcim.1c00679
-[^10]: Sumita, M., Terayama, K., Tamura, R., & Tsuda, K. (2022). QCforever: A Quantum Chemistry Wrapper for Everyone to Use in Black-Box Optimization. Journal of Chemical Information and Modeling, 62(18), 4427–4434. https://doi.org/10.1021/acs.jcim.2c00812
-[^11]: 石田祥一, 吉澤竜哉, 寺山慧 (2023). 深層学習と木探索に基づくde novo分子設計, SAR News, 44.
+[^4]: Sumita, M., Yang, X., Ishihara, S., Tamura, R., & Tsuda, K. (2018). Hunting for Organic Molecules with Artificial Intelligence: Molecules Optimized for Desired Excitation Energies. <i>ACS Central Science</i>, 4(9), 1126–1133. https://doi.org/10.1021/acscentsci.8b00213
+[^5]: Sumita, M., Terayama, K., Suzuki, N., Ishihara, S., Tamura, R., Chahal, M. K., Payne, D. T., Yoshizoe, K., & Tsuda, K. (2022). De novo creation of a naked eye–detectable fluorescent molecule based on quantum chemical computation and machine learning. <i>Science Advances</i>, 8(10). https://doi.org/10.1126/sciadv.abj3906
+[^6]: Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., … Liu, T.-Y. (2017). Lightgbm: A highly efficient gradient boosting decision tree. <i>Advances in Neural Information Processing Systems</i>, 30, 3146–3154.
+[^7]: Yoshizawa, T., Ishida, S., Sato, T., Ohta, M., Honma, T., & Terayama, K. (2022). Selective Inhibitor Design for Kinase Homologs Using Multiobjective Monte Carlo Tree Search. <i>Journal of Chemical Information and Modeling</i>, 62(22), 5351–5360. https://doi.org/10.1021/acs.jcim.2c00787
+[^8]: Eberhardt, J., Santos-Martins, D., Tillack, A. F., & Forli, S. (2021). AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings. <i>Journal of Chemical Information and Modeling</i>, 61(8), 3891–3898. https://doi.org/10.1021/acs.jcim.1c00203
+[^9]: Ma, B., Terayama, K., Matsumoto, S., Isaka, Y., Sasakura, Y., Iwata, H., Araki, M., & Okuno, Y. (2021). Structure-Based de Novo Molecular Generator Combined with Artificial Intelligence and Docking Simulations. <i>Journal of Chemical Information and Modeling</i>, 61(7), 3304–3313. https://doi.org/10.1021/acs.jcim.1c00679
+[^10]: Sumita, M., Terayama, K., Tamura, R., & Tsuda, K. (2022). QCforever: A Quantum Chemistry Wrapper for Everyone to Use in Black-Box Optimization. <i>Journal of Chemical Information and Modeling</i>, 62(18), 4427–4434. https://doi.org/10.1021/acs.jcim.2c00812
+[^11]: 石田祥一, 吉澤竜哉, 寺山慧 (2023). 深層学習と木探索に基づくde novo分子設計, <i>SAR News</i>, 44.
+[^12]: Barca, Giuseppe M. J. et al. (2020). Recent developments in the general atomic and molecular electronic structure system. <i>The Journal of Chemical Physics</i>, 152(15), 154102. https://doi.org/10.1063/5.0005188
 
 ## Support option/function :pushpin:
 
