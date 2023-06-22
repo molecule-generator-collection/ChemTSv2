@@ -25,7 +25,7 @@ class Vina_reward_selective2(Reward):
                     AllChem.EmbedMolecule(mol)
                     mol_conf = mol.GetConformer(-1)
                     centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
-                    tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
+                    tr = [conf[f'vina_center_{target_id}'][i] - centroid[i] for i in range(3)]
                     for i, p in enumerate(mol_conf.GetPositions()):
                         mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
                     mol_prep = MoleculePreparation()
@@ -34,7 +34,7 @@ class Vina_reward_selective2(Reward):
                     v.set_ligand_from_string(mol_pdbqt)
         
                     v.compute_vina_maps(
-                        center=conf['vina_center'],
+                        center=conf[f'vina_center_{target_id}'],
                         box_size=conf['vina_box_size'],
                         spacing=conf['vina_spacing'])
         
