@@ -130,7 +130,7 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 |LogP|[logP_reward.py](reward/logP_reward.py)|[setting.yaml](config/setting.yaml)|-|-|
 |Jscore|[Jscore_reward.py](reward/Jscore_reward.py)|[setting_jscore.yaml](config/setting_jscore.yaml)|-|[^1]|
 |Absorption wavelength|[chro_reward.py](reward/chro_reward.py)|[setting_chro.yaml](config/setting_chro.yaml)|Gaussian 16[^3]<br> via QCforever[^10]|[^4]|
-||[chro_gamess_reward.py](reward/chro_gamess_reward.py)|[setting_chro_gamess.yaml](config/setting_chro_gamess.yaml)|GAMESS 2022.2[^12] via QCforever[^10]||
+|Absorption wavelength|[chro_gamess_reward.py](reward/chro_gamess_reward.py)|[setting_chro_gamess.yaml](config/setting_chro_gamess.yaml)|GAMESS 2022.2[^12] via QCforever[^10]||
 |Upper-absorption & fluorescence<br> wavelength|[fluor_reward.py](reward/fluor_reward.py)|[setting_fluor.yaml](config/setting_fluor.yaml)|Gaussian 16[^3]<br> via QCforever[^10]|[^5]|
 |Kinase inhibitory activities|[dscore_reward.py](reward/dscore_reward.py)|[setting_dscore.yaml](config/setting_dscore.yaml)|LightGBM[^6]|[^7]|
 |Docking score|[Vina_binary_reward.py](reward/Vina_binary_reward.py)|[setting_vina_binary.yaml](config/setting_vina_binary.yaml)|AutoDock Vina[^8]|[^9]|
