@@ -28,7 +28,7 @@ policy_setting:
 
 # Restart setting
 save_checkpoint: False
-restart: False
+checkpoint_load: False
 checkpoint_file: chemtsv2.ckpt.pkl
 
 # Filter setting

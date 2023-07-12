@@ -13,8 +13,6 @@ token: model/tokens.pkl
 reward_setting: 
   reward_module: reward.logP_reward
   reward_class: LogP_reward
-save_checkpoint: True
-checkpoint_load: False
 
 # Advanced setting
 #expansion_threshold: 0.995
@@ -25,9 +23,9 @@ checkpoint_load: False
 #  policy_class: Ucb1
 
 # Restart setting
-#save_checkpoint: False
-#restart: False
-#checkpoint_file: chemtsv2.ckpt.pkl
+save_checkpoint: False
+checkpoint_load: False
+checkpoint_file: chemtsv2.ckpt.pkl
 
 # Filter setting
 use_lipinski_filter: True
