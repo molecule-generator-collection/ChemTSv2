@@ -39,14 +39,14 @@ def get_parser():
     return parser.parse_args()
     
 
-def get_logger(level, save_dir):
+def get_logger(level, save_dir, rank):
     logger = getLogger(__name__)
     logger.setLevel(level)
     logger.propagate = False
 
     formatter = Formatter("%(asctime)s : %(levelname)s : %(message)s ")
 
-    fh = FileHandler(filename=os.path.join(save_dir, "run.log"), mode='w')
+    fh = FileHandler(filename=os.path.join(save_dir, f"run_rank{rank}.log"), mode='w')
     fh.setLevel(level)
     fh.setFormatter(formatter)
     sh = StreamHandler()
@@ -134,7 +134,7 @@ def main():
     
     conf['debug'] = args.debug
     log_level = DEBUG if args.debug else INFO
-    logger = get_logger(log_level, conf["output_dir"])
+    logger = get_logger(log_level, conf["output_dir"], rank)
     if not conf['debug']:
         import warnings
         warnings.filterwarnings('ignore')
