@@ -144,6 +144,9 @@ def main():
     if args.debug:
         conf['fix_random_seed'] = True
 
+    if conf['random_seed'] != -1:
+        conf['fix_random_seed'] = True
+
     # download additional data if files don't exist
     if not os.path.exists('data/sascorer.py'):
         url = 'https://raw.githubusercontent.com/rdkit/rdkit/master/Contrib/SA_Score/sascorer.py'
