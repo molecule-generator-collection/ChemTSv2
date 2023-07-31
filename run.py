@@ -71,6 +71,7 @@ def set_default_config(conf):
     conf.setdefault('infinite_loop_threshold_for_selection', 1000)
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)
     conf.setdefault('fix_random_seed', False)
+    conf.setdefault('random_seed', -1)
 
     conf.setdefault('use_lipinski_filter', False)
     conf.setdefault('lipinski_filter', {
@@ -190,7 +191,11 @@ def main():
             
     conf['filter_list'] = get_filter_modules(conf)
 
-    conf['random_generator'] = default_rng(1234) if conf['fix_random_seed'] else default_rng()
+    if conf['fix_random_seed']:
+        random_seed = conf['random_seed'] if conf['random_seed'] != -1 else 1234
+        conf['random_generator'] = default_rng(random_seed)
+    else:
+        conf['random_generator'] = default_rng()
 
     with open(conf['token'], 'rb') as f:
         tokens = pickle.load(f)
