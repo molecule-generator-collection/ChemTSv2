@@ -156,6 +156,7 @@ def main():
 
     if args.debug:
         conf['fix_random_seed'] = True
+        conf['random_seed'] = 1234
 
     if conf['random_seed'] != -1:
         conf['fix_random_seed'] = True
@@ -194,11 +195,7 @@ def main():
             
     conf['filter_list'] = get_filter_modules(conf)
 
-    if conf['fix_random_seed']:
-        random_seed = conf['random_seed'] if conf['random_seed'] != -1 else 1234
-        conf['random_generator'] = default_rng(random_seed)
-    else:
-        conf['random_generator'] = default_rng()
+    conf['random_generator'] = default_rng(conf['random_seed']) if conf['fix_random_seed'] else default_rng()
 
     with open(conf['token'], 'rb') as f:
         tokens = pickle.load(f)
