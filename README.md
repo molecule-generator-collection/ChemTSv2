@@ -4,7 +4,7 @@
   <img src="https://github.com/molecule-generator-collection/ChemTSv2/blob/master/img/logo.png" width="95%">
 </div>
 
-ChemTSv2 is a refined and extended version of ChemTS[^1] and MPChemTS[^2].
+ChemTSv2[^13] is a refined and extended version of ChemTS[^1] and MPChemTS[^2].
 The original implementations are available at https://github.com/tsudalab/ChemTS and https://github.com/yoshizoe/mp-chemts, respectively. 
 
 ChemTSv2 provides:
@@ -12,6 +12,8 @@ ChemTSv2 provides:
 - easy-to-run interface by using only a configuration file
 - easy-to-define framework for users' any reward function, molecular filter, and tree policy
 - various usage examples in the GitHub repository
+
+[^13]: Ishida, S. and Aasawat, T. and Sumita, M. and Katouda, M. and Yoshizawa, T. and Yoshizoe, K. and Tsuda, K. and Terayama, K. (2023). ChemTSv2: Functional molecular design using de novo molecule generator. <i>WIREs Computational Molecular Science</i> https://wires.onlinelibrary.wiley.com/doi/10.1002/wcms.1680
 
 [^1]: Yang, X., Zhang, J., Yoshizoe, K., Terayama, K., & Tsuda, K. (2017). ChemTS: an efficient python library for de novo molecular generation. <i>Science and Technology of Advanced Materials</i>, 18(1), 972–976. https://doi.org/10.1080/14686996.2017.1401424
 
@@ -171,7 +173,7 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 
 Filter functions are described in [filter/README.md](./filter).
 
-## Advanced usege :pushpin:
+## Advanced usage :pushpin:
 
 ### Extend user-specified SMILES
 
@@ -218,6 +220,21 @@ If you want to use GPU, run ChemTS with `--gpu GPU_ID` argument as follows.
 
 ```bash
 chemtsv2 -c config/setting.yaml --gpu 0
+```
+
+## How to cite
+
+```
+@article{Ishida2023,
+  doi = {10.1002/wcms.1680},
+  url = {https://doi.org/10.1002/wcms.1680},
+  year = {2023},
+  month = jul,
+  publisher = {Wiley},
+  author = {Shoichi Ishida and Tanuj Aasawat and Masato Sumita and Michio Katouda and Tatsuya Yoshizawa and Kazuki Yoshizoe and Koji Tsuda and Kei Terayama},
+  title = {ChemTSv2: Functional molecular design using de novo molecule generator},
+  journal = {{WIREs} Computational Molecular Science}
+}
 ```
 
 ## License :pushpin:
