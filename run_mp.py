@@ -64,6 +64,7 @@ def set_default_config(conf):
     conf.setdefault('output_dir', 'result/example_mp01')
     conf.setdefault('zobrist_hash_seed', 3)
     conf.setdefault('fix_random_seed', False)
+    conf.setdefault('random_seed', -1)
     conf.setdefault('token', 'model/tokens.pkl')
 
     conf.setdefault('model_setting', {
@@ -142,6 +143,10 @@ def main():
     
     if args.debug:
         conf['fix_random_seed'] = True
+        conf['random_seed'] = 1234
+
+    if conf['random_seed'] != -1:
+        conf['fix_random_seed'] = True
 
     # download additional data if files don't exist
     if not os.path.exists('data/sascorer.py'):
@@ -170,7 +175,7 @@ def main():
 
     conf['filter_list'] = get_filter_modules(conf)
 
-    conf['random_generator'] = default_rng(1234) if conf['fix_random_seed'] else default_rng()
+    conf['random_generator'] = default_rng(conf['random_seed']) if conf['fix_random_seed'] else default_rng()
 
     chem_model = loaded_model(conf['model_setting']['model_weight'], logger, conf)
 

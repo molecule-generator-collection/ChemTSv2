@@ -71,6 +71,7 @@ def set_default_config(conf):
     conf.setdefault('infinite_loop_threshold_for_selection', 1000)
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)
     conf.setdefault('fix_random_seed', False)
+    conf.setdefault('random_seed', -1)
 
     conf.setdefault('use_lipinski_filter', False)
     conf.setdefault('lipinski_filter', {
@@ -155,6 +156,10 @@ def main():
 
     if args.debug:
         conf['fix_random_seed'] = True
+        conf['random_seed'] = 1234
+
+    if conf['random_seed'] != -1:
+        conf['fix_random_seed'] = True
 
     # download additional data if files don't exist
     if not os.path.exists('data/sascorer.py'):
@@ -190,7 +195,7 @@ def main():
             
     conf['filter_list'] = get_filter_modules(conf)
 
-    conf['random_generator'] = default_rng(1234) if conf['fix_random_seed'] else default_rng()
+    conf['random_generator'] = default_rng(conf['random_seed']) if conf['fix_random_seed'] else default_rng()
 
     with open(conf['token'], 'rb') as f:
         tokens = pickle.load(f)
