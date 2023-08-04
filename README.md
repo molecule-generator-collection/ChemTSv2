@@ -137,6 +137,8 @@ mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 |Kinase inhibitory activities|[dscore_reward.py](reward/dscore_reward.py)|[setting_dscore.yaml](config/setting_dscore.yaml)|LightGBM[^6]|[^7]|
 |Docking score|[Vina_binary_reward.py](reward/Vina_binary_reward.py)|[setting_vina_binary.yaml](config/setting_vina_binary.yaml)|AutoDock Vina[^8]|[^9]|
 |Pharmacophore|[pharmacophore_reward.py](reward/pharmacophore_reward.py)|[setting_pharmacophore.yaml](config/setting_pharmacophore.yaml)|-|[^11]|
+|Docking score (GPU)|VinaGPU_binary_reward.py](reward/VinaGPU_binary_reward.py)|[setting_vina-gpu_binary.yaml](config/setting_vina-gpu_binary.yaml)|Vina-GPU|
+|Docking score (DiffDock/AutoDock Vina)|DiffDock_reward.py](reward/DiffDock_reward.py)|[setting_diffdock.yaml](config/setting_diffdock.yaml)|DiffDock/AutoDock Vina|
 
 [^3]: Frisch, M. J. et al. Gaussian 16 Revision C.01. 2016; Gaussian Inc. Wallingford CT.
 [^4]: Sumita, M., Yang, X., Ishihara, S., Tamura, R., & Tsuda, K. (2018). Hunting for Organic Molecules with Artificial Intelligence: Molecules Optimized for Desired Excitation Energies. <i>ACS Central Science</i>, 4(9), 1126–1133. https://doi.org/10.1021/acscentsci.8b00213

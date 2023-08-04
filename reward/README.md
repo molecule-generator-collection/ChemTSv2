@@ -78,3 +78,70 @@ cmake ../ -DCMAKE_INSTALL_PREFIX=(/path/to/install/)
 make
 make install
 ```
+
+### Vina-GPU_reward.py
+```bash
+pip install meeko
+```
+
+Vina-GPU also needs to be installed and run on subprocess. See installation and usage instruction at https://github.com/DeltaGroupNJUPT/Vina-GPU .
+
+[Note]
+* Boost and proper version of GCC is required when both of build and run Vina-GPU. (Confirmed GCC 8 is worked properly)
+* Copy OpenCL directory in the same location as Vina-GPU binary file.
+* Copy Kernel1_Opt.bin and Kernel2_Opt.bin in working directory.
+* Recommend to configure TF_FORCE_GPU_ALLOW_GROWTH enviroment variable to avoid insufficient memory.
+```bash
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+```
+
+#### Parameter description
+
+Vina-GPU binary and Boost library should be set in the configuration file.
+|Paramaeter|Description|
+|vina_bin_path|Vina-GPU binary file|
+|boost_lib_path|Path to boost library|
+
+### DiffDock_reward.py
+
+Apart from ChemTSv2 environment, create DiffDock environment with conda.
+
+* DiffDock
+https://github.com/gcorso/DiffDock
+
+Set the name of environment as the value of 'diffdock_conda_env' parameter, then it will be used in subprocess.
+
+After DiffDock process, docking score is calculated by AutoDock Vina for the ligand which got the best DiffDock confidence score.
+Thus, vina and meeko libraries are also required for working AutoDock Vina.
+
+```bash
+pip install vina
+pip install meeko
+```
+
+#### Parameter description
+
+|Paramaeter|Description|
+|conda_cmd|conda command path|
+|diffdock_conda_env|Conda environment of Diffdock|
+|diffdock_pythonpath|Path to Downloaded (or cloned by git) DiffDock root directory|
+|diffdock_complex_name|target PDB ID|
+|diffdock_protein_path|target protein path (.pdb)|
+
+for other parameters, see diffdock help displayed by running python as follows:
+
+```bash
+cd Path_to_DiffDock 
+```
+or 
+
+```bash
+export PYTHONPATH= Path_to_DiffDock
+```
+
+then
+
+```bash
+python -m inference --help
+
+```
