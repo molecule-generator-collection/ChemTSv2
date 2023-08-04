@@ -99,6 +99,7 @@ export TF_FORCE_GPU_ALLOW_GROWTH=true
 
 Vina-GPU binary and Boost library should be set in the configuration file.
 |Paramaeter|Description|
+|:---|:---|
 |vina_bin_path|Vina-GPU binary file|
 |boost_lib_path|Path to boost library|
 
