@@ -10,7 +10,7 @@ model_setting:
   model_weight: model/model_chembl220k.tf25.best.ckpt.h5
 token: model/tokens_chembl220k.pkl
 reward_setting:
-  reward_module: reward.DiffDock_Vina_reward
+  reward_module: reward.DiffDock_reward
   reward_class: DiffDock_Vina_reward
 
 # Advanced setting

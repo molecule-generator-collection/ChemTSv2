@@ -147,3 +147,36 @@ then
 python -m inference --help
 
 ```
+
+### TankBind_reward.py
+
+Additional Python package installation is required for using TankBind.
+p2rank is also required for binding-site estimation.
+
+For further information, please see https://github.com/luwei0917/TankBind .
+
+Here is an example of TankBind environment installation, under ChemTSv2 environment.
+It could be better to install pytorch by PyPI than Conda.
+
+The following is an example of installation for the TankBind reward function.
+It might be better to use PyPI instead of Conda. (Althogh Conda is used to installation in [the official TankBind installation](https://github.com/luwei0917/TankBind#installation) )
+
+```
+conda activate mpchem
+conda install gcc=8
+pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+pip install torchdrug==0.1.2 pyg biopython
+pip install torchmetrics tqdm mlcrate pyallow
+pip install torch-scatter
+```
+
+#### Parameter description
+
+|Paramaeter|Description|
+|:---|:---|
+|p2rank_path|Conda environment of Diffdock|
+|tankbind_pythonpath| Specifiy 'tankbind' directory path in Downloaded (or cloned by git) Tankbind directory |
+|tankbind_modelfile| path to self_dock.pt (or re_dock.pt) in TankBind/saved_models directory |
+|tankbind_complex_name|target PDB ID|
+|tankbind_protein_path|target protein path (.pdb)|
+|tankbind_gpu|Use GPU or not. (Boolean)|

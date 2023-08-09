@@ -70,7 +70,7 @@ class DiffDock_Vina_reward(Reward):
                 'conda activate '+str(conf['diffdock_conda_env']),
                 '&&',
                 'python -m inference',
-                '--complex_name', str(conf['diffdock_complex_name']),
+                '--complex_name', str(conf['diffdock_complex_name'])+'-'+str(conf['gid']),
                 '--protein_path', str(conf['diffdock_protein_path']),
                 '--ligand_description', temp_ligand_fname,
                 '--out_dir',  diffdock_pose_dir,
@@ -102,7 +102,7 @@ class DiffDock_Vina_reward(Reward):
                     #shutil.rmtree(temp_dir)
                 return None
             try:
-                diffdock_best_sdf = glob.glob(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'/rank1_confidence*.sdf')[0]
+                diffdock_best_sdf = glob.glob(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'-'+str(conf['gid'])+'/rank1_confidence*.sdf')[0]
             except RuntimeError as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e) 
@@ -112,7 +112,7 @@ class DiffDock_Vina_reward(Reward):
                 return None
             #shutil.copyfile(best_sdf, output_ligand_fname)
 
-            diffdock_confidence_score = diffdock_best_sdf.replace(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'/rank1_confidence', '').replace('.sdf', '')
+            diffdock_confidence_score = diffdock_best_sdf.replace(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+str(conf['gid'])+'/rank1_confidence', '').replace('.sdf', '')
 
             if conf['debug']:
                 print(f"diffdock_confidence_score: {diffdock_confidence_score}")
@@ -170,7 +170,7 @@ class DiffDock_Vina_reward(Reward):
                 if not os.path.exists(vina_pose_dir):
                     os.mkdir(vina_pose_dir)
                 pose_file_name = f"{vina_pose_dir}/mol_{conf['gid']}_3D_pose_{best_model}.pdbqt"
-                v.write_poses(f"{vina_pose_dir}/vina_temp_out.pdbqt", n_poses=conf['vina_n_poses'], overwrite=True)
+                v.write_poses(f"{vina_pose_dir}/vina_best_out.pdbqt", n_poses=conf['vina_n_poses'], overwrite=True)
                 pdbqt_mol = PDBQTMolecule.from_file(f"{vina_pose_dir}/vina_temp_out.pdbqt", skip_typing=True)
                 for pose in pdbqt_mol:
                     if pose.pose_id == best_model - 1:
