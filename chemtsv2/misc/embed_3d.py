@@ -1,4 +1,17 @@
 import os,sys
+from rdkit.Chem import AllChem
+from rdkit.Geometry import Point3D
+import argparse
+import pickle
+import torch
+from tqdm.auto import tqdm
+
+from models.epsnet import *
+from utils.datasets import *
+from utils.transforms import *
+from utils.misc import *
+
+from confgf import dataset
 
 def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             device='cuda',
@@ -15,19 +28,6 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             log_dir='./result/geodiff/',
             seed=12345):
 
-    from rdkit.Chem import AllChem
-    from rdkit.Geometry import Point3D
-    import argparse
-    import pickle
-    import torch
-    from tqdm.auto import tqdm
-    
-    from models.epsnet import *
-    from utils.datasets import *
-    from utils.transforms import *
-    from utils.misc import *
-    
-    from confgf import dataset
 
     #def num_confs(num:str):
     #    if num.endswith('x'):
