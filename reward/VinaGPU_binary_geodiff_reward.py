@@ -16,7 +16,22 @@ class VinaGPU_reward(Reward):
     def get_objective_functions(conf):
         def VinaScore(mol):
             
-            mol = Embed3D_Geodiff(mol=mol,ckpt_path='/home/stsuser2/shitamichi/work2023/GeoDiff/logs/drugs_default/checkpoints/drugs_default.pt', tag='geodiff')
+            #mol = Embed3D_Geodiff(mol=mol,ckpt_path='/home/stsuser2/shitamichi/work2023/GeoDiff/logs/drugs_default/checkpoints/drugs_default.pt', tag='geodiff')
+            mol = Embed3D_Geodiff(mol=mol,ckpt_path=conf['geodiff_ckpt_path'], tag=conf['geodiff_tag'],
+                                  device='cuda',
+                                  clip=conf['geodiff_clip'],
+                                  n_steps=conf['geodiff_n_steps'],
+                                  global_start_sigma=conf['geodiff_global_start_sigma'],
+                                  w_global=conf['geodiff_w_global'],
+                                  sampling_type=conf['geodiff_sampling_type'],
+                                  eta=conf['geodiff_eta'],
+                                  smi=None,
+                                  infile=None,
+                                  edge_order=conf['geodiff_edge_order'],
+                                  save_data=conf['geodiff_save_data'],
+                                  log_dir=conf['geodiff_log_dir'],
+                                  seed=conf['geodiff_seed'],
+                                  gid=conf['gid'])
 
             verbosity = 1 if conf['debug'] else 0
             temp_dir = tempfile.mkdtemp()

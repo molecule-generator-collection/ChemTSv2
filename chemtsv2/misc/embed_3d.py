@@ -25,9 +25,12 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             infile=None,
             edge_order=3,
             save_data=False,
-            log_dir='./result/geodiff/',
-            seed=12345):
+            log_dir='./result/geodiff',
+            seed=12345,
+            gid=''):
 
+    #if conf['debug']:
+    #    logging.basicConfig(level=logging.DEBUG)
 
     #def num_confs(num:str):
     #    if num.endswith('x'):
@@ -38,7 +41,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     #        raise ValueError()
 
     # Logging
-    output_dir = get_new_log_dir(log_dir, 'sample', tag=tag)
+    output_dir = get_new_log_dir(log_dir, 'geodiff_'+str(gid), tag=tag)
     logger = get_logger('test', output_dir)
     #logger.info(args)
 
@@ -64,6 +67,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     
     # Model
     logger.info('Loading model...')
+    
     model = get_model(ckpt['config'].model).to(device)
     model.load_state_dict(ckpt['model'])
    
@@ -89,9 +93,9 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             test_set.append(smi)
         except Exception as e:
             logger.error(e)
-            sys.exit()
+            return
 
-    print(test_set)
+    logger.debug(test_set)
 
     test_set = map(dataset.dataset.smiles_to_data, test_set)
 
@@ -101,9 +105,10 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     # Predict
     logger.info('Begin prediction ...')
     
-    print(test_set)
+    logger.debug(test_set)
+
     for i, data in enumerate(tqdm(test_set)):
-        print(data)
+        logger.debug(data)
 
         logger.info('%i, %s', i, data.smiles)
 
@@ -139,8 +144,8 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                 done_smiles.add(data.smiles)
 
                 if save_data:
-                    save_path = os.path.join(output_dir, 'samples_%d.pkl' % i)
-                    logger.info('Saving samples to: %s' % save_path)
+                    save_path = os.path.join(output_dir, 'samples_%d.pkl' % gid)
+                    logger.info('Saving the conformer to: %s' % save_path)
                     with open(save_path, 'wb') as f:
                         pickle.dump(results, f)
 
@@ -150,15 +155,15 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                 try:
                     AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
                     conf = mol.GetConformer()
-                    logger.info("A temporal conformer is embedded by ETKDGv3.")
+                    logger.debug("A temporal conformer is embedded by ETKDGv3.")
                     
                     
                 except:
-                    logger.info("Try ETDG...")
+                    logger.debug("Try ETDG...")
                     try:
                         AllChem.EmbedMolecule(mol, AllChem.ETDG())
                         conf = mol.GetConformer()
-                        logger.info("A temporal conformer is embedded by ETDG.")           
+                        logger.debug("A temporal conformer is embedded by ETDG.")           
                     except ValueError as e:
                         logger.error('%i, %s', i, e)
                         continue
@@ -171,9 +176,11 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                 
                 mol = Chem.RemoveHs(mol)
 
+
+
                 if save_data:
-                    save_path_sdf = os.path.join(output_dir, 'samples_%d.sdf' % i)
-                    logger.info('Saving samples to: %s' % save_path)
+                    save_path_sdf = os.path.join(output_dir, 'samples_%d.sdf' % gid)
+                    logger.info('Saving the conformer to: %s' % save_path)
                     w = Chem.SDWriter(save_path_sdf)
                     w.write(mol)
     
@@ -197,7 +204,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
 #    if save_data:
 #        with open(save_path, 'wb') as f:
 #            pickle.dump(results, f)
-
+        del model
     return mol
 
 

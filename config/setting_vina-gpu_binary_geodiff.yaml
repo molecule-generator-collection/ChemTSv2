@@ -57,7 +57,22 @@ pains_filter:
   type: [pains_a]
 include_filter_result_in_reward: False
 
-# User setting
+# User setting for Geodiff
+geodiff_ckpt_path: /home/stsuser2/shitamichi/work2023/GeoDiff/logs/drugs_default/checkpoints/drugs_default.pt
+geodiff_tag: geodiff
+geodiff_clip: 1000.0
+geodiff_n_steps: 5000
+geodiff_global_start_sigma: 0.5
+geodiff_w_global: 1.0
+geodiff_sampling_type: ld
+geodiff_eta: 1.0
+geodiff_edge_order: 3
+geodiff_save_data: True
+geodiff_log_dir: ./result/vina-gpu_geodiff/geodiff
+geodiff_seed: 12345
+
+
+# User setteing for Vina-GPU
 vina_bin_path: /home/stsuser2/shitamichi/work2023/Vina-GPU-2.0/Vina-GPU+/Vina-GPU
 boost_lib_path: /home/stsuser2/shitamichi/work2023/boost_1_82_0/stage/lib
 vina_receptor: ./data/1iep_receptor.pdbqt

@@ -203,17 +203,30 @@ class Tankbind_reward(Reward):
     
             suppl = Chem.SDMolSupplier(toFile)
             tankbind_outmol = [m for m in suppl if m is not None][0]
-            tankbind_outmol = Chem.AddHs(tankbind_outmol)
+            tankbind_outmol = Chem.AddHs(tankbind_outmol, addCoords=True)
             try:
                 #AllChem.EmbedMolecule(mol)
                 mol_conf = tankbind_outmol.GetConformer(-1)
                 centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
                 tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
+                if conf['debug']:
+                    print("tankbind_output_positions:")
                 for i, p in enumerate(mol_conf.GetPositions()):
+                    if conf['debug']:
+                        print(i, tankbind_outmol.GetAtomWithIdx(i).GetSymbol(), p)
                     mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
+                mol_conf = tankbind_outmol.GetConformer(-1)
+                if conf['debug']:
+                    print("vina_centor:")
+                    print(tr)
+                    print("Centroided:")
+                    for i, p in enumerate(mol_conf.GetPositions()):
+                        print(i, tankbind_outmol.GetAtomWithIdx(i).GetSymbol(), p)
                 mol_prep = MoleculePreparation()
                 mol_prep.prepare(tankbind_outmol)
                 mol_pdbqt = mol_prep.write_pdbqt_string()
+                if conf['debug']:
+                    print(mol_pdbqt)
                 v.set_ligand_from_string(mol_pdbqt)
     
                 v.compute_vina_maps(
@@ -221,7 +234,7 @@ class Tankbind_reward(Reward):
                     box_size=conf['vina_box_size'],
                     spacing=conf['vina_spacing'])
     
-                _ = v.optimize()
+                #_ = v.optimize()
     
                 if conf['debug']:
                     pprint.pprint(v.info())
@@ -250,6 +263,9 @@ class Tankbind_reward(Reward):
                 pdbqt_mol = PDBQTMolecule.from_file(f"{vina_pose_dir}/vina_temp_out.pdbqt", skip_typing=True)
                 for pose in pdbqt_mol:
                     if pose.pose_id == best_model - 1:
+                        if conf['debug']:
+                            print("Vina Best Pose:")
+                            print(pose.write_pdbqt_string())
                         pose.write_pdbqt_file(pose_file_name)
                         file_path = Path(pose_file_name)
                         text = file_path.read_text()
