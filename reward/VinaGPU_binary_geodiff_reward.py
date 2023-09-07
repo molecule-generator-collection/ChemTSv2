@@ -10,13 +10,21 @@ from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
 
 from reward.reward import Reward
+
+import sys
+
 from chemtsv2.misc.embed_3d import Embed3D_Geodiff
 
 class VinaGPU_reward(Reward):
     def get_objective_functions(conf):
         def VinaScore(mol):
             
-            #mol = Embed3D_Geodiff(mol=mol,ckpt_path='/home/stsuser2/shitamichi/work2023/GeoDiff/logs/drugs_default/checkpoints/drugs_default.pt', tag='geodiff')
+            #### GeoDiff ####
+
+            if conf['debug']:
+                print("### Geodiff input structure")
+                print(Chem.MolToMolBlock(mol))
+
             mol = Embed3D_Geodiff(mol=mol,ckpt_path=conf['geodiff_ckpt_path'], tag=conf['geodiff_tag'],
                                   device='cuda',
                                   clip=conf['geodiff_clip'],
@@ -31,7 +39,18 @@ class VinaGPU_reward(Reward):
                                   save_data=conf['geodiff_save_data'],
                                   log_dir=conf['geodiff_log_dir'],
                                   seed=conf['geodiff_seed'],
-                                  gid=conf['gid'])
+                                  gid=conf['gid'],
+                                  debug=conf['debug'])
+
+            if conf['debug']:
+                print("### Geodiff output structure")
+                print(Chem.MolToMolBlock(mol))
+
+            ########
+
+            mol = Chem.AddHs(mol, addCoords=True)
+            #AllChem.EmbedMolecule(mol)
+
 
             verbosity = 1 if conf['debug'] else 0
             temp_dir = tempfile.mkdtemp()
@@ -40,8 +59,7 @@ class VinaGPU_reward(Reward):
             os.makedirs(pose_dir, exist_ok=True)
             output_ligand_fname = os.path.join(pose_dir, f"mol_{conf['gid']}_out.pdbqt")
 
-            mol = Chem.AddHs(mol)
-            AllChem.EmbedMolecule(mol)
+
             try:
                 mol_conf = mol.GetConformer(-1)
             except ValueError as e:

@@ -84,7 +84,7 @@ make install
 pip install meeko
 ```
 
-Vina-GPU also needs to be installed and run on subprocess. See installation and usage instruction at https://github.com/DeltaGroupNJUPT/Vina-GPU .
+Vina-GPU also needs to be installed and run on subprocess. See installation and usage instruction at https://github.com/DeltaGroupNJUPT/Vina-GPU-2.0 .
 
 [Note]
 * Boost and proper version of GCC is required when both of build and run Vina-GPU. (Confirmed GCC 8 is worked properly)
@@ -94,6 +94,7 @@ Vina-GPU also needs to be installed and run on subprocess. See installation and 
 ```bash
 export TF_FORCE_GPU_ALLOW_GROWTH=true
 ```
+* Please run chemtsv2 with GPU. 
 
 #### Parameter description
 
@@ -102,6 +103,54 @@ Vina-GPU binary and Boost library should be set in the configuration file.
 |:---|:---|
 |vina_bin_path|Vina-GPU binary file|
 |boost_lib_path|Path to boost library|
+
+### VinaGPU_binary_geodiff_reward.py
+
+In addition to Vina-GPU, GeoDiff is required for use this reward function.
+
+#### GeoDiff installation example
+
+GeoDiff Python packages need to be installed in the same environment as ChemTSv2.
+It should be better to install GeoDiff Python packages first.
+```bash
+git clone https://github.com/MinkaiXu/GeoDiff.git
+cd GeoDiff
+conda env create -f env.yml
+
+conda activate geodiff
+conda install pytorch-geometric=1.7.2=py37_torch_1.8.0_cu102 -c rusty1s -c conda-forge
+```
+#### Usage
+
+Berofe running chemtsv2, add GeoDiff directory to PYTHONPATH.
+```bash
+
+export PYTHONPATH=/path/to/GeoDiff
+
+chemtsv2 -c config/setting_vina-gpu_binary_geodiff.yaml -g 0
+
+```
+
+
+#### Parameter description
+
+|Paramaeter|Description|
+|:---|:---|
+|geodiff_ckpt_path| Trained model such as ./GeoDiff/logs/drugs_default/checkpoints/drugs_default.pt . Trained model examples can be available. See https://github.com/MinkaiXu/GeoDiff/tree/ea0ca48045a2f7abfccd7f0df449e45eb6eae638#generation .|
+|geodiff_tag| used for output file name|
+|geodiff_clip| clipping threshold |
+|geodiff_n_steps| sampling num steps; for DSM framework, this means num steps for each noise scale |
+|geodiff_global_start_sigma| enable global gradients only when noise is low |
+|geodiff_w_global| weight for global gradients |
+|geodiff_sampling_type| generalized, ddpm_noisy, ld: sampling method for DDIM, DDPM or Langevin Dynamics|
+|geodiff_eta| weight for DDIM and DDPM: 0->DDIM, 1->DDPM |
+|geodiff_edge_order| edge order|
+|geodiff_save_data| save sdf and pkl files |
+|geodiff_log_dir| output directory |
+|geodiff_seed| seed |
+
+for other parameters, see geodiff test.py  help displayed by running python as follows:
+
 
 ### DiffDock_reward.py
 

@@ -27,9 +27,10 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             save_data=False,
             log_dir='./result/geodiff',
             seed=12345,
-            gid=''):
+            gid='',
+            debug=False):
 
-    #if conf['debug']:
+    #if debug:
     #    logging.basicConfig(level=logging.DEBUG)
 
     #def num_confs(num:str):
@@ -42,8 +43,8 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
 
     # Logging
     output_dir = get_new_log_dir(log_dir, 'geodiff_'+str(gid), tag=tag)
-    logger = get_logger('test', output_dir)
-    #logger.info(args)
+    #logger = get_logger('test', output_dir)
+    #print(args)
 
             
             
@@ -55,10 +56,9 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     # Load checkpoint
     ckpt = torch.load(ckpt_path)
     seed_all(seed)
-    
 
     # Datasets and loaders
-    logger.info('Loading datasets...')
+    # print('Loading datasets...')
 
     transforms = Compose([
         CountNodesPerGraph(),
@@ -66,16 +66,16 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     ])
     
     # Model
-    logger.info('Loading model...')
+    print('Loading model...')
     
     model = get_model(ckpt['config'].model).to(device)
     model.load_state_dict(ckpt['model'])
    
-    logger.info('Loading testset...')
+    print('Loading testset...')
     test_set = []
 
     if infile and smi:
-        logger.error('Error. Mol or SMILES is required.')
+        print('Error. Mol or SMILES is required.')
         sys.exit()
 
     elif infile:
@@ -92,10 +92,11 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             smi = Chem.MolToSmiles(mol)
             test_set.append(smi)
         except Exception as e:
-            logger.error(e)
+            print(e)
             return
 
-    logger.debug(test_set)
+    if debug:
+        print(test_set)
 
     test_set = map(dataset.dataset.smiles_to_data, test_set)
 
@@ -103,14 +104,15 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     results = []
     
     # Predict
-    logger.info('Begin prediction ...')
+    print('Begin prediction ...')
     
-    logger.debug(test_set)
+    if debug:
+        print(test_set)
 
     for i, data in enumerate(tqdm(test_set)):
-        logger.debug(data)
 
-        logger.info('%i, %s', i, data.smiles)
+        if debug:
+            print(data)
 
         data_input = data.clone()
         data_input['pos_ref'] = None
@@ -140,72 +142,76 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                 pos_gen = pos_gen.cpu()
 
                 data.pos_gen = pos_gen
+
+                print("results=", results)
                 results.append(data)
                 done_smiles.add(data.smiles)
 
+                if debug:
+                    print("## GeoDiff predict positions ")
+                    print(data.pos_gen)
+
                 if save_data:
                     save_path = os.path.join(output_dir, 'samples_%d.pkl' % gid)
-                    logger.info('Saving the conformer to: %s' % save_path)
+                    print(f'Saving the conformer to: {save_path}')
                     with open(save_path, 'wb') as f:
                         pickle.dump(results, f)
 
 
-                mol = Chem.AddHs(data.rdmol)
-                
+                #mol = Chem.AddHs(data.rdmol)
+                mol = data.rdmol
+
                 try:
                     AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
                     conf = mol.GetConformer()
-                    logger.debug("A temporal conformer is embedded by ETKDGv3.")
+                    if debug:
+                        print("A temporal conformer is embedded by ETKDGv3.")
                     
                     
                 except:
-                    logger.debug("Try ETDG...")
+                    if debug:
+                        print("Try ETDG...")
                     try:
                         AllChem.EmbedMolecule(mol, AllChem.ETDG())
                         conf = mol.GetConformer()
-                        logger.debug("A temporal conformer is embedded by ETDG.")           
+                        if debug:
+                            print("A temporal conformer is embedded by ETDG.")           
                     except ValueError as e:
-                        logger.error('%i, %s', i, e)
+                        print('Error.', i, e)
                         continue
-                
+
+                conf = mol.GetConformer(-1)
+
                 for a in range(mol.GetNumAtoms()):
                     x,y,z = data.pos_gen.tolist()[a]
                     conf.SetAtomPosition(i,Point3D(x,y,z))
                     
-                AllChem.MMFFOptimizeMolecule(mol, maxIters=1000)
-                
-                mol = Chem.RemoveHs(mol)
-
-
-
+                if debug:
+                    
+                    print("### 3D Molecule (RDKit EmbedMolecule)")
+                    print(Chem.MolToMolBlock(mol))
+    
+                    print("### 3D Molecule (GeoDiff)")
+                    print(Chem.MolToMolBlock(mol))
+    
+                    AllChem.MMFFOptimizeMolecule(mol, maxIters=1000)
+                    
+                    print("### 3D Molecule (MMFF optimized)")
+                    print(Chem.MolToMolBlock(mol))
+    
+                    mol = Chem.RemoveHs(mol)
+    
                 if save_data:
                     save_path_sdf = os.path.join(output_dir, 'samples_%d.sdf' % gid)
-                    logger.info('Saving the conformer to: %s' % save_path)
+                    print(f'Saving the conformer to: {save_path}')
                     w = Chem.SDWriter(save_path_sdf)
                     w.write(mol)
     
                 break   # No errors occured, break the retry loop
             except FloatingPointError:
                 clip_local = 20
-                logger.warning('Retrying with local clipping.')
+                print('[Warning] Retrying with local clipping.')
 
-    #save_path = os.path.join(output_dir, 'samples_all.pkl')
-    #logger.info('Saving samples to: %s' % save_path)
-
-#    def get_mol_key(data):
-#        for i, d in enumerate(test_set):
-#            if d.smiles == data.smiles:
-#                return i
-#        return -1
-#    results.sort(key=get_mol_key)
-#
-#    print(results)
-#    
-#    if save_data:
-#        with open(save_path, 'wb') as f:
-#            pickle.dump(results, f)
         del model
     return mol
-
-
 

@@ -42,6 +42,8 @@ class Tankbind_reward(Reward):
             from data import TankBind_prediction
             from model import get_model
 
+            print("### TankBind ###") 
+
             workdir = conf['output_dir']
             pocket_dir = os.path.join(conf['output_dir'], "tankbind/p2rank_pocket")
             pose_dir = os.path.join(conf['output_dir'], "tankbind/input_pose")
@@ -85,9 +87,9 @@ class Tankbind_reward(Reward):
             mol = Chem.MolFromMolFile(rdkitMolFile)
             compound_info = extract_torchdrug_feature_from_mol(mol, has_LAS_mask=True)
 
-            if conf['debug']:
-                    print('protein_info:', protein_dict)
-                    print('ligand_info:', compound_info)
+            #if conf['debug']:
+            #        print('protein_info:', protein_dict)
+            #        print('ligand_info:', compound_info)
 
             ### p2rank
             #print(protein_dict[conf["tankbind_complex_name"]][0])
@@ -101,6 +103,12 @@ class Tankbind_reward(Reward):
                     os.system(cmd)
     
                 info = []
+               
+                ### use external center.
+                com = ",".join([str(round(a,3)) for a in conf['vina_center']])
+                info.append([conf['tankbind_complex_name'], 'ligand', "ext_center", com])
+
+
                 ### use protein center as the block center.
                 com = ",".join([str(a.round(3)) for a in protein_dict[conf["tankbind_complex_name"]][0].mean(axis=0).numpy()])
                 proteinFileName = proteinFile.split('/')[-1]
@@ -116,13 +124,13 @@ class Tankbind_reward(Reward):
                     #info.append([proteinFileName, Chem.MolToSmiles(mol), f"pocket_{ith_pocket+1}", com])
                     info.append([conf['tankbind_complex_name'], 'ligand', f"pocket_{ith_pocket+1}", com])
                 info = pd.DataFrame(info, columns=['protein_name', 'compound_name', 'pocket_name', 'pocket_com'])
-                if conf['debug']:
-                    print(info)
+                #if conf['debug']:
+                #    print(info)
 
             except Exception as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e)
-                return None
+                return None, None
             
             ### construct dataset
             dataset_path = os.path.join(conf['output_dir'], "tankbind/dataset")
@@ -160,17 +168,29 @@ class Tankbind_reward(Reward):
           
             info = dataset.data
             info['affinity'] = affinity_pred_list
-            
+
+
+            print(info)
+
             info.to_csv(workdir+'/tankbind/info_with_predicted_affinity_'+str(conf["gid"])+'.csv')
             chosen = info.loc[info.groupby(['protein_name', 'compound_name'],sort=False)['affinity'].agg('idxmax')].reset_index()
-
+            info_wo_bc = info.query( 'pocket_name != "protein_center"' )
+            chosen_best_pocket = info_wo_bc.loc[info_wo_bc.groupby(['protein_name', 'compound_name'],sort=False)['affinity'].agg('idxmax')].reset_index()
+            chosen_pocket_1 = info.query( '(pocket_name == "protein_center") or (pocket_name == "pocket_1")').reset_index()
+            chosen_block_center = info.query( 'pocket_name == "protein_center"' ).reset_index()
+            chosen_ext_center = info.query( 'pocket_name == "ext_center"' ).reset_index()
+            
+            chosen = chosen_ext_center
+            print("Use The docking result of \"ext_center\" for Vina Docking.")
+            print(chosen)
             tankbind_affinity = chosen['affinity'][0]
             print('TankBind Affinity:', tankbind_affinity)
 
             # from predicted interaction distance map to sdf
             from generation_utils import get_LAS_distance_constraint_mask, get_info_pred_distance, write_with_new_coords
+            
             idx = chosen['index'][0]
-            pocket_name = chosen['pocket_name'][0]
+            pocket_name = chosen['pocket_name']
             compound_name = chosen['compound_name'][0]
             ligandName = compound_name
             device = 'cpu'
@@ -191,96 +211,93 @@ class Tankbind_reward(Reward):
 
             tankbind_result_folder = f'{workdir}/tankbind/docking_result/'
             os.system(f'mkdir -p {tankbind_result_folder}')
-            toFile = tankbind_result_folder+'/'+ligandName+'_'+str(conf['gid'])+'_tankbind.sdf'
+            #toFile = tankbind_result_folder+'/'+str(ligandName)+'_'+str(conf['gid'])+'_tankbind.sdf'
+            toFile = tankbind_result_folder+ligandName+'_'+str(conf['gid'])+'_'+chosen['pocket_name'][0]+'.sdf'
             new_coords = info.sort_values("loss")['coords'].iloc[0].astype(np.double)
             write_with_new_coords(mol, new_coords, toFile)
+    
+            suppl = Chem.SDMolSupplier(toFile)
+            print([m for m in suppl if m is not None])
+            tankbind_outmol = [m for m in suppl if m is not None][0]
+            tankbind_outmol = Chem.AddHs(tankbind_outmol, addCoords=True)
 
-            
+            mol_conf = tankbind_outmol.GetConformer(-1)
+
+            if conf['debug']:
+                print("TankBind pose:")
+                for a in tankbind_outmol.GetAtoms():
+                    print(a.GetIdx(), a.GetSymbol(), mol_conf.GetPositions()[a.GetIdx()])
+
             print("### Autodock Vina ###") 
+
             verbosity = 1 if conf['debug'] else 0
             v = Vina(sf_name=conf['vina_sf_name'], cpu=conf['vina_cpus'], verbosity=verbosity)
             v.set_receptor(rigid_pdbqt_filename=conf['vina_receptor'])
     
-            suppl = Chem.SDMolSupplier(toFile)
-            tankbind_outmol = [m for m in suppl if m is not None][0]
-            tankbind_outmol = Chem.AddHs(tankbind_outmol, addCoords=True)
+            ignore_vina_center = False
+
             try:
-                #AllChem.EmbedMolecule(mol)
-                mol_conf = tankbind_outmol.GetConformer(-1)
+                # AllChem.EmbedMolecule(mol)
                 centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
-                tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
-                if conf['debug']:
-                    print("tankbind_output_positions:")
+                if not ignore_vina_center:
+                    tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
+                else:
+                    tr = [.0, .0, .0]
                 for i, p in enumerate(mol_conf.GetPositions()):
-                    if conf['debug']:
-                        print(i, tankbind_outmol.GetAtomWithIdx(i).GetSymbol(), p)
                     mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
-                mol_conf = tankbind_outmol.GetConformer(-1)
                 if conf['debug']:
-                    print("vina_centor:")
-                    print(tr)
-                    print("Centroided:")
+                    print("centroid:", centroid)
+                    print("tr:", tr)
+                    print("TankBind pose (apply translation for Vina):")
                     for i, p in enumerate(mol_conf.GetPositions()):
                         print(i, tankbind_outmol.GetAtomWithIdx(i).GetSymbol(), p)
                 mol_prep = MoleculePreparation()
                 mol_prep.prepare(tankbind_outmol)
                 mol_pdbqt = mol_prep.write_pdbqt_string()
-                if conf['debug']:
-                    print(mol_pdbqt)
                 v.set_ligand_from_string(mol_pdbqt)
     
-                v.compute_vina_maps(
-                    center=conf['vina_center'],
-                    box_size=conf['vina_box_size'],
-                    spacing=conf['vina_spacing'])
-    
-                #_ = v.optimize()
+                if not ignore_vina_center:
+                    v.compute_vina_maps(
+                        center=conf['vina_center'],
+                        box_size=conf['vina_box_size'],
+                        spacing=conf['vina_spacing'])
+
+                else:
+                    v.compute_vina_maps(
+                        center=centroid,
+                        box_size=conf['vina_box_size'],
+                        spacing=conf['vina_spacing'])
     
                 if conf['debug']:
                     pprint.pprint(v.info())
     
-                v.dock(
-                    exhaustiveness=conf['vina_exhaustiveness'],
-                    n_poses=conf['vina_n_poses'],
-                    min_rmsd=conf['vina_min_rmsd'],
-                    max_evals=conf['vina_max_evals'])
+                energy = v.score()
                 if conf['debug']:
-                    print(f"Vina Docking energies: {v.energies()}")
-                # get the best inter score, because v.energies()[0][1] is not the best inter_score in some case.
-                scores=v.energies()
+                    print(f"Vina Docking energies: {energy}")
+
                 min_inter_score = 1000
-                best_model = 1
-                for m, ene in enumerate(scores):
-                    if ene[1] < min_inter_score:
-                        min_inter_score = ene[1]
-                        best_model = m + 1
-                # save best pose
+                if energy[1] < min_inter_score:
+                    min_inter_score = energy[1]
+
+                # save pose
                 vina_pose_dir = os.path.join(conf['output_dir'], "vina_pose")
                 if not os.path.exists(vina_pose_dir):
                     os.mkdir(vina_pose_dir)
-                pose_file_name = f"{vina_pose_dir}/mol_{conf['gid']}_3D_pose_{best_model}.pdbqt"
-                v.write_poses(f"{vina_pose_dir}/vina_temp_out.pdbqt", n_poses=conf['vina_n_poses'], overwrite=True)
-                pdbqt_mol = PDBQTMolecule.from_file(f"{vina_pose_dir}/vina_temp_out.pdbqt", skip_typing=True)
-                for pose in pdbqt_mol:
-                    if pose.pose_id == best_model - 1:
-                        if conf['debug']:
-                            print("Vina Best Pose:")
-                            print(pose.write_pdbqt_string())
-                        pose.write_pdbqt_file(pose_file_name)
-                        file_path = Path(pose_file_name)
-                        text = file_path.read_text()
-                        text = 'REMARK TANKBIND AFFINITY: '+str(np.round(tankbind_affinity,decimals=3))+'\n'+text
-                        file_path.write_text(text)
-
+                pose_file_name = f"{vina_pose_dir}/mol_{conf['gid']}_3D_pose.pdbqt"
+                file_path = Path(pose_file_name)
+                text = mol_pdbqt
+                #text = 'REMARK DIFFDOCK CONFIDENCE: '+diffdock_confidence_score+'\n'+text
+                file_path.write_text(text)
 
                 if conf['debug']:
-                    print('min_inter_score: '+str(min_inter_score)+', tankbind_affinity: '+str(np.round(tankbind_affinity,decimals=3))+'. best pose num is '+str(best_model)+'.')
+                    # print('min_inter_score: '+str(min_inter_score)+', tankbind_affinity: '+str(np.round(tankbind_affinity,decimals=3))+'. best pose num is '+str(best_model)+'.')
+                    print('min_inter_score: '+str(min_inter_score)+', tankbind_affinity: '+str(np.round(tankbind_affinity,decimals=3))+'.')
                 return min_inter_score, tankbind_affinity
 
             except Exception as e:
                 print(f"Vina Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e)
-                return None
+                return None, None
 
         return [TankbindScore]
     

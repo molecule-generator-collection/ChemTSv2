@@ -29,6 +29,8 @@ class DiffDock_Vina_reward(Reward):
     def get_objective_functions(conf):
         def DiffDockScore(mol):
 
+            print("### DiffDock ###") 
+
             workdir = conf['output_dir']
             diffdock_pose_dir = os.path.join(conf['output_dir'], "diffdock_pose")
             temp_ligand_fname = os.path.join(diffdock_pose_dir, f"mol_{conf['gid']}_temp.sdf")
@@ -45,8 +47,6 @@ class DiffDock_Vina_reward(Reward):
             mol = Chem.AddHs(mol)
             AllChem.EmbedMolecule(mol)
 
-            print(type(mol))
-
             try:
                 mol_conf = mol.GetConformer(-1)
             except ValueError as e:
@@ -54,12 +54,12 @@ class DiffDock_Vina_reward(Reward):
                 print(e) 
                 if not conf['debug']:
                     shutil.rmtree(temp_dir)
-                return None
+                return None,None
             with Chem.SDWriter(temp_ligand_fname) as w:
                 for m in [mol]:
                     w.write(m)
 
-            print(temp_ligand_fname)
+            print("DiffDock input ligand:", temp_ligand_fname)
 
             suppl = Chem.SDMolSupplier(temp_ligand_fname)
             print(suppl)
@@ -100,7 +100,7 @@ class DiffDock_Vina_reward(Reward):
                 if not conf['debug']:
                     shutil.rmtree(workdir)
                     #shutil.rmtree(temp_dir)
-                return None
+                return None, None
             try:
                 diffdock_best_sdf = glob.glob(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'-'+str(conf['gid'])+'/rank1_confidence*.sdf')[0]
             except RuntimeError as e:
@@ -109,7 +109,7 @@ class DiffDock_Vina_reward(Reward):
                 if not conf['debug']:
                     shutil.rmtree(workdir)
                     #shutil.rmtree(temp_dir)
-                return None
+                return None, None
             #shutil.copyfile(best_sdf, output_ligand_fname)
 
             diffdock_confidence_score = diffdock_best_sdf.replace(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'-'+str(conf['gid'])+'/rank1_confidence', '').replace('.sdf', '')
@@ -118,107 +118,93 @@ class DiffDock_Vina_reward(Reward):
                 print(f"diffdock_confidence_score: {diffdock_confidence_score}")
             if not conf['debug']:
                 shutil.rmtree(workdir)
-                #shutil.rmtree(temp_dir)
 
-            print("### Autodock Vina ###") 
-            verbosity = 1 if conf['debug'] else 0
-            v = Vina(sf_name=conf['vina_sf_name'], cpu=conf['vina_cpus'], verbosity=verbosity)
-            v.set_receptor(rigid_pdbqt_filename=conf['vina_receptor'])
-    
             suppl = Chem.SDMolSupplier(diffdock_best_sdf)
             diffdock_outmol = [m for m in suppl if m is not None][0]
             diffdock_outmol = Chem.AddHs(diffdock_outmol, addCoords=True)
 
+            mol_conf = diffdock_outmol.GetConformer(-1)
+
+            if conf['debug']:
+                print("DiffDock pose:")
+                for a in diffdock_outmol.GetAtoms():
+                    print(a.GetIdx(), a.GetSymbol(), mol_conf.GetPositions()[a.GetIdx()])
+
+            print("### Autodock Vina ###") 
+
+            verbosity = 1 if conf['debug'] else 0
+            v = Vina(sf_name=conf['vina_sf_name'], cpu=conf['vina_cpus'], verbosity=verbosity)
+            v.set_receptor(rigid_pdbqt_filename=conf['vina_receptor'])
+
+            ignore_vina_center = True
+    
             try:
-                #AllChem.EmbedMolecule(mol)
-                mol_conf = diffdock_outmol.GetConformer(-1)
+                # AllChem.EmbedMolecule(mol)
                 centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
-                tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
-                #if conf['debug']:
-                #    for a in diffdock_outmol.GetAtoms():
-                #        print(a.GetIdx(), a.GetSymbol(), mol_conf.GetPositions()[a.GetIdx()])
-                if conf['debug']:
-                    print("diffdock_output_positions:")
+                if not ignore_vina_center:
+                    tr = [conf['vina_center'][i] - centroid[i] for i in range(3)]
+                else:
+                    tr = [.0, .0, .0]
                 for i, p in enumerate(mol_conf.GetPositions()):
-                    if conf['debug']:
-                        print(i, diffdock_outmol.GetAtomWithIdx(i).GetSymbol(), p)
                     mol_conf.SetAtomPosition(i, Point3D(p[0]+tr[0], p[1]+tr[1], p[2]+tr[2]))
-                mol_conf = diffdock_outmol.GetConformer(-1)
                 if conf['debug']:
-                    print("vina_centor:")
-                    print(tr)
-                    print("Centroided:")
+                    print('centroid:', centroid)
+                    print("tr:", tr)
+                    print("DiffDock pose (apply translation for Vina):")
                     for i, p in enumerate(mol_conf.GetPositions()):
                         print(i, diffdock_outmol.GetAtomWithIdx(i).GetSymbol(), p)
 
                 mol_prep = MoleculePreparation()
                 mol_prep.prepare(diffdock_outmol)
                 mol_pdbqt = mol_prep.write_pdbqt_string()
-                if conf['debug']:
-                    print(mol_pdbqt)
                 v.set_ligand_from_string(mol_pdbqt)
-                #v.set_ligand_from_file(mol_pdbqt)
     
-                v.compute_vina_maps(
-                    center=conf['vina_center'],
-                    box_size=conf['vina_box_size'],
-                    spacing=conf['vina_spacing'])
-    
-                #_ = v.optimize()
+                if not ignore_vina_center:
+                    v.compute_vina_maps(
+                        center=conf['vina_center'],
+                        box_size=conf['vina_box_size'],
+                        spacing=conf['vina_spacing'])
+
+                else:
+                    v.compute_vina_maps(
+                        center=centroid,
+                        box_size=conf['vina_box_size'],
+                        spacing=conf['vina_spacing'])
     
                 if conf['debug']:
                     pprint.pprint(v.info())
     
-                v.dock(
-                    exhaustiveness=conf['vina_exhaustiveness'],
-                    n_poses=conf['vina_n_poses'],
-                    min_rmsd=conf['vina_min_rmsd'],
-                    max_evals=conf['vina_max_evals'])
+                energy = v.score()
                 if conf['debug']:
-                    print(f"Vina Docking energies: {v.energies()}")
-                # get the best inter score, because v.energies()[0][1] is not the best inter_score in some case.
-                scores=v.energies()
+                    print(f"Vina Docking energies: {energy}")
 
                 min_inter_score = 1000
-                best_model = 1
-                for m, ene in enumerate(scores):
-                    if ene[1] < min_inter_score:
-                        min_inter_score = ene[1]
-                        best_model = m + 1
-                # save best pose
+                if energy[1] < min_inter_score:
+                    min_inter_score = energy[1]
+
+                # save pose
                 vina_pose_dir = os.path.join(conf['output_dir'], "vina_pose")
                 if not os.path.exists(vina_pose_dir):
                     os.mkdir(vina_pose_dir)
-                pose_file_name = f"{vina_pose_dir}/mol_{conf['gid']}_3D_pose_{best_model}.pdbqt"
-                v.write_poses(f"{vina_pose_dir}/vina_temp_out.pdbqt", n_poses=conf['vina_n_poses'], overwrite=True)
-                pdbqt_mol = PDBQTMolecule.from_file(f"{vina_pose_dir}/vina_temp_out.pdbqt", skip_typing=True)
-                for pose in pdbqt_mol:
-                    if pose.pose_id == best_model - 1:
-                        if conf['debug']:
-                            print("Vina Best Pose:")
-                            print(pose.write_pdbqt_string())
-                        pose.write_pdbqt_file(pose_file_name)
-                        file_path = Path(pose_file_name)
-                        text = file_path.read_text()
-                        text = 'REMARK DIFFDOCK CONFIDENCE: '+diffdock_confidence_score+'\n'+text
-                        file_path.write_text(text)
-
+                pose_file_name = f"{vina_pose_dir}/mol_{conf['gid']}_3D_pose.pdbqt"
+                file_path = Path(pose_file_name)
+                text = mol_pdbqt
+                text = 'REMARK DIFFDOCK CONFIDENCE: '+diffdock_confidence_score+'\n'+text
+                print(text)
+                file_path.write_text(text)
 
                 if conf['debug']:
-                    print(f"min_inter_score: {min_inter_score}, best pose num is {best_model}")
+                    #print(f"min_inter_score: {min_inter_score}, diffdock_confidence_score: {diffdock_confidence_score}. best pose num is {best_model}.")
+                    print(f"min_inter_score: {min_inter_score}, diffdock_confidence_score: {diffdock_confidence_score}.")
                 return diffdock_confidence_score, min_inter_score
             except Exception as e:
                 print(f"Vina Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e)
-                return None
+                return None, None
         return [DiffDockScore]
     
     
     def calc_reward_from_objective_values(values, conf):
-        if conf['debug']:
-            print("values")
-            print(type(values))
-            print(values)
         min_inter_score = values[0][1]
         if min_inter_score is None:
             return -1

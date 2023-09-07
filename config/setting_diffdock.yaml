@@ -81,8 +81,4 @@ vina_receptor: data/1iep_receptor.pdbqt
 vina_center: [15.190, 53.903, 16.917]
 vina_box_size: [20, 20, 20]
 vina_spacing: 0.375
-vina_exhaustiveness: 32
-vina_n_poses: 10
 vina_base_score: -20
-vina_min_rmsd: 1.0
-vina_max_evals: 0
