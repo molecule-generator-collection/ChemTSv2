@@ -3,7 +3,6 @@ import subprocess
 import shutil
 import tempfile
 
-#from vina import Vina
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
@@ -17,11 +16,6 @@ import pprint
 from vina import Vina
 from meeko import MoleculePreparation
 from meeko import PDBQTMolecule
-#from rdkit import Chem
-#from rdkit.Chem import AllChem, rdMolTransforms
-#from rdkit.Geometry import Point3D
-#
-#from reward.reward import Reward
 
 from pathlib import Path
 
@@ -37,13 +31,6 @@ class DiffDock_Vina_reward(Reward):
             os.makedirs(diffdock_pose_dir, exist_ok=True)
             output_ligand_fname = os.path.join(diffdock_pose_dir, f"mol_{conf['gid']}_out.sdf")
 
-            #temp_dir = tempfile.mkdtemp()
-            #os.mkdir(temp_dir+'/results')
-            #temp_ligand_fname = os.path.join(temp_dir, 'ligand_temp.sdf')
-            #pose_dir = os.path.join(conf['output_dir'], "3D_pose")
-            #os.makedirs(pose_dir, exist_ok=True)
-            #output_ligand_fname = os.path.join(pose_dir, f"mol_{conf['gid']}_difffdock_out.sdf")
-
             mol = Chem.AddHs(mol)
             AllChem.EmbedMolecule(mol)
 
@@ -52,8 +39,6 @@ class DiffDock_Vina_reward(Reward):
             except ValueError as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e) 
-                if not conf['debug']:
-                    shutil.rmtree(temp_dir)
                 return None,None
             with Chem.SDWriter(temp_ligand_fname) as w:
                 for m in [mol]:
@@ -98,26 +83,23 @@ class DiffDock_Vina_reward(Reward):
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e) 
                 if not conf['debug']:
-                    shutil.rmtree(workdir)
-                    #shutil.rmtree(temp_dir)
+                    shutil.rmtree(os.path.join(conf['output_dir'], conf['diffdock_complex_name'])+'-'+str(conf['gid']))
                 return None, None
             try:
                 diffdock_best_sdf = glob.glob(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'-'+str(conf['gid'])+'/rank1_confidence*.sdf')[0]
+                diffdock_confidence_score = diffdock_best_sdf.replace(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'-'+str(conf['gid'])+'/rank1_confidence', '').replace('.sdf', '')
             except RuntimeError as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e) 
                 if not conf['debug']:
-                    shutil.rmtree(workdir)
-                    #shutil.rmtree(temp_dir)
+                    shutil.rmtree(os.path.join(conf['output_dir'], conf['diffdock_complex_name'])+'-'+str(conf['gid']))
                 return None, None
-            #shutil.copyfile(best_sdf, output_ligand_fname)
 
-            diffdock_confidence_score = diffdock_best_sdf.replace(diffdock_pose_dir+'/'+str(conf['diffdock_complex_name'])+'-'+str(conf['gid'])+'/rank1_confidence', '').replace('.sdf', '')
+            if not conf['debug']:
+                os.remove(temp_ligand_fname)
 
             if conf['debug']:
                 print(f"diffdock_confidence_score: {diffdock_confidence_score}")
-            if not conf['debug']:
-                shutil.rmtree(workdir)
 
             suppl = Chem.SDMolSupplier(diffdock_best_sdf)
             diffdock_outmol = [m for m in suppl if m is not None][0]
@@ -194,7 +176,6 @@ class DiffDock_Vina_reward(Reward):
                 file_path.write_text(text)
 
                 if conf['debug']:
-                    #print(f"min_inter_score: {min_inter_score}, diffdock_confidence_score: {diffdock_confidence_score}. best pose num is {best_model}.")
                     print(f"min_inter_score: {min_inter_score}, diffdock_confidence_score: {diffdock_confidence_score}.")
                 return diffdock_confidence_score, min_inter_score
             except Exception as e:
