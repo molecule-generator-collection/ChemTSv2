@@ -176,7 +176,7 @@ class DiffDock_Vina_reward(Reward):
                 file_path.write_text(text)
 
                 if conf['debug']:
-                    print(f"min_inter_score: {min_inter_score}, diffdock_confidence_score: {diffdock_confidence_score}.")
+                    print(f"diffdock_confidence_score: {diffdock_confidence_score}, min_inter_score: {min_inter_score}.")
                 return diffdock_confidence_score, min_inter_score
             except Exception as e:
                 print(f"Vina Error SMILES: {Chem.MolToSmiles(mol)}")

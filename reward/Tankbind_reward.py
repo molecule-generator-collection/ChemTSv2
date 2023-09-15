@@ -63,7 +63,7 @@ class Tankbind_reward(Reward):
                 print(e) 
                 if not conf['debug']:
                     shutil.rmtree(temp_dir)
-                return None
+                return None, None
             with Chem.SDWriter(temp_ligand_fname) as w:
                 for m in [mol]:
                     w.write(m)
@@ -291,8 +291,8 @@ class Tankbind_reward(Reward):
 
                 if conf['debug']:
                     # print('min_inter_score: '+str(min_inter_score)+', tankbind_affinity: '+str(np.round(tankbind_affinity,decimals=3))+'. best pose num is '+str(best_model)+'.')
-                    print('min_inter_score: '+str(min_inter_score)+', tankbind_affinity: '+str(np.round(tankbind_affinity,decimals=3))+'.')
-                return min_inter_score, tankbind_affinity
+                    print('tankbind_affinity: '+str(np.round(tankbind_affinity,decimals=3))+', min_inter_score: '+str(min_inter_score)+'.')
+                return tankbind_affinity, min_inter_score
 
             except Exception as e:
                 print(f"Vina Error SMILES: {Chem.MolToSmiles(mol)}")
