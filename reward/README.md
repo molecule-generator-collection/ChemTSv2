@@ -106,7 +106,10 @@ Vina-GPU binary and Boost library should be set in the configuration file.
 
 ### VinaGPU_binary_geodiff_reward.py
 
-In addition to Vina-GPU, GeoDiff is required for use this reward function.
+This is an example of 3D Embedding using GeoDiff.
+In addition to Vina-GPU, GeoDiff and ConfGF are required for use *Embed3D_Geodiff* function.
+ConfGF is used for preparing GeoDiff dataset.
+
 
 #### GeoDiff installation example
 
@@ -215,7 +218,7 @@ conda activate mpchem
 conda install gcc=8
 pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
 pip install torchdrug==0.1.2 pyg biopython
-pip install torchmetrics tqdm mlcrate pyallow
+pip install torchmetrics tqdm mlcrate pyarrow
 pip install torch-scatter
 ```
 
