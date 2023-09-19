@@ -226,7 +226,7 @@ pip install torch-scatter
 
 |Paramaeter|Description|
 |:---|:---|
-|p2rank_path|Conda environment of Diffdock|
+|p2rank_path|Conda environment of TankBind|
 |tankbind_pythonpath| Specifiy 'tankbind' directory path in Downloaded (or cloned by git) Tankbind directory |
 |tankbind_modelfile| path to self_dock.pt (or re_dock.pt) in TankBind/saved_models directory |
 |tankbind_complex_name|target PDB ID|
