@@ -108,8 +108,7 @@ Vina-GPU binary and Boost library should be set in the configuration file.
 
 This is an example of 3D Embedding using GeoDiff.
 In addition to Vina-GPU, GeoDiff and ConfGF are required for use *Embed3D_Geodiff* function.
-ConfGF is used for preparing GeoDiff dataset.
-
+ConfGF is used for preparation/conversion molecule info.
 
 #### GeoDiff installation example
 
@@ -213,13 +212,22 @@ It could be better to install pytorch by PyPI than Conda.
 The following is an example of installation for the TankBind reward function.
 It might be better to use PyPI instead of Conda. (Althogh Conda is used to installation in [the official TankBind installation](https://github.com/luwei0917/TankBind#installation) )
 
-```
-conda activate mpchem
-conda install gcc=8
+* For a previous version of Pytorch
+```bash
+conda install -c conda-forge gcc
 pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
-pip install torchdrug==0.1.2 pyg biopython
-pip install torchmetrics tqdm mlcrate pyarrow
-pip install torch-scatter
+pip install torch-scatter torch_cluster -f https://data.pyg.org/whl/torch-1.12.1+cu113.html
+pip install torchdrug==0.1.2 torch_geometric torchmetrics
+pip install biopython vina meeko
+```
+
+* For the latest version of PyToch with CUDA 11.7
+```bash
+conda install -c conda-forge gcc
+pip install torch torchvision torchaudio
+pip install torch-scatter torch_cluster -f https://data.pyg.org/whl/torch-1.13.0+cu117.html
+pip install torchdrug==0.1.2 torch_geometric torchmetrics
+pip install biopython vina meeko
 ```
 
 #### Parameter description
