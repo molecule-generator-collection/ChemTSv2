@@ -118,7 +118,7 @@ class DiffDock_Vina_reward(Reward):
             v = Vina(sf_name=conf['vina_sf_name'], cpu=conf['vina_cpus'], verbosity=verbosity)
             v.set_receptor(rigid_pdbqt_filename=conf['vina_receptor'])
 
-            ignore_vina_center = True
+            ignore_vina_center = conf['ignore_vina_center']
     
             try:
                 # AllChem.EmbedMolecule(mol)
