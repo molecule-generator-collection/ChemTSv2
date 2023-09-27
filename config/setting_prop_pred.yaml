@@ -90,7 +90,7 @@ deepchem:
     batch_size: 100
     batch_normalize: True
     uncertainty: True
-    model_dir: './property_prediction/model_train'
+    model_dir: './property_prediction/model_opt'
     #nb_epoch: 10
     #metrics: ["r2_score","pearson_r2_score","mean_squared_error","mean_absolute_error","rms_score","mae_score"]
     #valid_metric: "pearson_r2_score"
