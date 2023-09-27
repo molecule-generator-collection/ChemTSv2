@@ -182,14 +182,12 @@ def main():
     logger.info(f'Run MPChemTS [rank {rank}]')
     comm.barrier()
     search = p_mcts(comm, chem_model, reward_calculator, conf, logger)
-    if conf['search_type'] == 'TDS_UCT':
-        search.TDS_UCT()
-    #elif conf['search_type'] == 'TDS_df_UCT':
-    #    search.TDS_df_UCT()
+    if conf['search_type'] == 'TDS_df_UCT':
+        search.TDS_df_UCT()
     elif conf['search_type'] == 'MP_MCTS':
         search.MP_MCTS()
     else:
-        logger.error('[ERROR] Select a search type from [TDS_UCT, MP_MCTS]')
+        logger.error('[ERROR] Select a search type from [TDS_df_UCT, MP_MCTS]')
         sys.exit(1)
 
     comm.barrier()
