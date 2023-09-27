@@ -5,7 +5,7 @@ import deepchem as dc
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import matplotlib.pyplot as plot
+#import matplotlib.pyplot as plot
 import copy, yaml, argparse
 from hyperopt import hp, fmin, tpe, rand, atpe, Trials, STATUS_OK
 import statistics, time
@@ -103,7 +103,8 @@ def cv(args):
                                                   interval=params['training']['valid_interval'], metrics=metrics,
                                                   save_metric=params['training']['metrics'].index(params['training']['valid_metric']),
                                                   save_dir=model_dir, 
-                                                  transformers=transformers, save_on_minimum=save_on_minimum
+                                                  #transformers=transformers,
+                                                  save_on_minimum=save_on_minimum
                                                   #output_file=open(params['training']['model_dir']+'/fold_'+str(i)+'/all_results.txt', 'a')
                                                  )
         
@@ -211,7 +212,8 @@ def train(params, datasets):
                                               interval=params['training']['valid_interval'], metrics=metrics,
                                               save_metric=params['training']['metrics'].index(params['training']['valid_metric']),
                                               save_dir=params['training']['model_dir'], 
-                                              transformers=transformers, save_on_minimum=save_on_minimum
+                                              # transformers=transformers,
+                                              save_on_minimum=save_on_minimum
                                               # output_file=open(params['training']['model_dir']+'/train.log', 'a')
                                              )
 

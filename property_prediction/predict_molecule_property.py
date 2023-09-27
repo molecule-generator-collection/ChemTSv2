@@ -2,7 +2,7 @@ import deepchem as dc
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import matplotlib.pyplot as plot
+#import matplotlib.pyplot as plot
 import copy, yaml, argparse
 from hyperopt import hp, fmin, tpe, rand, atpe, Trials, STATUS_OK
 import statistics, time
@@ -93,15 +93,25 @@ logger.info("params:\n %s",params)
 
 logger.info("Loading data...")
 
-infile = params["dataloader"]["infile"]
+# Read CSV File
+if params['dataloader']['tasks'] is not None and type(params['dataloader']['tasks']) is list and len(params['dataloader']['tasks']) >0:
+    dataset = DataLoader.loadCSV(params['dataloader'])
+    
+    # transformers
+    transformers = [ getattr(dc.trans, t)(transform_y=True, dataset=dataset) for t in params["dataloader"]["transformers"]]
 
-df = pd.read_csv(infile)
-smiles = df['smiles'].values
+    for transformer in transformers:
+        d = transformer.transform(dataset)
 
-featurizer = params['dataloader']['featurizer']
-features = featurizer.featurize(smiles)
+else:
+    infile = params["dataloader"]["infile"]
+    df = pd.read_csv(infile)
+    smiles = df['smiles'].values
+    featurizer = params['dataloader']['featurizer']
+    features = featurizer.featurize(smiles)
+    d = dc.data.NumpyDataset(X=features,ids=smiles)
 
-dataset = dc.data.NumpyDataset(X=features,ids=smiles)
+
 
 # dataset.to_dataframe()
 
@@ -124,14 +134,19 @@ model = dc.models.GraphConvModel(
 
 model.restore()
 
-logger.info(dataset)
+logger.info(d)
 
-y_pred, y_std = model.predict_uncertainty(dataset)
-# y_pred = transformers[0].untransform(y_pred)
+y_pred, y_std = model.predict_uncertainty(d)
 
-df = pd.DataFrame(list(zip(dataset.ids, y_pred)), columns=['smiles', 'predict_value'])
+if params['dataloader']['tasks'] is not None and type(params['dataloader']['tasks']) is list and len(params['dataloader']['tasks']) >0:
+    y_pred = transformers[0].untransform(y_pred)
+    df = pd.DataFrame(list(zip(d.ids, dataset.y, y_pred, y_std)), columns=['smiles', 'actual', 'predict', 'std_dev'])
+
+else:
+    df = pd.DataFrame(list(zip(d.ids, y_pred)), columns=['smiles', 'predict'])
+
 print(df)
-df.to_csv(params['training']['model_dir']+'/predict.csv', index=False)
+df.to_csv('./predict.csv', index=False)
 
 #model.restore()
 
