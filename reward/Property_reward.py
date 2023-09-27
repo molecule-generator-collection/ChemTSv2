@@ -94,7 +94,8 @@ class Property_reward(Reward):
         return [PropValue]
 
     def calc_reward_from_objective_values(values, conf):
-        return np.tanh(values[0]/10) if None not in values else -1
+        #return np.tanh(values[0]/10) if None not in values else -1
+        return values[0] if None not in values else -999
 
     
     
