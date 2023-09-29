@@ -90,7 +90,10 @@ def cv(args):
                     batch_size = params['training']['batch_size'],
                     batch_normalize = params['training']['batch_normalize'],
                     uncertainty = params['training']['uncertainty'],
-                    model_dir = model_dir
+                    model_dir = model_dir,
+                    learning_rate=params['training']['learning_rate'],
+                    optimizer = params['training']['optimizer']
+
         )
         
         if params['training']['valid_metric'] in ["r2_score","pearson_r2_score"]:
@@ -113,7 +116,7 @@ def cv(args):
         for j in tqdm(range(params['training']["nb_epoch"])):
             print('[epoch '+str(j+1)+'/'+str(params['training']["nb_epoch"])+']')
             loss = model.fit(train_set, nb_epoch=1, callbacks=validation)
-            print('loss=',loss)
+            print(f'loss= {loss}')
 
         model.restore(model_dir=model_dir)
 
@@ -199,7 +202,10 @@ def train(params, datasets):
                 batch_size = params['training']['batch_size'],
                 batch_normalize = params['training']['batch_normalize'],
                 uncertainty = params['training']['uncertainty'],
-                model_dir = params['training']['model_dir']
+                model_dir = params['training']['model_dir'],
+                learning_rate=params['training']['learning_rate'],
+                optimizer = params['training']['optimizer']
+
     )
     
     if params['training']['valid_metric'] in ["r2_score","pearson_r2_score"]:
@@ -220,7 +226,7 @@ def train(params, datasets):
     for i in tqdm(range(params['training']["nb_epoch"])):
         print('[epoch '+str(i+1)+'/'+str(params['training']["nb_epoch"])+']')
         loss = model.fit(train_set, nb_epoch=1, callbacks=validation)
-        print('loss=',loss)
+        print(f'loss= {loss}')
     
     return model, loss, metrics, valid_metric, transformers
 
@@ -231,6 +237,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-c", "--config", type=str, default=None, help="Config file path")
 parser.add_argument("-opt", "--optimize", action="store_true", help="Perform Hyperparameter Optimization")
+parser.add_argument("-o", "--out_csv", type=str, default='./predict.csv', help="Path to prediction result file name (CSV)")
 parser.add_argument("-v", "--verbose", action="store_true", help="For debug")
 
 
@@ -264,6 +271,7 @@ params = copy.deepcopy(config)
 
 params['dataloader']['featurizer'] = getattr(dc.feat,config['dataloader']['featurizer']['type'])(config['dataloader']['featurizer']['kwargs'])
 params['splitter']['type'] = getattr(dc.splits,config['splitter']['type'])()
+params['training']['optimizer'] = getattr(dc.models.optimizers, config['training']['optimizer'])()
 
 logger.debug("config:\n %s", config)
 logger.info("params:\n %s",params)
@@ -371,4 +379,4 @@ y_pred = transformers[0].untransform(y_pred)
 df = pd.DataFrame(list(zip(data_for_pred.ids, data_for_pred.y, y_pred, y_std)), columns=['smiles', 'actural', 'predict', 'std_dev'])
 logger.info('%s', df)
 
-df.to_csv(params['training']['model_dir']+'/predict.csv', index=False)
+df.to_csv(args.out_csv, index=False)

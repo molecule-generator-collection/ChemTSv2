@@ -1,5 +1,5 @@
 dataloader:
-    infile: ./ABL.csv
+    infile: ./EGFR.csv
     target: smiles
     tasks: ["value"]
     featurizer:
@@ -17,28 +17,30 @@ splitter:
 training:
     n_tasks: 1
     graph_conv_layers: [64, 64]
-    dense_layer_size: 64
+    dense_layer_size: 256
     dropout: 0.5
     mode: 'regression'
     number_atom_features: 75
-    n_classes: None
+    n_classes: 2
     batch_size: 100
     batch_normalize: True
     uncertainty: True
-    model_dir: './model_train'
+    model_dir: './model_opt'
+    learning_rate: 0.001
+    optimizer: Adam
     nb_epoch: 100
     metrics: ["r2_score","pearson_r2_score","mean_squared_error","mean_absolute_error","rms_score","mae_score"]
     valid_metric: "pearson_r2_score"
     valid_interval: 2
     
-#hyperopt:
-#    params:
-#        graph_conv_layers: [[64, 64],[64, 64, 64]]
-#        dense_layer_size: [64, 128, 256]
-#        dropout: { 'low': 0.2, 'high': 0.5 }
-#        learning_rate: { 'high': 0.001, 'low': 0.0001}
-#    algo: "tpe"
-#    max_evals: 3
-#    timeout: 3600
+hyperopt:
+    params:
+        graph_conv_layers: [[64, 64],[128, 128]]
+        dense_layer_size: [64, 128]
+        dropout: { 'low': 0.2, 'high': 0.5 }
+        learning_rate: { 'high': 0.001, 'low': 0.0001}
+    algo: "tpe"
+    max_evals: 5
+    timeout: 3600
     
     

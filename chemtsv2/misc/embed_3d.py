@@ -28,29 +28,10 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
             log_dir='./result/geodiff',
             seed=12345,
             gid='',
-            debug=False):
-
-    #if debug:
-    #    logging.basicConfig(level=logging.DEBUG)
-
-    #def num_confs(num:str):
-    #    if num.endswith('x'):
-    #       return lambda x:x*int(num[:-1])
-    #    elif int(num) > 0: 
-    #        return lambda x:int(num)
-    #    else:
-    #        raise ValueError()
+            debug=True):
 
     # Logging
     output_dir = get_new_log_dir(log_dir, 'geodiff_'+str(gid), tag=tag)
-    #logger = get_logger('test', output_dir)
-    #print(args)
-
-            
-            
-    #num_confs = num_confs('2x')
-    #num_samples = num_confs(2)
-    #num_samples = args.num_confs
     num_samples = 1
 
     # Load checkpoint
@@ -58,7 +39,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     seed_all(seed)
 
     # Datasets and loaders
-    # print('Loading datasets...')
+    print('Loading datasets...')
 
     transforms = Compose([
         CountNodesPerGraph(),
@@ -152,7 +133,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                     print(data.pos_gen)
 
                 if save_data:
-                    save_path = os.path.join(output_dir, 'samples_%d.pkl' % gid)
+                    save_path = os.path.join(output_dir, 'samples_%s.pkl' % str(i))
                     print(f'Saving the conformer to: {save_path}')
                     with open(save_path, 'wb') as f:
                         pickle.dump(results, f)
@@ -202,7 +183,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                     mol = Chem.RemoveHs(mol)
     
                 if save_data:
-                    save_path_sdf = os.path.join(output_dir, 'samples_%d.sdf' % gid)
+                    save_path_sdf = os.path.join(output_dir, 'samples_%s.sdf' % str(i))
                     print(f'Saving the conformer to: {save_path}')
                     w = Chem.SDWriter(save_path_sdf)
                     w.write(mol)
@@ -212,6 +193,66 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
                 clip_local = 20
                 print('[Warning] Retrying with local clipping.')
 
-        del model
     return mol
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--ckpt', type=str, default='logs/drugs_default/checkpoints/drugs_default.pt', help='path for loading the checkpoint')
+    parser.add_argument('--tag', type=str, default='')
+    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--clip', type=float, default=1000.0)
+    parser.add_argument('--n_steps', type=int, default=5000,
+                    help='sampling num steps; for DSM framework, this means num steps for each noise scale')
+    parser.add_argument('--global_start_sigma', type=float, default=0.5,
+                    help='enable global gradients only when noise is low')
+    parser.add_argument('--w_global', type=float, default=1.0,
+                    help='weight for global gradients')
+    # Parameters for DDPM
+    parser.add_argument('--sampling_type', type=str, default='ld',
+                    help='generalized, ddpm_noisy, ld: sampling method for DDIM, DDPM or Langevin Dynamics')
+    parser.add_argument('--eta', type=float, default=1.0,
+                    help='weight for DDIM and DDPM: 0->DDIM, 1->DDPM')
+
+    parser.add_argument('--smi', type=str, default=None)
+    parser.add_argument('--infile', type=str, default=None,
+                    help = 'input smi file for multiple monomers')
+    parser.add_argument('--edge_order', type=int, default=3)
+    parser.add_argument('--log_dir', type=str, default='./result/geodiff/')
+    parser.add_argument('--save_data', action='store_true', default=False)
+    
+    args = parser.parse_args()
+    
+    n_steps = args.n_steps
+    w_global = args.w_global
+    global_start_sigma = args.global_start_sigma
+    clip = args.clip
+    sampling_type = args.sampling_type
+    eta = args.eta
+    tag = args.tag
+    edge_order = args.edge_order
+    device = args.device
+
+    infile = args.infile
+    smi = args.smi
+    ckpt_path = args.ckpt
+    log_dir = args.log_dir
+
+    mol = Embed3D_Geodiff(smi = args.smi,
+                    n_steps = args.n_steps,
+                    w_global = args.w_global,
+                    global_start_sigma = args.global_start_sigma,
+                    clip = args.clip,
+                    sampling_type = args.sampling_type,
+                    eta = args.eta,
+                    tag = args.tag,
+                    edge_order = args.edge_order,
+                    device = args.device,
+                    infile = args.infile,
+                    ckpt_path = args.ckpt,
+                    seed = 12345,
+                    save_data = args.save_data,
+                    log_dir = args.log_dir)
+
+    print(Chem.MolToMolBlock(mol))
+    print(Chem.MolToSmiles(mol))
 

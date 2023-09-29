@@ -55,6 +55,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-c", "--config", type=str, default=None, help="Config file path")
 parser.add_argument("-opt", "--optimize", action="store_true", help="Perform Hyperparameter Optimization")
+parser.add_argument("-o", "--out_csv", type=str, default='./predict.csv', help="Path to prediction result file name (CSV)")
 parser.add_argument("-v", "--verbose", action="store_true", help="For debug")
 
 
@@ -86,6 +87,7 @@ params = copy.deepcopy(config)
 
 params['dataloader']['featurizer'] = getattr(dc.feat,config['dataloader']['featurizer']['type'])(config['dataloader']['featurizer']['kwargs'])
 params['splitter']['type'] = getattr(dc.splits,config['splitter']['type'])()
+params['training']['optimizer'] = getattr(dc.models.optimizers, config['training']['optimizer'])()
 
 logger.debug("config:\n %s", config)
 logger.info("params:\n %s",params)
@@ -129,7 +131,9 @@ model = dc.models.GraphConvModel(
             batch_size = params['training']['batch_size'],
             batch_normalize = params['training']['batch_normalize'],
             uncertainty = params['training']['uncertainty'],
-            model_dir = params['training']['model_dir']
+            model_dir = params['training']['model_dir'],
+            learning_rate=params['training']['learning_rate'],
+            optimizer = params['training']['optimizer']
 )
 
 model.restore()
@@ -146,7 +150,5 @@ else:
     df = pd.DataFrame(list(zip(d.ids, y_pred)), columns=['smiles', 'predict'])
 
 print(df)
-df.to_csv('./predict.csv', index=False)
-
-#model.restore()
+df.to_csv(args.out_csv, index=False)
 
