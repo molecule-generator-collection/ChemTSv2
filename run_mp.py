@@ -16,7 +16,7 @@ import requests
 import yaml
 
 from chemtsv2.utils import loaded_model, get_model_structure_info
-from chemtsv2.parallel_mcts import p_mcts
+from chemtsv2.parallel_mcts_ls import p_mcts
 
 
 def get_parser():
