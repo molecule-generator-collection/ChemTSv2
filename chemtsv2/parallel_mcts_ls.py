@@ -16,9 +16,7 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 
-from chemtsv2.mp_utils import (
-    backtrack_tdsdfuct, backtrack_mpmcts, compare_ucb_tdsdfuct, compare_ucb_mpmcts, update_selection_ucbtable_mpmcts, update_selection_ucbtable_tdsdfuct,
-    Item, HashTable)
+from chemtsv2.mp_utils import backtrack_mpmcts, compare_ucb_mpmcts, update_selection_ucbtable_mpmcts, Item, HashTable
 from chemtsv2.utils import chem_kn_simulation, build_smiles_from_tokens, expanded_node, has_passed_through_filters
 
 """
@@ -294,187 +292,6 @@ class p_mcts:
         self.filter_check_list.clear()
         self.objective_values_list.clear()
 
-    def TDS_df_UCT(self):
-        # self.comm.barrier()
-        status = MPI.Status()
-        self.start_time = time.time()
-        bpm = 0
-        bp = []
-        _, rootdest = self.hsm.hashing(['&'])
-        jobq = deque()
-        timeup = False
-        if self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []])
-            for i in range(3 * self.nprocs):
-                temp = deepcopy(root_job_message)
-                root_job = (JobType.SEARCH.value, temp)
-                jobq.appendleft(root_job)
-        while not timeup:
-            if self.rank == 0:
-                if self.elapsed_time() > self.threshold:
-                    timeup = True
-                    for dest in range(1, self.nprocs):
-                        dummy_data = tag = JobType.TIMEUP.value
-                        self.comm.bsend(dummy_data, dest=dest,
-                                        tag=JobType.TIMEUP.value)
-            while True:
-                ret = self.comm.Iprobe(source=MPI.ANY_SOURCE,
-                                        tag=MPI.ANY_TAG, status=status)
-                if ret == False:
-                    break
-                else:
-                    message = self.comm.recv(
-                        source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
-                    cur_status = status
-                    tag = cur_status.Get_tag()
-                    job = (tag, message)
-                    if JobType.is_high_priority(tag):
-                        jobq.append(job)
-                    else:
-                        jobq.appendleft(job)
-            jobq_non_empty = bool(jobq)
-            if jobq_non_empty:
-                (tag, message) = jobq.pop()
-                if tag == JobType.SEARCH.value:
-                    if self.hsm.search_table(message[0]) == None:
-                        node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
-                        info_table = message[5]
-                        #print ("not in table info_table:",info_table)
-                        if node.state == ['&']:
-                            node.expansion(self.chem_model, self.logger)
-                            m = self.conf['random_generator'].choice(node.expanded_nodes)
-                            n = node.addnode(m)
-                            self.hsm.insert(Item(node.state, node))
-                            _, dest = self.hsm.hashing(n.state)
-                            self.send_message(n, dest, tag=JobType.SEARCH.value)
-                        else:
-                            if len(node.state) < node.max_len:
-                                gen_id = self.get_generated_id()
-                                values_list, score, smi, filter_flag, is_valid_smi = node.simulation(
-                                    self.chem_model, node.state, gen_id, self.generated_dict)
-                                if is_valid_smi:
-                                    self.record_result(smiles=smi, depth=len(node.state), reward=score,
-                                                       gen_id=gen_id, raw_reward_list=values_list, filter_flag=filter_flag)
-                                node.update_local_node(score)
-                                # update infor table
-                                info_table = backtrack_tdsdfuct(
-                                    info_table, score)
-                                self.hsm.insert(Item(node.state, node))
-                                _, dest = self.hsm.hashing(node.state[0:-1])
-                                self.send_backprop(node, dest)
-                            else:
-                                score = -1
-                                node.update_local_node(score)
-                                info_table = backtrack_tdsdfuct(
-                                    info_table, score)
-                                self.hsm.insert(Item(node.state, node))
-                                _, dest = self.hsm.hashing(node.state[0:-1])
-                                self.send_backprop(node, dest)
-
-                    else:  # if node already in the local hashtable
-                        node = self.hsm.search_table(message[0])
-                        info_table = message[5]
-                        #print ("in table info_table:",info_table)
-                        if node.state == ['&']:
-                            # print ("in table root:",node.state,node.path_ucb,len(node.state),len(node.path_ucb))
-                            if node.expanded_nodes != []:
-                                m = self.conf['random_generator'].choice(node.expanded_nodes)
-                                n = node.addnode(m)
-                                self.hsm.insert(Item(node.state, node))
-                                _, dest = self.hsm.hashing(n.state)
-                                self.send_message(n, dest, tag=JobType.SEARCH.value)
-                            else:
-                                ind, childnode = node.selection()
-                                self.hsm.insert(Item(node.state, node))
-                                info_table = update_selection_ucbtable_tdsdfuct(
-                                    info_table, node, ind)
-                                #print ("info_table after selection:",info_table)
-                                _, dest = self.hsm.hashing(childnode.state)
-                                self.send_message(childnode, dest, tag=JobType.SEARCH.value)
-                        else:
-                            #node.path_ucb = message[5]
-                            # info_table=message[5]
-                            #print("check ucb:", node.reward, node.visits, node.num_thread_visited,info_table)
-                            if len(node.state) < node.max_len:
-                                if node.state[-1] != '\n':
-                                    if node.expanded_nodes != []:
-                                        m = self.conf['random_generator'].choice(node.expanded_nodes)
-                                        n = node.addnode(m)
-                                        self.hsm.insert(Item(node.state, node))
-                                        _, dest = self.hsm.hashing(n.state)
-                                        self.send_message(n, dest, tag=JobType.SEARCH.value)
-                                    else:
-                                        if node.check_childnode == []:
-                                            node.expansion(self.chem_model, self.logger)
-                                            m = self.conf['random_generator'].choice(
-                                                node.expanded_nodes)
-                                            n = node.addnode(m)
-                                            self.hsm.insert(Item(node.state, node))
-                                            _, dest = self.hsm.hashing(n.state)
-                                            self.send_message(n, dest, tag=JobType.SEARCH.value)
-                                        else:
-                                            ind, childnode = node.selection()
-                                            self.hsm.insert(Item(node.state, node))
-                                            info_table = update_selection_ucbtable_tdsdfuct(
-                                                info_table, node, ind)
-                                            _, dest = self.hsm.hashing(
-                                                childnode.state)
-                                            self.send_message(childnode, dest, tag=JobType.SEARCH.value)
-                                else:
-                                    gen_id = self.get_generated_id()
-                                    value_list, score, smi, filter_flag, is_valid_smi = node.simulation(
-                                        self.chem_model, node.state, gen_id, self.generated_dict)
-                                    score = -1
-                                    if is_valid_smi:
-                                        self.record_result(smiles=smi, depth=len(node.state), reward=score,
-                                                           gen_id=gen_id, raw_reward_list=value_list, filter_flag=filter_flag)
-                                    node.update_local_node(score)
-                                    info_table = backtrack_tdsdfuct(
-                                        info_table, score)
-
-                                    self.hsm.insert(Item(node.state, node))
-                                    _, dest = self.hsm.hashing(node.state[0:-1])
-                                    self.send_backprop(node, dest)
-                            else:
-                                score = -1
-                                node.update_local_node(score)
-                                info_table = backtrack_tdsdfuct(
-                                    info_table, score)
-                                self.hsm.insert(Item(node.state, node))
-                                _, dest = self.hsm.hashing(node.state[0:-1])
-                                self.send_backprop(node, dest)
-
-                elif tag == JobType.BACKPROPAGATION.value:
-                    bpm += 1
-                    node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
-                    node.reward = message[1]
-                    local_node = self.hsm.search_table(message[0][0:-1])
-                    #print ("report check message[5]:",message[5])
-                    #print ("check:",len(message[0]), len(message[5]))
-                    #print ("check:",local_node.wins, local_node.visits, local_node.num_thread_visited)
-                    info_table=message[5]
-                    if local_node.state == ['&']:
-                        local_node.backpropagation(node)
-                        self.hsm.insert(Item(local_node.state, local_node))
-                        _, dest = self.hsm.hashing(local_node.state)
-                        self.send_message(local_node, dest, tag=JobType.SEARCH.value)
-                    else:
-                        local_node.backpropagation(node)
-                        #local_node,info_table = backtrack_tdsdf(info_table,local_node, node)
-                        back_flag = compare_ucb_tdsdfuct(info_table,local_node)
-                        self.hsm.insert(Item(local_node.state, local_node))
-                        if back_flag == 1:
-                            _, dest = self.hsm.hashing(local_node.state[0:-1])
-                            self.send_backprop(local_node, dest)
-                        if back_flag == 0:
-                            _, dest = self.hsm.hashing(local_node.state)
-                            self.send_message(local_node, dest, tag=JobType.SEARCH.value)
-                elif tag == JobType.TIMEUP.value:
-                    timeup = True
-        bp.append(bpm)
-
-        return
-
     def MP_MCTS(self):
         #self.comm.barrier()
         status = MPI.Status()
@@ -510,7 +327,6 @@ class p_mcts:
                 jobq.appendleft(root_job)
 
         async def _proc_search(tag, message):
-            # print(f"rank {self.rank} _proc_search started")
             if self.hsm.search_table(message[0]) == None:
                 node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
                 if node.state == ['&']:
@@ -534,7 +350,6 @@ class p_mcts:
             else:  # if node already in the local hashtable
                 node = self.hsm.search_table(message[0])
                 if node.state == ['&']:
-                    # print ("in table root:",node.state,node.path_ucb,len(node.state),len(node.path_ucb))
                     if node.expanded_nodes != []:
                         m = self.conf['random_generator'].choice(node.expanded_nodes)
                         n = node.addnode(m)
@@ -549,7 +364,6 @@ class p_mcts:
                         self.send_message(childnode, dest, tag=JobType.SEARCH.value, data=ucb_table)
                 else:
                     node.path_ucb = message[5]
-                    #print("check ucb:", node.wins, node.visits, node.num_thread_visited)
                     if len(node.state) < node.max_len:
                         if node.state[-1] != '\n':
                             if node.expanded_nodes != []:
@@ -607,9 +421,7 @@ class p_mcts:
             assert self.rank == 0
             nonlocal checkpoint_ready_count
             checkpoint_ready_count += 1
-            #print('Checkpoint ready count', checkpoint_ready_count)
             if checkpoint_ready_count >= self.nprocs - 1:
-                #print('Checkpoint ready count', checkpoint_ready_count)
                 for dest in range(0, self.nprocs):
                     dummy_data = tag = JobType.CHECKPOINT_SAVE.value
                     self.comm.bsend(dummy_data, dest=dest, tag=JobType.CHECKPOINT_SAVE.value)
@@ -617,7 +429,6 @@ class p_mcts:
         async def _proc_checkpoint_prepare(tag, message):
             nonlocal checkpoint_prepare
             checkpoint_prepare = True
-            #print('Checkpoint prepare', self.rank)
             dummy_data = JobType.CHECKPOINT_READY.value
             self.comm.bsend(dummy_data, dest=0, tag=JobType.CHECKPOINT_READY.value)
 
@@ -639,30 +450,27 @@ class p_mcts:
                     ckpt_path = os.path.join(self.conf['output_dir'], f"mp_checkpoint_rank{i:04}.pickle")
                     with open(ckpt_path, mode='wb') as f:
                         pickle.dump(cp_obj, f)
-            #print('Checkpoint save finished')
             checkpoint_saved = True
 
         async def _async_simulation():
-            print(f"rank {self.rank} _async_simulation started")
+            # print(f"rank {self.rank} _async_simulation started")
             nonlocal running_simulation_counter
             running_simulation_counter += 1
             nonlocal continue_simulation
             while continue_simulation:
                 if not self.sim_task_queue.empty():
-                    # print(f"rank {self.rank} _async_simulation received sim_task_queue")
                     node, gen_id, override_score = await self.sim_task_queue.get()
-                    print(f"rank {self.rank} _async_simulation calling node.simulation")
+                    # print(f"rank {self.rank} _async_simulation calling node.simulation")
                     values_list, score, smi, filter_flag, is_valid_smi = node.simulation(
                         self.chem_model, node.state, gen_id, self.generated_dict)
-                    print(f"rank {self.rank} _async_simulation result {smi} {score}")
+                    # print(f"rank {self.rank} _async_simulation result {smi} {score}")
                     if override_score:
                         score = -1
                     await self.sim_result_queue.put((node, gen_id, values_list, score, smi, filter_flag, is_valid_smi))
                 await asyncio.sleep(0)
-            print(f"rank {self.rank} _async_simulation finished")
+            # print(f"rank {self.rank} _async_simulation finished")
 
         async def _async_simulation_done():
-            # print(f"rank {self.rank} _async_simulation_done started")
             nonlocal running_simulation_counter
             while not self.sim_result_queue.empty():
                 node, gen_id, values_list, score, smi, filter_flag, is_valid_smi = await self.sim_result_queue.get()
@@ -674,35 +482,27 @@ class p_mcts:
                 _, dest = self.hsm.hashing(node.state[0:-1])
                 self.send_backprop(node, dest)
                 running_simulation_counter -= 1
-            # print(f"rank {self.rank} _async_simulation_done finished")
 
         async def _proc_timeup():
-            print(f"rank {self.rank} _proc_timeup")
             nonlocal timeup
             nonlocal continue_simulation
             timeup = True
             continue_simulation = False
-            # while not self.sim_task_queue.empty():
-            #    await self.sim_task_queue.get()
 
         async def _probe_loop():
-            print(f"rank {self.rank} _probe_loop started")
             nonlocal timeup
             nonlocal continue_simulation
             nonlocal checkpoint_ready_count
             nonlocal checkpoint_prepare
             while not timeup:
-                # print(f"rank {self.rank} _probe_loop enter while timeup loop")
                 if self.rank == 0:
                     if self.elapsed_time() > self.threshold and self.conf['save_checkpoint'] and not checkpoint_prepare:
                         checkpoint_prepare = True
                         checkpoint_ready_count = 0
-                        #print('Checkpoint prepare')
                         for dest in range(1, self.nprocs):
                             dummy_data = tag = JobType.CHECKPOINT_PREPARE.value
                             self.comm.bsend(dummy_data, dest=dest, tag=JobType.CHECKPOINT_PREPARE.value)
                     if self.elapsed_time() > self.threshold and (not self.conf['save_checkpoint'] or checkpoint_saved):
-                        print(f"rank {self.rank}: detected timeup")
                         try:
                             await asyncio.wait_for(_proc_timeup(), timeout=None)
                         except TimeoutError:
@@ -725,14 +525,11 @@ class p_mcts:
                         else:
                             jobq.appendleft(job)
 
-                # print(f"rank {self.rank} _probe_loop before _async_simulation_done")
-
                 # get from sim_result_queue
                 await _async_simulation_done()
 
                 jobq_non_empty = bool(jobq)
                 if jobq_non_empty:
-                    # print(f"rank {self.rank} _probe_loop jobq was not empty")
                     if checkpoint_prepare:
                         (tag, message) = jobq[-1]
                         if JobType.is_high_priority(tag):
@@ -741,7 +538,6 @@ class p_mcts:
                             continue
                     (tag, message) = jobq.pop()
                     if tag == JobType.SEARCH.value:
-                        # print(f"rank {self.rank} _probe_loop before _proc_search")
                         await _proc_search(tag, message)
                     elif tag == JobType.BACKPROPAGATION.value:
                         await _proc_backprop(tag, message)
@@ -758,7 +554,6 @@ class p_mcts:
                         await _proc_checkpoint_save(tag, message)
                 else:
                     await asyncio.sleep(0.01)
-            print(f"rank {self.rank} _probe_loop finished")
             return
 
         async def _main_loop():
