@@ -8,8 +8,8 @@ from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
 
 from reward.reward import Reward
-#######importing added module proprocess#######
-from chemtsv2.preprocessing import get_appropriate_ligand3d
+from reward.util import get_appropriate_ligand3d
+
 
 class Vina_use_appropriate_lingand3d_reward(Reward):
     def get_objective_functions(conf):
@@ -18,13 +18,7 @@ class Vina_use_appropriate_lingand3d_reward(Reward):
             v = Vina(sf_name=conf['vina_sf_name'], cpu=conf['vina_cpus'], verbosity=verbosity)
             v.set_receptor(rigid_pdbqt_filename=conf['vina_receptor'])
 
-#####This process is unified to preprocess#####
-#            mol = Chem.AddHs(mol)            #
-###############################################
             try:
-#####This process is replaced by preprocess####
-#                AllChem.EmbedMolecule(mol)   #
-###############################################
                 mol = get_appropriate_ligand3d(mol)
                 mol_conf = mol.GetConformer(-1)
                 centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
