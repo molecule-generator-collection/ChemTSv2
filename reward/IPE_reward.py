@@ -5,7 +5,7 @@ from rdkit.Chem import Descriptors, RDConfig
 sys.path.append("./data/")
 import sascorer
 
-from reward.reward import Reward
+from chemtsv2.reward import Reward
 
 import GaussianRunPack
 from rdkit import Chem
