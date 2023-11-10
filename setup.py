@@ -27,6 +27,7 @@ INSTALL_REQUIRES = [
     'numpy~=1.19.2',
     'protobuf~=3.9.2',
     'rdkit-pypi==2021.03.5',
+    'selfies==2.1.0',
     'pyyaml',
     'pandas',
     'joblib']
@@ -54,7 +55,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT LIcense",
     url="https://github.com/molecule-generator-collection/ChemTSv2",
-    version="0.9.13",
+    version="0.9.13rc1",
     download_url="https://github.com/molecule-generator-collection/ChemTSv2",
     python_requires=">=3.7",
     install_requires=INSTALL_REQUIRES,

@@ -110,7 +110,7 @@ class Tree_Node():
 
         self.conf['gid'] = gen_id
         all_posible = chem_kn_simulation(chem_model, state, self.val, self.conf)
-        smi = build_smiles_from_tokens(all_posible, self.val)
+        smi = build_smiles_from_tokens(all_posible, self.val, use_selfies=self.conf['use_selfies'])
 
         if smi in generated_dict:
             values_list = generated_dict[smi][0]

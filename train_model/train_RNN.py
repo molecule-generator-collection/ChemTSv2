@@ -45,9 +45,9 @@ def prepare_data(smiles, all_smiles):
     return X_train, y_train
 
 
-def save_model(model, output_dir):
-    output_json = os.path.join(output_dir, "model.tf25.json")
-    output_weight = os.path.join(output_dir, "model.tf25.h5")
+def save_model(model, output_dir, use_selfies=False):
+    output_json = os.path.join(output_dir, "model_sf.tf25.json" if use_selfies else "model.tf25.json")
+    output_weight = os.path.join(output_dir, "model_sf.tf25.h5" if use_selfies else "model.tf25.h5")
     model_json = model.to_json()
 
     with open(output_json, "w") as json_file:
@@ -70,6 +70,7 @@ def update_config(conf):
     conf.setdefault('units', 256)    
     conf.setdefault('rec_dropout_rate', 0)
     conf.setdefault('maxlen', 82)
+    conf.setdefault('use_selfies', False)
 
 
 def main():
@@ -88,13 +89,19 @@ def main():
 
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
-    vocabulary, all_smiles = tokenize_smiles(original_smiles)
+    vocabulary, all_smiles = tokenize_smiles(original_smiles, use_selfies=conf['use_selfies'])
+    if conf['use_selfies']:
+        base, ext = os.path.splitext(conf['output_token'])
+        conf['output_token'] = f"{base}_sf{ext}"
     with open(conf['output_token'], 'wb') as f:
         pickle.dump(vocabulary, f)
-    print(f"[INFO] Save generated tokens to {conf['output_token']}")
+    if conf['use_selfies']:
+        print(f"[INFO] Save generated tokens to {conf['output_token']}. Note that the file name was modified because `use_selfies` was specified.")
+    else:
+        print(f"[INFO] Save generated tokens to {conf['output_token']}")
         
     print(f"vocabulary:\n{vocabulary}\n"
-          f"size of SMILES list: {len(all_smiles)}")
+          f"size of molecule list: {len(all_smiles)}")
     X_train, y_train = prepare_data(vocabulary, all_smiles) 
     X = sequence.pad_sequences(X_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
     y = sequence.pad_sequences(y_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
@@ -116,7 +123,7 @@ def main():
         patience=5
     )
     model_ckpt = ModelCheckpoint(
-        filepath = os.path.join(conf['output_model_dir'], "model.tf25.best.ckpt.h5"),
+        filepath = os.path.join(conf['output_model_dir'], "model_sf.tf25.best.ckpt.h5" if conf['use_selfies'] else"model.tf25.best.ckpt.h5"),
         monitor='val_accuracy',
         verbose=1,
         save_best_only=True,
@@ -141,7 +148,7 @@ def main():
         callbacks=callbacks,
         validation_split=conf['validation_split'],
         shuffle=True,)
-    save_model(model, conf["output_model_dir"])
+    save_model(model, conf["output_model_dir"], use_selfies=conf['use_selfies'])
     print(f"[INFO] Save a training log to {log_path}")
 
 

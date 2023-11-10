@@ -1,10 +1,13 @@
 import re
 
-def tokenize_smiles(smiles_list):
+import selfies as sf
+
+
+def tokenize_smiles(smiles_list, use_selfies=False):
     tokenized_smiles_list = []
     unique_token_set = set()
     for smi in smiles_list:
-        tokenized_smiles = smi_tokenizer(smi)
+        tokenized_smiles = selfies_tokenizer_from_smiles(smi) if use_selfies else smi_tokenizer(smi)
         tokenized_smiles.append('\n')
         unique_token_set |= set(tokenized_smiles)
         tokenized_smiles_list.append(tokenized_smiles)
@@ -26,5 +29,15 @@ def smi_tokenizer(smi):
     regex = re.compile(pattern)
     tokens = [token for token in regex.findall(smi)]
     assert smi == ''.join(tokens)
+    tokens.insert(0, '&')
+    return tokens
+
+
+def selfies_tokenizer_from_smiles(smi):
+    if '*' in smi:
+        smi = smi.replace("*", "[Lr]")  # Because SELFIES (v2.1.0) currently does not support a wildcard (*) representation.
+    slfs = sf.encoder(smi)
+    tokens = list(sf.split_selfies(slfs))
+    assert slfs == ''.join(tokens)
     tokens.insert(0, '&')
     return tokens

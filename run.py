@@ -14,7 +14,7 @@ from rdkit import RDLogger
 
 from chemtsv2.mcts import MCTS, State
 from chemtsv2.utils import loaded_model, get_model_structure_info
-from chemtsv2.preprocessing import smi_tokenizer
+from chemtsv2.preprocessing import smi_tokenizer, selfies_tokenizer_from_smiles
 
 
 def get_parser():
@@ -125,6 +125,7 @@ def set_default_config(conf):
     conf.setdefault('checkpoint_file', "chemtsv2.ckpt.pkl")
 
     conf.setdefault('neutralization', False)
+    conf.setdefault('use_selfies', False)
     
     
 
@@ -180,7 +181,7 @@ def main():
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
-        conf["tokenized_smiles"] = smi_tokenizer(conf["input_smiles"])
+        conf["tokenized_smiles"] = selfies_tokenizer_from_smiles(conf["input_smiles"]) if conf['use_selfies'] else smi_tokenizer(conf["input_smiles"])
 
     if conf['threshold_type'] == 'time':  # To avoid user confusion
         conf.pop('generation_num')

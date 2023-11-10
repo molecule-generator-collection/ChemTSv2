@@ -104,6 +104,7 @@ def set_default_config(conf):
         'module': 'filter.pains_filter',
         'class': 'PainsFilter',
         'type': ['pains_a']})
+    conf.setdefault('use_selfies', False)
 
     
 def get_filter_modules(conf):

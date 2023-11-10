@@ -10,6 +10,7 @@ from tensorflow.keras.layers import Dense, Embedding, GRU
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem.MolStandardize import rdMolStandardize
+import selfies as sf
 
 from chemtsv2.misc.manage_qsub_parallel import run_qsub_parallel
 
@@ -72,11 +73,17 @@ def chem_kn_simulation(model, state, val, conf):
     return get_int
 
 
-def build_smiles_from_tokens(all_posible, val):
+def build_smiles_from_tokens(all_posible, val, use_selfies=False):
     total_generated = all_posible
     generate_tokens = [val[total_generated[j]] for j in range(len(total_generated) - 1)]
     generate_tokens.remove("&")
-    return ''.join(generate_tokens)
+    concat_tokens = ''.join(generate_tokens)
+    if use_selfies:
+        if '[Lr]' in concat_tokens:  # "*" is replaced with [Lr] because SELFIES (v2.1.0) currently does not support a wildcard representation.
+            concat_tokens = sf.decoder(concat_tokens).replace('[Lr]', '*') 
+        else:
+            concat_tokens = sf.decoder(concat_tokens)
+    return concat_tokens 
 
 
 def has_passed_through_filters(smiles, conf):
