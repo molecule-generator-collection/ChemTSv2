@@ -23,20 +23,20 @@ shutil.copyfile(f"{path}/reward/reward.py", f"{path}/chemtsv2/reward.py")
 
 DOCLINES = (__doc__ or '').split('\n')
 INSTALL_REQUIRES = [
-    'tensorflow==2.5',
-    'numpy~=1.19.2',
-    'protobuf~=3.9.2',
-    'rdkit-pypi==2021.03.5',
-    'selfies==2.1.0',
+    'tensorflow~=2.14.1',
+    'numpy~=1.26.2',
+    'protobuf~=4.25.1',
+    'rdkit~=2023.9.1',
+    'selfies~=2.1.0',
     'pyyaml',
-    'pandas',
+    'pandas~=2.1.3',
     'joblib']
 PACKAGES = [
     'chemtsv2',
     'chemtsv2.misc']
 CLASSIFIERS = [
     'Intended Audience :: Science/Research',
-    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.11',
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"]
 CONSOLE_SCRIPTS = [
@@ -55,9 +55,9 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT LIcense",
     url="https://github.com/molecule-generator-collection/ChemTSv2",
-    version="0.9.13rc1",
+    version="1.0.0rc1",
     download_url="https://github.com/molecule-generator-collection/ChemTSv2",
-    python_requires=">=3.7",
+    python_requires=">=3.11",
     install_requires=INSTALL_REQUIRES,
     packages=PACKAGES,
     entry_points={'console_scripts': CONSOLE_SCRIPTS},
