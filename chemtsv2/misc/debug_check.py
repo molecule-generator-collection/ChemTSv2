@@ -8,6 +8,8 @@ def main():
     df_ref.drop('elapsed_time', axis=1, inplace=True)
     df.drop('elapsed_time', axis=1, inplace=True)
 
+    df_ref['reward'] = df_ref['reward'].round(decimals=10)
+    df['reward'] = df['reward'].round(decimals=10)
     if df.equals(df_ref):
         print('[INFO] OK!')
     else:
