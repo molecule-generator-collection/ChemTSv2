@@ -26,13 +26,13 @@ ChemTSv2 provides:
 <details>
   <summary>Click to show/hide requirements</summary>
 
-1. python: 3.7
-2. rdkit: 2021.03.5
-3. tensorflow: 2.5.0
+1. python: 3.11
+2. rdkit: 2023.9.1
+3. tensorflow: 2.14.1
 4. pyyaml
-5. pandas
+5. pandas: 2.1.3
 6. joblib
-7. mpi4py: 3.0.3 (for massive parallel mode)
+7. mpi4py: 3.1.5 (for massive parallel mode)
 </details>
 
 ### ChemTSv2 with single process mode :red_car:
@@ -41,7 +41,7 @@ ChemTSv2 provides:
 
 ```bash
 cd YOUR_WORKSPACE
-python3.7 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade chemtsv2
 ```
@@ -60,18 +60,18 @@ If you can use/prepare a server with MPI environment, please follow the (a) inst
 
 ```bash
 cd YOUR_WORKSPACE
-python3.7 -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade chemtsv2
-pip install mpi4py==3.0.3
+pip install mpi4py==3.1.5
 ```
 
 #### (b) Installation on a server WITHOUT a MPI environment
 
 ```bash
-conda create -n mpchem python=3.7
+conda create -n mpchem python=3.11 -c conda-forge
 # swith to the `mpchem` environment
-conda install -c conda-forge openmpi cxx-compiler mpi mpi4py=3.0.3
+conda install -c conda-forge openmpi cxx-compiler mpi mpi4py=3.1.5
 pip install --upgrade chemtsv2
 ```
 </details>
