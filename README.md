@@ -125,6 +125,17 @@ chemtsv2 -c config/setting.yaml
 mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
 ```
 
+#### ChemTSv2 with Docker
+
+```bash
+docker build -t chemtsv2:1.0.0 .
+docker run -u $(id -u):$(id -g) \
+           --rm \
+           --mount type=bind,source=./,target=/app/ \
+           chemtsv2:1.0.0 \
+           chemtsv2 -c config/setting.yaml
+```
+
 ## Example usage :pushpin:
 
 |Target|Reward|Config|Additional requirement|Ref.|
