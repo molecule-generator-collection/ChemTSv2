@@ -79,8 +79,8 @@ def build_smiles_from_tokens(all_posible, val, use_selfies=False):
     generate_tokens.remove("&")
     concat_tokens = ''.join(generate_tokens)
     if use_selfies:
-        if '[Lr]' in concat_tokens:  # "*" is replaced with [Lr] because SELFIES (v2.1.0) currently does not support a wildcard representation.
-            concat_tokens = sf.decoder(concat_tokens).replace('[Lr]', '*') 
+        if '[Lr]' in concat_tokens:  # "[*]" is replaced with [Lr] because SELFIES (v2.1.0) currently does not support a wildcard representation.
+            concat_tokens = sf.decoder(concat_tokens).replace('[Lr]', '[*]') 
         else:
             concat_tokens = sf.decoder(concat_tokens)
     return concat_tokens 

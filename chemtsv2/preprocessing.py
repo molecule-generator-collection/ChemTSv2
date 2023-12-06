@@ -34,8 +34,8 @@ def smi_tokenizer(smi):
 
 
 def selfies_tokenizer_from_smiles(smi):
-    if '*' in smi:
-        smi = smi.replace("*", "[Lr]")  # Because SELFIES (v2.1.0) currently does not support a wildcard (*) representation.
+    if '[*]' in smi:
+        smi = smi.replace("[*]", "[Lr]")  # Because SELFIES (v2.1.0) currently does not support a wildcard (*) representation.
     slfs = sf.encoder(smi)
     tokens = list(sf.split_selfies(slfs))
     assert slfs == ''.join(tokens)
