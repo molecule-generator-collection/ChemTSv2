@@ -6,7 +6,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from data import metadata
-from filter.filter import Filter
+from chemtsv2.filter import Filter
 
 
 class Neutralizer:
