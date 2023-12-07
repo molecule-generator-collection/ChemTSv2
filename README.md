@@ -62,8 +62,7 @@ If you can use/prepare a server with MPI environment, please follow the (a) inst
 cd YOUR_WORKSPACE
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade chemtsv2
-pip install mpi4py==3.1.5
+pip install --upgrade chemtsv2[mp]
 ```
 
 #### (b) Installation on a server WITHOUT a MPI environment
@@ -91,7 +90,7 @@ An example of reward definition for LogP maximization task is as follows.
 ```python
 from rdkit.Chem import Descriptors
 import numpy as np
-from reward.reward import Reward
+from chemtsv2.reward import Reward
 
 class LogP_reward(Reward):
     def get_objective_functions(conf):
