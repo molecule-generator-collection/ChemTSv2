@@ -37,6 +37,10 @@ def get_parser():
         help="constrain gpu. (e.g. 0,1)"
     )
     parser.add_argument(
+        "--use_gpu_only_reward", action='store_true',
+        help="use GPUs exclusively for reward calculations"
+    )
+    parser.add_argument(
         "--input_smiles", type=str,
         help="SMILES string (Need to put the atom you want to extend at the end of the string)"
     )
@@ -156,6 +160,10 @@ def main():
     logger = get_logger(log_level, conf["output_dir"])
     if not args.debug:
         RDLogger.DisableLog("rdApp.*")
+
+    if args.use_gpu_only_reward:
+        logger.info("Use GPUs exclusively for reward caluculations")
+        tf.config.set_visible_devices([], 'GPU')
 
     if args.debug:
         conf['fix_random_seed'] = True

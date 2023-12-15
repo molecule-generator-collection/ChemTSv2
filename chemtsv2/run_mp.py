@@ -38,6 +38,10 @@ def get_parser():
         "-g", "--gpu", type=str,
         help="constrain gpu. (e.g. 0,1)"
     )
+    parser.add_argument(
+        "--use_gpu_only_reward", action='store_true',
+        help="use GPUs exclusively for reward calculations"
+    )
     return parser.parse_args()
     
 
@@ -143,6 +147,9 @@ def main():
         import warnings
         warnings.filterwarnings('ignore')
         RDLogger.DisableLog("rdApp.*")
+    if args.use_gpu_only_reward:
+        logger.info("Use GPUs exclusively for reward caluculations")
+        tf.config.set_visible_devices([], 'GPU')
     
     if args.debug:
         conf['fix_random_seed'] = True
