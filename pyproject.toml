@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chemtsv2"
-version = "1.0.1"
+version = "1.0.1rc1"
 description = "ChemTSv2 is a flexible and versatile molecule generator based on reinforcement learning with natural language processing."
 authors = [
     "Shoichi Ishida <ishida.sho.nm@yokohama-cu.ac.jp>"
@@ -31,6 +31,7 @@ mpi4py = {version = "~3.1.5", optional = true}
 [tool.poetry.scripts]
 chemtsv2 = "chemtsv2.run:main"
 chemtsv2-mp = "chemtsv2.run_mp:main"
+chemtsv2-debug-check = "chemtsv2.misc.debug_check:main"
 
 [tool.poetry.extras]
 mp = ["mpi4py"]
