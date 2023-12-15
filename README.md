@@ -5,7 +5,7 @@
 </div>
 
 ChemTSv2[^13] is a refined and extended version of ChemTS[^1] and MPChemTS[^2].
-The original implementations are available at https://github.com/tsudalab/ChemTS and https://github.com/yoshizoe/mp-chemts, respectively. 
+The original implementations are available at https://github.com/tsudalab/ChemTS and https://github.com/yoshizoe/mp-chemts, respectively.
 
 ChemTSv2 provides:
 
@@ -19,10 +19,10 @@ ChemTSv2 provides:
 
 [^2]: Yang, X., Aasawat, T., & Yoshizoe, K. (2021). Practical Massively Parallel Monte-Carlo Tree Search Applied to Molecular Design. <i>In International Conference on Learning Representations</i>. https://openreview.net/forum?id=6k7VdojAIK
 
-
 ## How to setup :pushpin:
 
 ### Requirements :memo:
+
 <details>
   <summary>Click to show/hide requirements</summary>
 
@@ -33,9 +33,11 @@ ChemTSv2 provides:
 5. pandas: 2.1.3
 6. joblib
 7. mpi4py: 3.1.5 (for massive parallel mode)
+
 </details>
 
 ### ChemTSv2 with single process mode :red_car:
+
 <details>
   <summary>Click to show/hide the instruction</summary>
 
@@ -45,6 +47,7 @@ python3.11 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade chemtsv2
 ```
+
 </details>
 
 ### ChemTSv2 with massive parallel mode :airplane:
@@ -73,6 +76,7 @@ conda create -n mpchem python=3.11 -c conda-forge
 conda install -c conda-forge openmpi cxx-compiler mpi mpi4py=3.1.5
 pip install --upgrade chemtsv2
 ```
+
 </details>
 
 ## How to run ChemTSv2 :pushpin:
@@ -85,8 +89,10 @@ cd ChemTSv2
 ```
 
 ### 2. Prepare a reward file
+
 Please refer to `reward/README.md`.
 An example of reward definition for LogP maximization task is as follows.
+
 ```python
 from rdkit.Chem import Descriptors
 import numpy as np
@@ -105,9 +111,9 @@ class LogP_reward(Reward):
 
 ### 3. Prepare a config file
 
-The explanation of options are described in the [Support option/function](#support-optionfunction-pushpin) section. 
+The explanation of options are described in the [Support option/function](#support-optionfunction-pushpin) section.
 The prepared reward file needs to be specified in `reward_setting`.
-For details, please refer to a sample file ([config/setting.yaml](config/setting.yaml)). 
+For details, please refer to a sample file ([config/setting.yaml](config/setting.yaml)).
 If you want to pass any value to `calc_reward_from_objective_values` (e.g., weights for each value), add it in the config file.
 
 ### 4. Generate molecules
@@ -147,6 +153,7 @@ docker run -u $(id -u):$(id -g) \
 |Kinase inhibitory activities|[dscore_reward.py](reward/dscore_reward.py)|[setting_dscore.yaml](config/setting_dscore.yaml)|LightGBM[^6]|[^7]|
 |Docking score|[Vina_binary_reward.py](reward/Vina_binary_reward.py)|[setting_vina_binary.yaml](config/setting_vina_binary.yaml)|AutoDock Vina[^8]|[^9]|
 |Pharmacophore|[pharmacophore_reward.py](reward/pharmacophore_reward.py)|[setting_pharmacophore.yaml](config/setting_pharmacophore.yaml)|-|[^11]|
+|gnina docking|[gnina_singularity_reward.py](reward/gnina_singularity_reward.py)|[setting_gnina_singularity.yaml](config/setting_gnina_singularity.yaml)|-||
 
 [^3]: Frisch, M. J. et al. Gaussian 16 Revision C.01. 2016; Gaussian Inc. Wallingford CT.
 [^4]: Sumita, M., Yang, X., Ishihara, S., Tamura, R., & Tsuda, K. (2018). Hunting for Organic Molecules with Artificial Intelligence: Molecules Optimized for Desired Excitation Energies. <i>ACS Central Science</i>, 4(9), 1126–1133. https://doi.org/10.1021/acscentsci.8b00213
@@ -209,13 +216,12 @@ obabel -:"NC1=CC(Br)=CC=C1" -osmi -xl 5
 
 Please refer to the [official documentation](https://openbabel.org/docs/current/FileFormats/SMILES_format.html) for detailed usage.
 
-
 ### Train RNN models using your own dataset
 
-If you want to use the RNN models trained on your own datasets, use [train_model/train_RNN.py](train_model/train_RNN.py) and [train_model/model_setting.yaml](train_model/model_setting.yaml) to train the models. 
+If you want to use the RNN models trained on your own datasets, use [train_model/train_RNN.py](train_model/train_RNN.py) and [train_model/model_setting.yaml](train_model/model_setting.yaml) to train the models.
 You need to prepare a dataset that only contains SMILES string and modify the path in `dataset` key in `model_setting.yaml`. And then, run the following command:
 
-```
+```bash
 cd train_model/
 python train_RNN.py -c model_setting.yaml
 ```
@@ -234,7 +240,7 @@ chemtsv2 -c config/setting.yaml --gpu 0
 
 ## How to cite
 
-```
+```text
 @article{Ishida2023,
   doi = {10.1002/wcms.1680},
   url = {https://doi.org/10.1002/wcms.1680},
