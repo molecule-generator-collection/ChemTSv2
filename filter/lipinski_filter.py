@@ -13,9 +13,9 @@ class LipinskiFilter(Filter):
         acceptor = rdMolDescriptors.CalcNumLipinskiHBA(mol)
         rotbonds = rdMolDescriptors.CalcNumRotatableBonds(mol)
         if conf['lipinski_filter']['type'] == 'rule_of_5':
-            cond = weight < 500 or logp < 5 or donor < 5 or acceptor < 10
+            cond = weight <= 500 and logp <= 5 or donor <= 5 and acceptor <= 10
         elif conf['lipinski_filter']['type'] == 'rule_of_3':
-            cond = weight < 300 or logp < 3 or donor < 3 or acceptor < 3 or rotbonds < 3
+            cond = weight <= 300 and logp <= 3 and donor <= 3 and acceptor <= 3 and rotbonds <= 3
         else:
             print("`use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
             sys.exit(1)

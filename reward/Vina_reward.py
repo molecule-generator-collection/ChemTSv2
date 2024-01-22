@@ -52,8 +52,8 @@ class Vina_reward(Reward):
                 min_inter_score = 1000
                 best_model = 1
                 for m, ene in enumerate(scores):
-                    if ene[1] < min_inter_score:
-                        min_inter_score = ene[1]
+                    if ene[0] < min_inter_score:  ## change for vina score
+                        min_inter_score = ene[0]  ## change for vina score 
                         best_model = m + 1
                 # save best pose
                 pose_dir = f"{conf['output_dir']}/3D_pose"
