@@ -7,7 +7,7 @@
 - If the minimum value is set to -10 and the maximum value to -1, the scaling will be as shown in the figure below.
 
 <div align="left">
-  <img src="../img/minmax.png" width="400">
+  <img src="../../img/minmax.png" width="400">
 </div>
 
 ## `max_gauss`
@@ -17,7 +17,7 @@
 - If `a=1, μ=8, σ=2`, the scaling will be as shown in the figure below.
 
 <div align="left">
-  <img src="../img/max_gauss.png" width="400">
+  <img src="../../img/max_gauss.png" width="400">
 </div>
 
 ## `min_gauss`
@@ -27,7 +27,7 @@
 - If `a=1, μ=8, σ=2`, the scaling will be as shown in the figure below.
 
 <div align="left">
-  <img src="../img/min_gauss.png" width="400">
+  <img src="../../img/min_gauss.png" width="400">
 </div>
 
 ### Reference

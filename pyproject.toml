@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "chemtsv2"
+version = "1.0.2"
+description = "ChemTSv2 is a flexible and versatile molecule generator based on reinforcement learning with natural language processing."
+authors = [
+    "Shoichi Ishida <ishida.sho.nm@yokohama-cu.ac.jp>"
+]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/molecule-generator-collection/ChemTSv2"
+classifiers = [
+    'Intended Audience :: Science/Research',
+    'Programming Language :: Python :: 3.11',
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+packages = [{include = "chemtsv2"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+tensorflow = "~2.14.1"
+numpy = "~1.26.2"
+protobuf = "~4.25.1"
+rdkit = "~2023.9.1"
+selfies = "^2.1.0"
+pyyaml = "*"
+pandas = "~2.1.3"
+joblib = "*"
+mpi4py = {version = "~3.1.5", optional = true}
+
+[tool.poetry.scripts]
+chemtsv2 = "chemtsv2.run:main"
+chemtsv2-mp = "chemtsv2.run_mp:main"
+chemtsv2-debug-check = "chemtsv2.misc.debug_check:main"
+chemtsv2-column-splitter = "chemtsv2.misc.result_column_splitter:main"
+
+[tool.poetry.extras]
+mp = ["mpi4py"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

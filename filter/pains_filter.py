@@ -3,7 +3,7 @@ import sys
 from rdkit.Chem import FilterCatalog
 from rdkit.Chem.FilterCatalog import FilterCatalogParams
 
-from filter.filter import Filter
+from chemtsv2.filter import Filter
 
 
 class PainsFilter(Filter):

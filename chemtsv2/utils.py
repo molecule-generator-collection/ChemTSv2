@@ -3,7 +3,6 @@ from functools import wraps
 import itertools
 import sys
 import time
-import os
 
 import joblib
 from tensorflow.keras.models import Sequential, model_from_json
@@ -11,8 +10,7 @@ from tensorflow.keras.layers import Dense, Embedding, GRU
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem.MolStandardize import rdMolStandardize
-from rdkit.Chem import AllChem
-import pandas as pd
+import selfies as sf
 
 from chemtsv2.misc.manage_qsub_parallel import run_qsub_parallel
 
@@ -75,11 +73,17 @@ def chem_kn_simulation(model, state, val, conf):
     return get_int
 
 
-def build_smiles_from_tokens(all_posible, val):
+def build_smiles_from_tokens(all_posible, val, use_selfies=False):
     total_generated = all_posible
     generate_tokens = [val[total_generated[j]] for j in range(len(total_generated) - 1)]
     generate_tokens.remove("&")
-    return ''.join(generate_tokens)
+    concat_tokens = ''.join(generate_tokens)
+    if use_selfies:
+        if '[Lr]' in concat_tokens:  # "[*]" is replaced with [Lr] because SELFIES (v2.1.0) currently does not support a wildcard representation.
+            concat_tokens = sf.decoder(concat_tokens).replace('[Lr]', '[*]') 
+        else:
+            concat_tokens = sf.decoder(concat_tokens)
+    return concat_tokens 
 
 
 def has_passed_through_filters(smiles, conf):
@@ -239,28 +243,3 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     logger.info(f"Valid SMILES ratio: {len(valid_compound)/len(new_compound)}")
 
     return node_index, values_list, valid_compound, generated_ids, filter_check_list
-
-def read_reactions(reaction_file):
-    reaction_df = pd.read_csv(reaction_file,header=None)
-    reaction_list = [smarts for smarts in reaction_df[0]]
-    return reaction_list
-
-def read_substruct_mol(path, ss_list_file):
-    file_list_df = pd.read_csv(ss_list_file, header = None)
-    mol_list=[]
-    for file_name in file_list_df[0]:
-        mol_list.append(Chem.MolFromMolFile(str(os.path.join(path, file_name))))
-    return mol_list
-
-def sort_sdf_confs(sdf_inp, sdf_out):
-    suppl = AllChem.SDMolSupplier(sdf_inp, removeHs=False)
-    energy_id_list = []
-    for i in range(0, len(suppl) - 1):
-        energy_id = [suppl[i].GetProp("Energy"), i]
-        energy_id_list.append(energy_id)
-    energy_id_list.sort(key = lambda x: float(x[0]))
-    writer = Chem.SDWriter(sdf_out)
-    for energy, mol_id in energy_id_list:
-        writer.write(suppl[mol_id])
-    writer.close()
-    return 1

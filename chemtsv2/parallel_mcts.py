@@ -110,7 +110,7 @@ class Tree_Node():
 
         self.conf['gid'] = gen_id
         all_posible = chem_kn_simulation(chem_model, state, self.val, self.conf)
-        smi = build_smiles_from_tokens(all_posible, self.val)
+        smi = build_smiles_from_tokens(all_posible, self.val, use_selfies=self.conf['use_selfies'])
 
         if smi in generated_dict:
             values_list = generated_dict[smi][0]
@@ -215,21 +215,21 @@ class p_mcts:
         # typical usage of data is path_ucb for newly created child nodes
         if data is None:
             self.comm.bsend(np.asarray(
-                [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb]),
+                [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb], dtype=object),
                 dest=dest, tag=tag)
         else:
             self.comm.bsend(np.asarray(
-                [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, data]),
+                [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, data], dtype=object),
                 dest=dest, tag=tag)
 
     def send_search_childnode(self, node, ucb_table, dest):
         self.comm.bsend(np.asarray(
-            [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, ucb_table]),
+            [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, ucb_table], dtype=object),
             dest=dest, tag=JobType.SEARCH.value)
 
     def send_backprop(self, node, dest):
         self.comm.bsend(np.asarray(
-            [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb]),
+            [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb], dtype=object),
             dest=dest, tag=JobType.BACKPROPAGATION.value)
 
     def record_result(self, smiles, depth, reward, gen_id, raw_reward_list, filter_flag):
@@ -296,7 +296,7 @@ class p_mcts:
         jobq = deque()
         timeup = False
         if self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []])
+            root_job_message = np.asarray([['&'], None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)
@@ -375,7 +375,7 @@ class p_mcts:
                                 self.hsm.insert(Item(node.state, node))
                                 _, dest = self.hsm.hashing(n.state)
                                 self.comm.bsend(np.asarray([n.state, n.reward, n.wins, n.visits,
-                                                n.num_thread_visited]), dest=dest, tag=JobType.SEARCH.value)
+                                                n.num_thread_visited], dtype=object), dest=dest, tag=JobType.SEARCH.value)
                             else:
                                 ind, childnode = node.selection()
                                 self.hsm.insert(Item(node.state, node))
@@ -458,7 +458,7 @@ class p_mcts:
         jobq = deque()
         timeup = False
         if self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []])
+            root_job_message = np.asarray([['&'], None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)
@@ -655,7 +655,7 @@ class p_mcts:
             #self.start_time = cp_obj['start_time']
             jobq = cp_obj['jobq']
         elif self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []])
+            root_job_message = np.asarray([['&'], None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)

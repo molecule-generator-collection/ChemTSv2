@@ -1,4 +1,4 @@
-from filter.filter import Filter
+from chemtsv2.filter import Filter
 
 
 class RingSizeFilter(Filter):

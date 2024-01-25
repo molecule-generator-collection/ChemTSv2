@@ -1,6 +1,6 @@
 from rdkit.Chem import Descriptors
 
-from filter.filter import Filter
+from chemtsv2.filter import Filter
 
 
 class RadicalFilter(Filter):

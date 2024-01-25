@@ -1,6 +1,6 @@
 from rdkit import Chem
 
-from filter.filter import Filter
+from chemtsv2.filter import Filter
 
 
 class NoChargeFilter(Filter):

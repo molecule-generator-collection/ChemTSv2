@@ -11,10 +11,12 @@ import yaml
 
 from numpy.random import default_rng
 from rdkit import RDLogger
+import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
 
 from chemtsv2.mcts import MCTS, State
 from chemtsv2.utils import loaded_model, get_model_structure_info
-from chemtsv2.preprocessing import smi_tokenizer
+from chemtsv2.preprocessing import smi_tokenizer, selfies_tokenizer_from_smiles
 
 
 def get_parser():
@@ -33,6 +35,10 @@ def get_parser():
     parser.add_argument(
         "-g", "--gpu", type=str,
         help="constrain gpu. (e.g. 0,1)"
+    )
+    parser.add_argument(
+        "--use_gpu_only_reward", action='store_true',
+        help="use GPUs exclusively for reward calculations"
     )
     parser.add_argument(
         "--input_smiles", type=str,
@@ -125,6 +131,7 @@ def set_default_config(conf):
     conf.setdefault('checkpoint_file', "chemtsv2.ckpt.pkl")
 
     conf.setdefault('neutralization', False)
+    conf.setdefault('use_selfies', False)
     
     
 
@@ -154,6 +161,10 @@ def main():
     if not args.debug:
         RDLogger.DisableLog("rdApp.*")
 
+    if args.use_gpu_only_reward:
+        logger.info("Use GPUs exclusively for reward caluculations")
+        tf.config.set_visible_devices([], 'GPU')
+
     if args.debug:
         conf['fix_random_seed'] = True
         conf['random_seed'] = 1234
@@ -180,7 +191,7 @@ def main():
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
-        conf["tokenized_smiles"] = smi_tokenizer(conf["input_smiles"])
+        conf["tokenized_smiles"] = selfies_tokenizer_from_smiles(conf["input_smiles"]) if conf['use_selfies'] else smi_tokenizer(conf["input_smiles"])
 
     if conf['threshold_type'] == 'time':  # To avoid user confusion
         conf.pop('generation_num')

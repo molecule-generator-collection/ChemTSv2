@@ -5,7 +5,7 @@ from rdkit.Chem import Descriptors
 sys.path.append("./data/")
 import sascorer
 
-from reward.reward import BatchReward
+from chemtsv2.reward import BatchReward
 
 class Jscore_reward(BatchReward):
     def get_batch_objective_functions():

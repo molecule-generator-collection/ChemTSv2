@@ -12,6 +12,8 @@ from mpi4py import MPI
 import numpy as np
 from numpy.random import default_rng
 from rdkit import RDLogger
+import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
 import requests
 import yaml
 
@@ -35,6 +37,10 @@ def get_parser():
     parser.add_argument(
         "-g", "--gpu", type=str,
         help="constrain gpu. (e.g. 0,1)"
+    )
+    parser.add_argument(
+        "--use_gpu_only_reward", action='store_true',
+        help="use GPUs exclusively for reward calculations"
     )
     return parser.parse_args()
     
@@ -104,6 +110,7 @@ def set_default_config(conf):
         'module': 'filter.pains_filter',
         'class': 'PainsFilter',
         'type': ['pains_a']})
+    conf.setdefault('use_selfies', False)
 
     
 def get_filter_modules(conf):
@@ -140,6 +147,9 @@ def main():
         import warnings
         warnings.filterwarnings('ignore')
         RDLogger.DisableLog("rdApp.*")
+    if args.use_gpu_only_reward:
+        logger.info("Use GPUs exclusively for reward caluculations")
+        tf.config.set_visible_devices([], 'GPU')
     
     if args.debug:
         conf['fix_random_seed'] = True

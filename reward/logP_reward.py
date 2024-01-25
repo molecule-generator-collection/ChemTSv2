@@ -1,7 +1,8 @@
 from rdkit.Chem import Descriptors
 import numpy as np
 
-from reward.reward import Reward
+from chemtsv2.reward import Reward
+
 
 class LogP_reward(Reward):
     def get_objective_functions(conf):

@@ -9,7 +9,7 @@ from rdkit.Chem import AllChem
 sys.path.append("./data/")
 import sascorer
 
-from reward.reward import Reward
+from chemtsv2.reward import Reward
 from qcforever.gamess_run import GamessRunPack
 
 

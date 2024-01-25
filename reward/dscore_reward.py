@@ -10,7 +10,7 @@ sys.path.append("./data/")
 import sascorer
 
 from chemtsv2.misc.scaler import minmax, max_gauss, min_gauss, rectangular
-from reward.reward import Reward
+from chemtsv2.reward import Reward
 
 LGB_MODELS_PATH = 'data/model/lgb_models.pickle'
 SURE_CHEMBL_ALERTS_PATH = 'data/sure_chembl_alerts.txt'
