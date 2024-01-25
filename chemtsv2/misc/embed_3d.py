@@ -62,7 +62,7 @@ def Embed3D_Geodiff(mol=None,ckpt_path=None,tag=None,
     elif infile:
         with open(infile, 'r') as f:
             for s in f:
-                s = f.readline().rstrip()
+                s = s.rstrip()
                 test_set.append(s)
 
     elif smi:
