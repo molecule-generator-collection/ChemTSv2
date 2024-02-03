@@ -49,11 +49,17 @@ class Vina_reward(Reward):
                     print(f"Vina Docking energies: {v.energies()}")
                 # get the best inter score, because v.energies()[0][1] is not the best inter_score in some case.
                 scores=v.energies()
-                min_inter_score = 1000
+                min_score = 1000
                 best_model = 1
+                
+                if conf['vina_score_type']:
+                    score_type = conf['vina_score_type'] # 0: vina score 1: vina inter score
+                else:
+                    score_type = 1  # default use vina inter score
+                
                 for m, ene in enumerate(scores):
-                    if ene[0] < min_inter_score:  ## change for vina score
-                        min_inter_score = ene[0]  ## change for vina score 
+                    if ene[score_type] < min_score:  ## change for vina score
+                        min_score = ene[score_type]  ## change for vina score 
                         best_model = m + 1
                 # save best pose
                 pose_dir = f"{conf['output_dir']}/3D_pose"
@@ -67,8 +73,8 @@ class Vina_reward(Reward):
                         pose.write_pdbqt_file(pose_file_name)
 
                 if conf['debug']:
-                    print(f"min_inter_score: {min_inter_score}, best pose num is {best_model}")
-                return min_inter_score
+                    print(f"min_score: {min_score}, best pose num is {best_model}")
+                return min_score
             except Exception as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e)
@@ -77,8 +83,8 @@ class Vina_reward(Reward):
     
     
     def calc_reward_from_objective_values(values, conf):
-        min_inter_score = values[0]
-        if min_inter_score is None:
+        min_score = values[0]
+        if min_score is None:
             return -1
-        score_diff = min_inter_score - conf['vina_base_score']
+        score_diff = min_score - conf['vina_base_score']
         return - score_diff * 0.1 / (1 + abs(score_diff) * 0.1)
