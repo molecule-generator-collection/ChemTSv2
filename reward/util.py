@@ -438,3 +438,674 @@ def calc_3dstructure(smiles):
 
 
     return tmp_mol
+
+
+
+def Embed3D_Geodiff(mol=None,ckpt_path=None,tag='',
+            device='cuda',
+            clip=1000.0,
+            n_steps=5000,
+            global_start_sigma=0.5,
+            w_global=1.0,
+            sampling_type='ld',
+            eta=1.0,
+            smi=None,
+            infile=None,
+            edge_order=3,
+            save_data=True,
+            log_dir='./result/geodiff/',
+            seed=0,
+            ref_lig=None,
+            rmsd_threshold=3,
+            num_confs = 2,
+            save_traj = False):
+
+    import os,sys
+    from rdkit.Chem import AllChem
+    from rdkit.Geometry import Point3D
+    import argparse
+    import pickle
+    import torch
+    from tqdm.auto import tqdm
+    
+    from models.epsnet import *
+    from utils.datasets import *
+    from utils.transforms import *
+    from utils.misc import *
+    
+    from confgf import dataset
+    
+    import pandas as pd
+
+    # Logging
+    output_dir = get_new_log_dir(log_dir, 'sample', tag=tag)
+    logger = get_logger('test', output_dir)
+    #logger.info(args)
+
+    # Load checkpoint
+    ckpt = torch.load(ckpt_path)
+    if seed != None and seed != 0:
+        seed_all(seed)
+    
+    # Datasets and loaders
+    logger.info('Loading datasets...')
+
+    transforms = Compose([
+        CountNodesPerGraph(),
+        AddHigherOrderEdges(order=edge_order), # Offline edge augmentation
+    ])
+    
+    # Model
+    logger.info('Loading model...')
+    model = get_model(ckpt['config'].model).to(device)
+    model.load_state_dict(ckpt['model'])
+   
+    logger.info('Loading testset...')
+    test_set = []
+
+    if infile and smi:
+        logger.error('Error. Mol or SMILES is required.')
+        sys.exit()
+
+    elif infile:
+        with open(infile, 'r') as f:
+            for s in f:
+                s = s.rstrip()
+                test_set.append(s)
+
+    elif smi:
+        test_set.append(smi)
+    
+    elif mol != None and smi == None and infile == None:
+        try:
+            smi = Chem.MolToSmiles(mol)
+            test_set.append(smi)
+        except Exception as e:
+            logger.error(e)
+            sys.exit()
+
+    print(test_set)
+
+    test_set = map(dataset.dataset.smiles_to_data, test_set)
+
+    done_smiles = set()
+    results = []
+    outfiles = []
+    bestmols = []
+    
+    # Predict
+    logger.info('Begin prediction ...')
+    
+    print(test_set)
+    for i, data in enumerate(tqdm(test_set)):
+        print(data)
+
+        logger.info('%i, %s', i, data.smiles)
+
+        if data.smiles in done_smiles:
+            logger.info('Molecule#%d is already done.' % i)
+            continue
+
+        num_samples = num_confs
+        print("num_samples",num_samples)
+
+        data_input = data.clone()
+        data_input['pos_ref'] = None
+        batch = repeat_data(data_input, num_samples).to(device)
+
+        clip_local = None
+        for _ in range(2):  # Maximum number of retry
+            try:
+                pos_init = torch.randn(batch.num_nodes, 3).to(device)
+                pos_gen, pos_gen_traj = model.langevin_dynamics_sample(
+                    atom_type=batch.atom_type,
+                    pos_init=pos_init,
+                    bond_index=batch.edge_index,
+                    bond_type=batch.edge_type,
+                    batch=batch.batch,
+                    num_graphs=batch.num_graphs,
+                    extend_order=False, # Done in transforms.
+                    n_steps=n_steps,
+                    step_lr=1e-6,
+                    w_global=w_global,
+                    global_start_sigma=global_start_sigma,
+                    clip=clip,
+                    clip_local=clip_local,
+                    sampling_type=sampling_type,
+                    eta=eta
+                )
+                pos_gen = pos_gen.cpu()
+                
+                if save_traj:
+                    data.pos_gen = torch.stack(pos_gen_traj)
+                else:
+                    data.pos_gen = pos_gen
+                results.append(data)
+                done_smiles.add(data.smiles)
+
+                if save_data:
+                    save_path = os.path.join(output_dir, 'samples_%d.pkl' % i)
+                    logger.info('Saving samples to: %s' % save_path)
+                    with open(save_path, 'wb') as f:
+                        pickle.dump(results, f)
+                
+                pos_gens = torch.chunk(pos_gen, num_samples)
+
+                mol = Chem.AddHs(data.rdmol)
+                
+                mol.SetProp('SMILES', data.smiles)
+                mol.SetProp('3dGenMethod', 'Geodiff')
+                
+                try:
+                    AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
+                    AllChem.EmbedMultipleConfs(mol, numConfs=num_samples)
+                    logger.info("A temporal conformer is embedded by ETKDGv3.")
+                    
+                    
+                except:
+                    logger.info("Try ETDG...")
+                    try:
+                        AllChem.EmbedMolecule(mol, AllChem.ETDG())
+                        AllChem.EmbedMultipleConfs(mol, numConfs=num_samples)
+                        logger.info("A temporal conformer is embedded by ETDG.")           
+                    except ValueError as e:
+                        logger.error('%i, %s', i, e)
+                        continue
+
+                for cid,p_g in enumerate(pos_gens):
+                    conf = mol.GetConformer(cid)
+                    for a in range(mol.GetNumAtoms()):
+                        x,y,z = p_g.tolist()[a]
+                        conf.SetAtomPosition(a,Point3D(x,y,z))
+
+                save_path_tmp = os.path.join(output_dir, 'samples_%d.tmp.sdf' % i)
+                logger.info('Saving samples to: %s' % save_path_tmp)
+                w = Chem.SDWriter(save_path_tmp)
+
+                print('num conformers',mol.GetNumConformers())
+                for cid in range(mol.GetNumConformers()):  
+                        w.write(mol, confId=cid)
+
+                w.close()
+                
+                suppl = Chem.SDMolSupplier(save_path_tmp)
+                mols = [m for m in suppl]
+        
+        
+                done_mols = [] 
+                for cid, m in enumerate(mols):
+                    prop = AllChem.MMFFGetMoleculeProperties(mol)
+                    print("cid:", cid)
+                    mmff = AllChem.MMFFGetMoleculeForceField(mol, prop)
+                    mmff.Minimize()
+                    energy_mmff = mmff.CalcEnergy()
+                    energy = energy_mmff
+                    print(energy, '[kcal/mol]')
+                    m.SetProp('CID', str(cid))           
+                    m.SetProp('Energy_MMFF', str(energy))
+                    done_mols.append(m)
+        
+                save_path_sdf = os.path.join(output_dir, 'samples_%d.sdf' % i)
+                logger.info('Saving samples to: %s' % save_path_sdf)
+                w = Chem.SDWriter(save_path_sdf)
+        
+                for m in done_mols:
+                    w.write(m)
+        
+                w.close()
+                
+                break
+            except FloatingPointError:
+                clip_local = 20
+                logger.warning('Retrying with local clipping.')
+        outfiles.append(save_path_sdf)
+
+        if ref_lig is not None:
+            rmsd = CalcRMSD(save_path_sdf, ref_lig)
+
+        if rmsd is not None:
+            bestmol = GetBestConformer(save_path_sdf,rmsd_threshold=rmsd_threshold)
+        else:
+            bestmol = ''
+    return bestmol
+
+
+def Embed3D_RDKit(mol=None,tag='',
+            smi=None,
+            infile=None,
+            save_data=True,
+            log_dir='./result/rdkit/',
+            seed=0,
+            ref_lig=None,
+            rmsd_threshold=3,
+            num_confs = 2):
+    
+    # Logging
+    output_dir = get_new_log_dir(log_dir, 'sample', tag=tag)
+    logger = get_logger('test', output_dir)
+    #logger.info(args)
+    
+    logger.info('Loading testset...')
+    test_set = []
+
+    if infile and smi:
+        logger.error('Error. Mol or SMILES is required.')
+        sys.exit()
+
+    elif infile:
+        with open(infile, 'r') as f:
+            for s in f:
+                s = s.rstrip()
+                test_set.append(s)
+
+    elif smi:
+        test_set.append(smi)
+
+    elif mol != None and smi == None and infile == None:
+        try:
+            smi = Chem.MolToSmiles(mol)
+            test_set.append(smi)
+        except Exception as e:
+            logger.error(e)
+            sys.exit()
+
+    print(test_set)
+    
+    done_smiles = set()
+    outfiles = []
+    bestmols = []
+    
+    for i, smiles in enumerate(tqdm(test_set)):
+        
+        logger.info('%i, %s', i, smiles)
+
+        if smiles in done_smiles:
+            logger.info('Molecule#%d is already done.' % i)
+            continue
+            
+        num_samples = num_confs
+        print("num_samples",num_samples)
+    
+        mol = Chem.MolFromSmiles(smiles)
+        mol = Chem.AddHs(mol)
+        
+        mol.SetProp('SMILES', smiles)
+        mol.SetProp('3dGenMethod', 'RDKit')
+        
+        try:
+            AllChem.EmbedMolecule(mol, AllChem.ETKDGv3())
+            AllChem.EmbedMultipleConfs(mol, numConfs=num_samples)
+#                     conf = mol.GetConformer()
+            logger.info("A temporal conformer is embedded by ETKDGv3.")
+
+
+        except:
+            logger.info("Try ETDG...")
+            try:
+                AllChem.EmbedMolecule(mol, AllChem.ETDG())
+                AllChem.EmbedMultipleConfs(mol, numConfs=num_samples)
+#                         conf = mol.GetConformer()
+                logger.info("A temporal conformer is embedded by ETDG.")           
+            except ValueError as e:
+                logger.error('%i, %s', i, e)
+                continue
+
+        save_path_tmp = os.path.join(output_dir, 'samples_%d.tmp.sdf' % i)
+        logger.info('Saving samples to: %s' % save_path_tmp)
+        w = Chem.SDWriter(save_path_tmp)
+
+        print('num conformers',mol.GetNumConformers())
+        for cid in range(mol.GetNumConformers()):  
+                w.write(mol, confId=cid)
+
+        w.close()
+        
+        suppl = Chem.SDMolSupplier(save_path_tmp)
+        mols = [m for m in suppl]
+
+        opt_type = 'mmff_molff'
+
+        done_mols = [] 
+        for cid, m in enumerate(mols):
+            prop = AllChem.MMFFGetMoleculeProperties(mol)
+            mmff = AllChem.MMFFGetMoleculeForceField(mol, prop)
+            mmff.Minimize()
+            energy_mmff = mmff.CalcEnergy()
+            energy = energy_mmff
+            m.SetProp('CID', str(cid))           
+            m.SetProp('Energy_MMFF', str(energy))
+            done_mols.append(m)
+            
+        save_path_sdf = os.path.join(output_dir, 'samples_%d.sdf' % i)
+        logger.info('Saving samples to: %s' % save_path_sdf)
+        w = Chem.SDWriter(save_path_sdf)
+
+        for m in done_mols:
+            w.write(m)
+        w.close()
+
+        if ref_lig is not None:
+            rmsd = CalcRMSD(save_path_sdf, ref_lig)
+        
+        if rmsd is not None:
+            bestmol = GetBestConformer(save_path_sdf,rmsd_threshold=rmsd_threshold)
+        else:
+            bestmol = ''
+        
+
+    return bestmol
+
+def Embed3D_OpenBabel(mol=None,tag='',
+            smi=None,
+            infile=None,
+            save_data=True,
+            log_dir='./result/babel/',
+            seed=0,
+            ref_lig=None,
+            rmsd_threshold=3,
+            num_confs = 2):
+    
+    # Logging
+    output_dir = get_new_log_dir(log_dir, 'sample', tag=tag)
+    logger = get_logger('test', output_dir)
+    #logger.info(args)
+    
+    logger.info('Loading testset...')
+    test_set = []
+
+    if infile and smi:
+        logger.error('Error. Mol or SMILES is required.')
+        sys.exit()
+
+    elif infile:
+        with open(infile, 'r') as f:
+            for s in f:
+                s = s.rstrip()
+                test_set.append(s)
+
+    elif smi:
+        test_set.append(smi)
+
+    elif mol != None and smi == None and infile == None:
+        try:
+            smi = Chem.MolToSmiles(mol)
+            test_set.append(smi)
+        except Exception as e:
+            logger.error(e)
+            sys.exit()
+
+    print(test_set)
+    
+    done_smiles = set()
+    
+    for i, smiles in enumerate(tqdm(test_set)):
+        
+        logger.info('%i, %s', i, smiles)
+
+        if smiles in done_smiles:
+            logger.info('Molecule#%d is already done.' % i)
+            continue
+
+        smi_tmpfile = os.path.join(output_dir, 'input_'+str(i).zfill(4)+'.smi')
+        init3d_tmpfile = os.path.join(output_dir, 'init3d_'+str(i).zfill(4)+'.sdf') # single 3d from smiles
+        conf_tmpfile = os.path.join(output_dir, 'confs0_'+str(i).zfill(4)+'.sdf') # before opt
+        conf_file = os.path.join(output_dir, 'confs_'+str(i).zfill(4)+'.sdf') # optimized
+        # sdf_tmpfile = os.path.join(output_dir, 'init3d_'+str(i)+'_'+str(j)+'.sdf' )
+        
+        with open(smi_tmpfile, 'w') as f:
+            f.write(smiles)
+            
+        # num_samples = num_confs
+        
+        cmd_gen3d = [
+            'obabel', '-ismi', smi_tmpfile, '-O', init3d_tmpfile,  '--gen3d', '--fast' '--energy'
+            ]
+
+        print(' '.join(cmd_gen3d))
+
+        mode = 'conformer'
+        # nconf = 2
+        if mode == 'conformer':
+            cmd_conf = [
+                'obabel', '-isdf', init3d_tmpfile, '-O', conf_tmpfile, '--conformer', '--nconf', str(num_confs), '--log', '--score', 'energy', '--writeconformers'
+                ]
+            
+            print(' '.join(cmd_conf))
+
+            try:
+                subprocess.run(' '.join(cmd_gen3d), shell=True, check=True)
+                subprocess.run(' '.join(cmd_conf), shell=True, check=True)
+            except subprocess.CalledProcessError as e:
+    #         print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
+                print(e) 
+                return 1
+                
+        outmols = []
+        outfiles = []
+        bestmols = []
+        
+        suppl = Chem.SDMolSupplier(conf_tmpfile)
+        mols = [ m for m in suppl ]
+        for j,mol in enumerate(mols):
+            tempfile = os.path.join(output_dir, 'confs0_tmp.sdf')
+            writer = Chem.SDWriter(tempfile)
+            writer.write(mol)
+            writer.close()
+    
+            cmd_calc_energy = [ 'obabel', '-isdf', tempfile, '-O', tempfile,  '--minimize', '--energy' ]
+            print(' '.join(cmd_calc_energy))
+    
+            subprocess.run(' '.join(cmd_calc_energy), shell=True, check=True)
+    
+            outmol = Chem.SDMolSupplier(tempfile)[0]
+    
+            outmol.SetProp('3dGenMethod', 'OpenBabel')
+            outmol.SetProp('CID', str(j))
+    
+            print(outmol.GetPropsAsDict())
+            outmols.append(outmol)
+    
+
+        writer = Chem.SDWriter(conf_file)
+        for m in outmols:
+            writer.write(m)
+        writer.close()
+        
+        if ref_lig is not None:
+            rmsd = CalcRMSD(conf_file, ref_lig)
+
+        bestmol = GetBestConformer(conf_file,rmsd_threshold=rmsd_threshold)
+       
+    return bestmol
+
+
+
+def Embed3D_Omega(mol=None,tag='',
+            smi=None,
+            infile=None,
+            save_data=True,
+            log_dir='./result/omega/',
+            seed=0,
+            ref_lig=None,
+            rmsd_threshold=3,
+            num_confs = 2):
+    
+    # Logging
+    output_dir = get_new_log_dir(log_dir, 'sample', tag=tag)
+    logger = get_logger('test', output_dir)
+    #logger.info(args)
+    
+    logger.info('Loading testset...')
+    test_set = []
+
+    if infile and smi:
+        logger.error('Error. Mol or SMILES is required.')
+        sys.exit()
+
+    elif infile:
+        with open(infile, 'r') as f:
+            for s in f:
+                s = s.rstrip()
+                test_set.append(s)
+
+    elif smi:
+        test_set.append(smi)
+
+    elif mol != None and smi == None and infile == None:
+        try:
+            smi = Chem.MolToSmiles(mol)
+            test_set.append(smi)
+        except Exception as e:
+            logger.error(e)
+            sys.exit()
+
+    print(test_set)
+
+    done_smiles = set()
+    outfiles = []
+    bestmols = []
+
+    for i, smiles in enumerate(tqdm(test_set)):
+    
+        omega_infile = os.path.join(output_dir, 'input_'+str(i).zfill(4)+'.smi')
+        omega_outfile = os.path.join(output_dir, 'confs_'+str(i).zfill(4)+'.sdf')
+        
+        with open(omega_infile, 'w') as f:
+            for s in test_set:
+                f.write(s+'\n')
+        
+        save_path_sdf = os.path.join(output_dir, 'samples.sdf')
+        
+        num_samples = num_confs
+        
+        cmd = [
+            'omega2', '-in', str(omega_infile), '-out', str(omega_outfile), 
+            '-maxconfs', str(num_samples), '-sdEnergy'
+            ]
+
+        print(' '.join(cmd))
+    
+        try:
+            subprocess.run(' '.join(cmd), shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(e) 
+            return 1
+
+        outfiles.append(omega_outfile)
+
+        if ref_lig is not None:
+            rmsd = CalcRMSD(omega_outfile, ref_lig)
+
+        bestmol = GetBestConformer(omega_outfile,rmsd_threshold=rmsd_threshold)
+        
+
+    return bestmol
+
+def CalcRMSD(sdf, ref_lig):
+
+    from rdkit import Chem
+    
+    suppl = Chem.SDMolSupplier(sdf)
+    confs = [ m for m in suppl ]
+    
+    # for m in suppl:
+    df = pd.DataFrame.from_dict([ m.GetPropsAsDict() for m in confs])
+
+    suffix = os.path.splitext(ref_lig)[-1]
+    if suffix == '.sdf':
+        try:
+            ref_mol = Chem.SDMolSupplier(ref_lig)[0]
+        except:
+            print('Can not read ligand SDF ('+ref_lig+'). Try to read PDB if the file is exist.')
+            # ref_lig = os.path.join(os.path.splitext(ref_lig)[0], '.pdb')
+            try:
+                ref_lig = ''.join([os.path.splitext(ref_lig)[0], '.pdb'])
+                ref_mol = Chem.MolFromPDBFile(ref_lig)
+                
+            except Exception as e:
+                print(e)
+                rmsds = {}
+                return rmsds 
+                
+    elif suffix == '.pdb':
+        try:
+            ref_mol = Chem.MolFromPDBFile(ref_lig)
+            
+        except:
+            print('Can not read ligand PDB ('+ref_lig+'). Try to read SDF if the file is exist.')
+            # ref_lig = os.path.join(os.path.splitext(ref_lig)[0], '.sdf')
+            try:
+                ref_lig = ''.join([os.path.splitext(ref_lig)[0], '.sdf'])
+                ref_mol = Chem.SDMolSupplier(ref_lig)[0]
+                
+            except Exception as e:
+                print(e)
+                rmsds = {}
+                return rmsds                 
+
+    rmsds = {}
+    for cid, m in enumerate(confs):
+        try:
+            rmsd = Chem.AllChem.AlignMol(m, ref_mol)
+            rmsd = '{:.2f}'.format(rmsd)
+
+        except Exception as e:
+        # except RuntimeError as e:
+            print(e)
+            rmsd = None
+            
+        m.SetProp('ref_ligand', ref_lig)
+        # m.SetProp('RMSD', str(rmsd))
+        m.SetProp('RMSD', str(rmsd))
+    
+        confs[cid] = m
+        rmsds[cid] = rmsd
+
+        writer = Chem.SDWriter(sdf)
+        for m in confs:
+            writer.write(m)
+        writer.close()
+
+    return rmsds
+
+def GetBestConformer(sdf,rmsd_threshold=3):
+    suppl = Chem.SDMolSupplier(sdf)
+    confs = [ m for m in suppl ]
+    
+    # for m in suppl:
+    df = pd.DataFrame.from_dict([ m.GetPropsAsDict() for m in confs])
+    # df['Energy'] = pd.to_numeric(df['Energy'])
+    # print(df)
+
+    # minimium energy conformer
+    print('Minimum Energy: CID='+str(df['Energy_MMFF'].idxmin())+',', 'Energy='+str(df['Energy_MMFF'].min()), '[kcal/mol]')
+
+    # RMSD
+    # print(df.sort_values('RMSD'))
+    # pd.to_numeric(df['RMSD'],errors="coerce")
+    df.query('RMSD <= '+str(rmsd_threshold), inplace=True)
+    df.reset_index(inplace=True,drop=True)
+    df.sort_values('RMSD', inplace=True)
+    df.reset_index(inplace=True,drop=True)
+    df.sort_values('Energy_MMFF',inplace=True)
+    df.reset_index(inplace=True)
+    df=df.rename(columns={'index': 'rank_RMSD'})
+
+    sdf_dirname = os.path.dirname(sdf)
+    sdf_basename = os.path.splitext(os.path.basename(sdf))[0]
+    outfilename_energy = sdf_basename+'_best_energy.csv'
+    outfilename_rmsd = sdf_basename+'_best_rmsd.csv'
+    
+    best_energy_outfile = os.path.join(sdf_dirname, outfilename_energy)
+    best_rmsd_outfile = os.path.join(sdf_dirname, outfilename_rmsd)
+
+    df.loc[df['Energy_MMFF'].idxmin()].T.to_csv(best_energy_outfile)
+    # print(df.query('RMSD <= '+str(rmsd_threshold)).sort_values(['Energy_MMFF','RMSD']))
+    df.query('RMSD <= '+str(rmsd_threshold), inplace=True)
+    print(df)
+    df[df['RMSD'] <= float(rmsd_threshold)].sort_values('RMSD').to_csv(best_rmsd_outfile)
+    
+    outmol = confs[df['Energy_MMFF'].idxmin()]
+
+    return outmol
+
