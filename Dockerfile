@@ -9,7 +9,7 @@ ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR="/tmp/poetry_cache"
 RUN poetry install --no-root && rm -rf $POETRY_CACHE_DIR
-RUN /usr/local/.venv/bin/pip install --no-deps .
+RUN /usr/local/.venv/bin/pip install .
 
 # runtime image
 FROM python:3.11-slim AS runtime
