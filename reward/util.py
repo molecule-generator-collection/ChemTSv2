@@ -7,6 +7,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.MolStandardize import rdMolStandardize, normalize
 import pandas as pd
+import numpy as np
 import subprocess
 
 
@@ -438,3 +439,21 @@ def calc_3dstructure(smiles):
 
 
     return tmp_mol
+
+
+"""Calculate RMSD of scaffold region between reference structure and docking pose"""
+def calc_scaffold_rmsd(dock_mol, conf):
+    scaffold_mol = Chem.MolFromSmiles(conf['fixed_structure_smiles'])
+    reference_mol = Chem.MolFromMolFile(conf['reference_structure_path']) 
+
+    # Extract coordinates (Reference structure)
+    ref_scaf_match_index = reference_mol.GetSubstructMatch(scaffold_mol)
+    ref_match_coords = np.array([reference_mol.GetConformer(0).GetAtomPosition(idx) for idx in ref_scaf_match_index])
+    
+    # Extract coordinates (Docking pose)
+    dock_scaf_indexs = dock_mol.GetSubstructMatch(scaffold_mol)
+    dock_match_coords = np.array([dock_mol.GetConformer(0).GetAtomPosition(idx) for idx in dock_scaf_indexs])
+
+    squared_diff = np.square(ref_match_coords - dock_match_coords)
+    rmsd = np.sqrt(np.sum(squared_diff) / len(squared_diff))
+    return rmsd  

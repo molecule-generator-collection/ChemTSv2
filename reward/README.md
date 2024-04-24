@@ -108,3 +108,16 @@ How to run:
 ```bash
 chemtsv2 -c config/setting_gnina_singularity.yaml --gpu 0 --use_gpu_only_reward
 ```
+
+### gnina_rmsd_reward.py
+
+This reward function calculates ligand RMSD of the common molecular scaffold between a docking pose and reference structure. When using this function, note the following.
+
+1. When using a ligand from a crystal structure, outputted using Pymol, as the reference structure, please convert it using Open Babel as follows:
+
+```bash
+obabel -ipdb ligand.pdb -omol -O ligand.mol
+```
+
+2. This reward function doesn't take into account the inversion of symmetrical structure caused by a single bond when calculates RMSD.
+
