@@ -459,7 +459,7 @@ def calc_scaffold_rmsd(dock_mol, conf):
     return rmsd  
 
 def calc_strain_energy(docking_pose_file, conf):
-    scname = ["Total_Strain", "dihedral_torsion_strain"]
+    scname = ["total_strain", "dihedral_torsion_strain"]
 
     basename, ext = os.path.splitext(os.path.basename(docking_pose_file))
     ext = ext.lower()
@@ -486,16 +486,14 @@ def calc_strain_energy(docking_pose_file, conf):
         df = pd.read_csv(csv_path, header=None)[[1, 5]]
         df.index.name = "SID"
         df.columns = scname
-        name = [os.path.basename(docking_pose_file) for i in range(len(df))][0]
         top_pose_strain_energy = df.to_numpy()[0]
         tortal_strain_energy = top_pose_strain_energy[0]
         max_single_strain_energy = top_pose_strain_energy[1]
     except:
-        name = [os.path.basename(docking_pose_file)]
-        score = np.zeros([1, 2])
-        score[:, :] = np.nan
-        tortal_strain_energy = score[0]
-        max_single_strain_energy = score[0]
+        top_pose_strain_energy = np.zeros([1, 2])
+        top_pose_strain_energy[:, :] = np.nan
+        tortal_strain_energy = top_pose_strain_energy[0]
+        max_single_strain_energy = top_pose_strain_energy[1]
         pass
 
     if not conf["savescr"]:
