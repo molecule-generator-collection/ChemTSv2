@@ -457,3 +457,49 @@ def calc_scaffold_rmsd(dock_mol, conf):
     squared_diff = np.square(ref_match_coords - dock_match_coords)
     rmsd = np.sqrt(np.sum(squared_diff) / len(squared_diff))
     return rmsd  
+
+def calc_strain_energy(docking_pose_file, conf):
+    scname = ["Total_Strain", "dihedral_torsion_strain"]
+
+    basename, ext = os.path.splitext(os.path.basename(docking_pose_file))
+    ext = ext.lower()
+    mol2_path = basename + ".mol2"
+    cmd = [
+        'obabel', '-i'+ext[1:], docking_pose_file, '-omol2', '-O', mol2_path, '-xu'
+    ]
+    results = subprocess.run(
+        cmd, capture_output=True, check=True, text=True
+    )
+    cw_dir = os.getcwd()
+    os.chdir(conf["script_path"])
+    cmd = [
+        'python', 'Torsion_Strain.py', cw_dir +'/' + mol2_path
+    ]
+    results = subprocess.run(
+        cmd, capture_output=True, check=True, text=True
+    )
+
+    os.chdir(cw_dir)
+
+    csv_path = basename + "_Torsion_Strain.csv"
+    try:
+        df = pd.read_csv(csv_path, header=None)[[1, 5]]
+        df.index.name = "SID"
+        df.columns = scname
+        name = [os.path.basename(docking_pose_file) for i in range(len(df))][0]
+        top_pose_strain_energy = df.to_numpy()[0]
+        tortal_strain_energy = top_pose_strain_energy[0]
+        max_single_strain_energy = top_pose_strain_energy[1]
+    except:
+        name = [os.path.basename(docking_pose_file)]
+        score = np.zeros([1, 2])
+        score[:, :] = np.nan
+        tortal_strain_energy = score[0]
+        max_single_strain_energy = score[0]
+        pass
+
+    if not conf["savescr"]:
+        for file_path in [mol2_path, csv_path]:
+            if os.path.exists(file_path): os.remove(file_path)
+
+    return tortal_strain_energy, max_single_strain_energy
