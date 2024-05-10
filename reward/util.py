@@ -2,13 +2,13 @@ import os
 import random
 import re
 import string
+import subprocess
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.MolStandardize import rdMolStandardize, normalize
 import pandas as pd
 import numpy as np
-import subprocess
 
 
 def read_reactions(reaction_file):
