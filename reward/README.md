@@ -80,7 +80,7 @@ Below is the command to install AutoDock Vina Python package.
 pip install vina, meeko, scipy
 ```
 
-Below is the example of command to install openbabel binary.
+Below is the example of command to install openbabel binary. <a id="here"></a>  
 In detail, please refer to the official instruction (https://openbabel.org/docs/dev/Installation/install.html#basic-build-procedure).
 
 ```bash
@@ -126,7 +126,6 @@ obabel -ipdb ligand.pdb -omol -O ligand.mol
 This reward function need  StrainFilter distributed at [Tldr's a Ligand Discovery Resource](https://tldr.docking.org/).
 Using this reward fucntion, you need to create Tldr account at [Tldr Web site](https://tldr.docking.org/) with the agreement of the Tldr's license, and activate the account after getting permission by the Irwin and Shoichet Laboratories. After finishing the installation of STRAIN_FILTER directory, please move it to ChemTSv2/data/
 
-You also need to install openbabel.  
-```conda isntall -c conda-forge openbabel```
+You also need to install openbabel. Click [here](#here) for instllation instructions.
 
 Strainfilter is licensed by the [Irwin](https://irwinlab.compbio.ucsf.edu/) and [Shoichet](https://bkslab.org/) Laboratories in the Department of Pharmaceutical Chemistry at the University of California, San Francisco (UCSF).
