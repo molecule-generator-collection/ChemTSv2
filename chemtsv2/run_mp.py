@@ -211,6 +211,7 @@ def main():
     if rank==0:
         search.flush()
         logger.info("FINISH!")
+    comm.barrier()
     MPI.Finalize()
 
 if __name__ == "__main__":
