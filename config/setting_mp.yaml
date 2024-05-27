@@ -25,7 +25,6 @@ reward_setting:
 # Restart setting
 save_checkpoint: False
 checkpoint_load: False
-checkpoint_file: chemtsv2.ckpt.pkl
 
 # Filter setting
 use_lipinski_filter: True

@@ -29,7 +29,6 @@ policy_setting:
 # Restart setting
 save_checkpoint: False
 checkpoint_load: False
-checkpoint_file: chemtsv2.ckpt.pkl
 
 # Filter setting
 use_lipinski_filter: False
@@ -63,9 +62,6 @@ pains_filter:
 include_filter_result_in_reward: False
 
 # User setting
-
-#parallelization strategy
-leaf_parallel: False
 
 #Gaussian setting
 gau_functional: B3LYP
