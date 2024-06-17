@@ -2,13 +2,13 @@ import os
 import random
 import re
 import string
+import subprocess
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.MolStandardize import rdMolStandardize, normalize
 import pandas as pd
 import numpy as np
-import subprocess
 
 
 def read_reactions(reaction_file):
@@ -482,22 +482,27 @@ def calc_strain_energy(docking_pose_file, conf):
     os.chdir(cw_dir)
 
     csv_path = basename + "_Torsion_Strain.csv"
+    total_strain_energy = None
+    max_single_strain_energy = None
+
     try:
-        df = pd.read_csv(csv_path, header=None)[[1, 5]]
+        if not os.path.exists(csv_path):
+            raise Exception(f"CSV file {csv_path} does not exist.")
+        df = pd.read_csv(csv_path, header=None)   
+        df = df[[1, 5]] #column1: total strain energy, column5: max single strain energy. For more Details, please check the README in the STRAIN_FILTER directory.
         df.index.name = "SID"
         df.columns = scname
         top_pose_strain_energy = df.to_numpy()[0]
-        tortal_strain_energy = top_pose_strain_energy[0]
-        max_single_strain_energy = top_pose_strain_energy[1]
-    except:
-        top_pose_strain_energy = np.zeros([1, 2])
-        top_pose_strain_energy[:, :] = np.nan
-        tortal_strain_energy = top_pose_strain_energy[0]
-        max_single_strain_energy = top_pose_strain_energy[1]
-        pass
+        if len(top_pose_strain_energy)  >=2:
+            total_strain_energy = top_pose_strain_energy[0]
+            max_single_strain_energy = top_pose_strain_energy[1]
+        else:
+            raise Exception("The CSV file does not contain sufficient data.")
+    except Exception as e:
+        print(f"Warning: {e}")
 
     if not conf["savescr"]:
         for file_path in [mol2_path, csv_path]:
             if os.path.exists(file_path): os.remove(file_path)
 
-    return tortal_strain_energy, max_single_strain_energy
+    return total_strain_energy, max_single_strain_energy
