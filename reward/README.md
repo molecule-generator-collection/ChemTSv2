@@ -121,3 +121,11 @@ obabel -ipdb ligand.pdb -omol -O ligand.mol
 
 2. This reward function doesn't take into account the inversion of symmetrical structure caused by a single bond when calculates RMSD.
 
+### gnina_strain_reward.py
+
+This reward function need  StrainFilter distributed at [Tldr's a Ligand Discovery Resource](https://tldr.docking.org/).
+Using this reward fucntion, you need to create Tldr account at [Tldr Web site](https://tldr.docking.org/) with the agreement of the Tldr's license, and activate the account after getting permission by the Irwin and Shoichet Laboratories. After finishing the installation of STRAIN_FILTER directory, please move it to ChemTSv2/data/
+
+You also need to install openbabel. Click [here](#here) for instllation instructions.
+
+Strainfilter is licensed by the [Irwin](https://irwinlab.compbio.ucsf.edu/) and [Shoichet](https://bkslab.org/) Laboratories in the Department of Pharmaceutical Chemistry at the University of California, San Francisco (UCSF).

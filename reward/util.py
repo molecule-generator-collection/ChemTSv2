@@ -2,13 +2,13 @@ import os
 import random
 import re
 import string
+import subprocess
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.MolStandardize import rdMolStandardize, normalize
 import pandas as pd
 import numpy as np
-import subprocess
 
 
 def read_reactions(reaction_file):
@@ -457,3 +457,52 @@ def calc_scaffold_rmsd(dock_mol, conf):
     squared_diff = np.square(ref_match_coords - dock_match_coords)
     rmsd = np.sqrt(np.sum(squared_diff) / len(squared_diff))
     return rmsd  
+
+def calc_strain_energy(docking_pose_file, conf):
+    scname = ["total_strain", "dihedral_torsion_strain"]
+
+    basename, ext = os.path.splitext(os.path.basename(docking_pose_file))
+    ext = ext.lower()
+    mol2_path = basename + ".mol2"
+    cmd = [
+        'obabel', '-i'+ext[1:], docking_pose_file, '-omol2', '-O', mol2_path, '-xu'
+    ]
+    results = subprocess.run(
+        cmd, capture_output=True, check=True, text=True
+    )
+    cw_dir = os.getcwd()
+    os.chdir(conf["script_path"])
+    cmd = [
+        'python', 'Torsion_Strain.py', cw_dir +'/' + mol2_path
+    ]
+    results = subprocess.run(
+        cmd, capture_output=True, check=True, text=True
+    )
+
+    os.chdir(cw_dir)
+
+    csv_path = basename + "_Torsion_Strain.csv"
+    total_strain_energy = None
+    max_single_strain_energy = None
+
+    try:
+        if not os.path.exists(csv_path):
+            raise Exception(f"CSV file {csv_path} does not exist.")
+        df = pd.read_csv(csv_path, header=None)   
+        df = df[[1, 5]] #column1: total strain energy, column5: max single strain energy. For more Details, please check the README in the STRAIN_FILTER directory.
+        df.index.name = "SID"
+        df.columns = scname
+        top_pose_strain_energy = df.to_numpy()[0]
+        if len(top_pose_strain_energy)  >=2:
+            total_strain_energy = top_pose_strain_energy[0]
+            max_single_strain_energy = top_pose_strain_energy[1]
+        else:
+            raise Exception("The CSV file does not contain sufficient data.")
+    except Exception as e:
+        print(f"Warning: {e}")
+
+    if not conf["savescr"]:
+        for file_path in [mol2_path, csv_path]:
+            if os.path.exists(file_path): os.remove(file_path)
+
+    return total_strain_energy, max_single_strain_energy
