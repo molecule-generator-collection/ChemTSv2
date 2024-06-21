@@ -42,7 +42,7 @@ If you want to use external software packages, such as Gaussian 16 and AutoDock 
 ### dscore_reward.py
 
 ```bash
-pip install lightgbm
+pip install chemtsv2 lightgbm==3.2.1
 ```
 
 ### Vina_binary_reward.py
