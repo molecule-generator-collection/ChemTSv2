@@ -241,6 +241,12 @@ If you want to use GPU, run ChemTS with `--gpu GPU_ID` argument as follows.
 chemtsv2 -c config/setting.yaml --gpu 0
 ```
 
+If you want to use GPU only for reward calculations, run ChemTSv2 with `--gpu` and `--use_gpu_only_reward` arguments as follows.
+
+```bash
+chemtsv2 -c config/setting_gnina_singularity.yaml --gpu 0 --use_gpu_only_reward
+```
+
 ## How to cite
 
 ```text
