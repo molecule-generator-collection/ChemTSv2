@@ -156,7 +156,8 @@ docker run -u $(id -u):$(id -g) \
 |Kinase inhibitory activities|[dscore_reward.py](reward/dscore_reward.py)|[setting_dscore.yaml](config/setting_dscore.yaml)|LightGBM[^6]|[^7]|
 |Docking score|[Vina_binary_reward.py](reward/Vina_binary_reward.py)|[setting_vina_binary.yaml](config/setting_vina_binary.yaml)|AutoDock Vina[^8]|[^9]|
 |Pharmacophore|[pharmacophore_reward.py](reward/pharmacophore_reward.py)|[setting_pharmacophore.yaml](config/setting_pharmacophore.yaml)|-|[^11]|
-|gnina docking|[gnina_singularity_reward.py](reward/gnina_singularity_reward.py)|[setting_gnina_singularity.yaml](config/setting_gnina_singularity.yaml)|-||
+|gnina docking|[gnina_singularity_reward.py](reward/gnina_singularity_reward.py)|[setting_gnina_singularity.yaml](config/setting_gnina_singularity.yaml)|-|-|
+|Linker generation|[Linker_logP_reward.py](reward/Linker_logP_reward.py)|[setting_linker.yaml](config/setting_linker.yaml)|-|-|
 
 [^3]: Frisch, M. J. et al. Gaussian 16 Revision C.01. 2016; Gaussian Inc. Wallingford CT.
 [^4]: Sumita, M., Yang, X., Ishihara, S., Tamura, R., & Tsuda, K. (2018). Hunting for Organic Molecules with Artificial Intelligence: Molecules Optimized for Desired Excitation Energies. <i>ACS Central Science</i>, 4(9), 1126–1133. https://doi.org/10.1021/acscentsci.8b00213
