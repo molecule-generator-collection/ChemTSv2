@@ -30,7 +30,7 @@ class BatchReward(ABC):
         raise NotImplementedError('Please check your reward file')
 
 
-def convert_linker_reward(conf: dict):
+def convert_to_linker_reward(conf: dict):
     def decorator(func):
         def wrapper(*args, **kwargs):
             if not isinstance(args[0], Mol):
