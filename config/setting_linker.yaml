@@ -58,4 +58,4 @@ pains_filter:
 include_filter_result_in_reward: False
 
 # Settings for linker generation
-warheads: ['C1([*:1])C=CC(O)=CC=1', 'C1(=CC=NC=C1)[*:2]']
+cores: ['C1([*:1])C=CC(O)=CC=1', 'C1(=CC=NC=C1)[*:2]']
