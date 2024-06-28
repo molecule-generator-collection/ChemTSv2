@@ -119,28 +119,31 @@ def get_model_structure_info(model_json, logger):
     input_shape = None
     vocab_size = None
     output_size = None
+    num_gru_units = None
     for layer in loaded_model.get_config()['layers']:
         config = layer.get('config')
         if layer.get('class_name') == 'InputLayer':
             input_shape = config['batch_input_shape'][1]
         if layer.get('class_name') == 'Embedding':
             vocab_size = config['input_dim']
+        if layer.get('class_name') == 'GRU':  # Two GRU layers are included in the default RNN model. The two layers are assumed to have the same number of units.
+            num_gru_units = config['units']
         if layer.get('class_name') == 'TimeDistributed':
             output_size = config['layer']['config']['units']
-    if input_shape is None or vocab_size is None or output_size is None:
-        logger.error('Confirm if the version of Tensorflow is 2.5. If so, please consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`')
+    if input_shape is None or vocab_size is None or output_size is None or num_gru_units is None:
+        logger.error('Confirm if the version of Tensorflow is 2.14. If so, please consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`')
         sys.exit()
             
-    return input_shape, vocab_size, output_size
+    return input_shape, vocab_size, output_size, num_gru_units
 
     
 def loaded_model(model_weight, logger, conf):
     model = Sequential()
     model.add(Embedding(input_dim=conf['rnn_vocab_size'], output_dim=conf['rnn_vocab_size'],
                         mask_zero=False, batch_size=1))
-    model.add(GRU(256, batch_input_shape=(1, None, conf['rnn_vocab_size']), activation='tanh',
+    model.add(GRU(conf['num_gru_units'], batch_input_shape=(1, None, conf['rnn_vocab_size']), activation='tanh',
                   return_sequences=True, stateful=True))
-    model.add(GRU(256, activation='tanh', return_sequences=False, stateful=True))
+    model.add(GRU(conf['num_gru_units'], activation='tanh', return_sequences=False, stateful=True))
     model.add(Dense(conf['rnn_output_size'], activation='softmax'))
     model.load_weights(model_weight)
     logger.info(f"Loaded model_weight from {model_weight}")

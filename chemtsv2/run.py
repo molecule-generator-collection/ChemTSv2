@@ -186,7 +186,7 @@ def main():
     reward_calculator = getattr(import_module(rs["reward_module"]), rs["reward_class"])
     ps = conf['policy_setting']
     policy_evaluator = getattr(import_module(ps['policy_module']), ps['policy_class'])
-    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
+    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'], conf['num_gru_units'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
     model = loaded_model(conf['model_setting']['model_weight'], logger, conf)  #WM300 not tested  
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")

@@ -171,7 +171,7 @@ def main():
     with open(conf['token'], 'rb') as f:
         tokens = pickle.load(f)
     conf['token'] = tokens
-    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
+    conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'], conf['num_gru_units'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
 
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs['reward_module']), rs['reward_class'])
