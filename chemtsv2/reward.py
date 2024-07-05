@@ -45,7 +45,10 @@ def convert_to_linker_reward(conf: dict):
             cores_mol = [Chem.MolFromSmiles(s) for s in conf['cores']]
             for m in cores_mol:
                 rwmol.InsertMol(m)
-            prod = Chem.molzip(rwmol)
+            try:
+                prod = Chem.molzip(rwmol)
+            except:
+                return -1
             return func(prod) 
         return wrapper
 
