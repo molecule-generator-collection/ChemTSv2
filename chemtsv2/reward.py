@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import wraps
 from typing import List, Callable
 import re
 
@@ -32,6 +33,7 @@ class BatchReward(ABC):
 
 def convert_to_linker_reward(conf: dict):
     def decorator(func):
+        @wraps(func)
         def wrapper(*args, **kwargs):
             if not isinstance(args[0], Mol):
                 raise TypeError("Check this decorator is placed in the correct position.")
