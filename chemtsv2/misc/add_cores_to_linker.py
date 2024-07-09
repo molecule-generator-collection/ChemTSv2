@@ -31,7 +31,10 @@ def main():
         rwmol = Chem.RWMol(linker_mol)
         for m in cores:
             rwmol.InsertMol(m)
-        prod = Chem.molzip(rwmol)
+        try:
+            prod = Chem.molzip(rwmol)
+        except:
+            return None
         return Chem.MolToSmiles(prod)
     
     args = get_parser()
