@@ -129,3 +129,13 @@ Using this reward fucntion, you need to create Tldr account at [Tldr Web site](h
 You also need to install openbabel. Click [here](#here) for instllation instructions.
 
 Strainfilter is licensed by the [Irwin](https://irwinlab.compbio.ucsf.edu/) and [Shoichet](https://bkslab.org/) Laboratories in the Department of Pharmaceutical Chemistry at the University of California, San Francisco (UCSF).
+
+### gnina_interaction_reward.py
+
+This reward function assesses the interactions between the receptor and the generated molecules using [ProLIF](https://doi.org/10.1186/s13321-021-00548-6).
+Need to install prolif and MDAnalysis.
+
+```bash
+pip install prolif
+pip install MDAnalysis
+```
