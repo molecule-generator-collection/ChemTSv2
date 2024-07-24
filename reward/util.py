@@ -524,7 +524,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
 
     # Define the types of interactions to be detected
     interaction_types = []
-    for c in conf['interactions']:
+    for c in conf['prolif_interactions']:
         interaction_types.extend(c['interaction_type'])
     interaction_types = list(set(interaction_types))
 
@@ -540,7 +540,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
         )
 
     # Set the maximum distance of interaction to be detected
-    tolerance = conf['tolerance']
+    tolerance = conf['prolif_tolerance']
     parameters = {}
     for interaction_type in interaction_types:
         param_key = 'tolerance' if interaction_type == 'VdWContact' else 'distance'
@@ -558,7 +558,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
         parameters=parameters,
         count=True,
         )
-    residues = [c['residue'] for c in conf['interactions']]
+    residues = [c['residue'] for c in conf['prolif_interactions']]
     try:
         fp.run_from_iterable(
             lig_iterable=[ligand_mol], prot_mol=protein_mol, residues=residues
@@ -568,7 +568,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
 
     # Get the minimum distance of detected interactions for each residue
     min_distance_dict = {}
-    for c in conf['interactions']:
+    for c in conf['prolif_interactions']:
         res = c['residue']
         min_distance_dict[res] = {'interaction_type': None, 'distance': None}
         metadata = fp.metadata(ligand_mol, protein_mol[res])

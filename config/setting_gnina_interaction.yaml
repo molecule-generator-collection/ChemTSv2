@@ -68,11 +68,11 @@ gnina_base_smina_affinity: -10.01144
 gnina_base_cnn_affinity: 8.1709308624
 
 # Setting for prolif
-interactions:
+prolif_interactions:
   - residue: VAL803.A
     interaction_type: ['VdWContact']
     cutoff: [3.0]
   - residue: GLN812.A
     interaction_type: ['HBAcceptor', 'HBDonor']
     cutoff: [3.5, 3.5]
-tolerance: 10
+prolif_tolerance: 10

@@ -79,7 +79,7 @@ class Gnina_interaction_reward(Reward):
         cnn_afy_diff_scaled = cnn_afy_diff*0.6 / (1 + abs(cnn_afy_diff)*0.1)
 
         scaled_distance_list = []
-        for c in conf['interactions']:
+        for c in conf['prolif_interactions']:
             residue = c['residue']
             if min_distance_dict[residue]['interaction_type'] is None:
                 scaled_distance_list.append(0)
@@ -88,7 +88,7 @@ class Gnina_interaction_reward(Reward):
             detected_interaction = min_distance_dict[residue]['interaction_type']
             detected_interaction_idx = c['interaction_type'].index(detected_interaction)
             mu = c['cutoff'][detected_interaction_idx]
-            tolerance = conf['tolerance']
+            tolerance = conf['prolif_tolerance']
             sigma = np.sqrt((-(tolerance-mu)**2) / (2*np.log(1e-3)))
             scaled_distance = min_gauss(distance, a=1, mu=mu, sigma=sigma)
             scaled_distance_list.append(scaled_distance)
