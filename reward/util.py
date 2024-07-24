@@ -509,6 +509,7 @@ def calc_strain_energy(docking_pose_file, conf):
     return total_strain_energy, max_single_strain_energy
 
 
+# This function currently supports GNINA.
 def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, conf):
 
     # Import necessary modules
