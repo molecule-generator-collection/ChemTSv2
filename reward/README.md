@@ -132,10 +132,37 @@ Strainfilter is licensed by the [Irwin](https://irwinlab.compbio.ucsf.edu/) and 
 
 ### gnina_interaction_reward.py
 
-This reward function assesses the interactions between the receptor and the generated molecules using [ProLIF](https://doi.org/10.1186/s13321-021-00548-6).
-Need to install prolif and MDAnalysis.
+This reward function assesses the interactions between the receptor and generated molecules using [ProLIF](https://doi.org/10.1186/s13321-021-00548-6).
+To use this function, you need to install ProLIF and MDAnalysis.
 
 ```bash
 pip install prolif
 pip install MDAnalysis
 ```
+
+You can specify parameters for ProLIF in a YAML configuration file.
+An example of configuration is shown below.
+
+```yaml
+prolif_interactions:
+  - residue: VAL803.A
+    interaction_type: ['VdWContact']
+    cutoff: [3.0]
+  - residue: GLN812.A
+    interaction_type: ['HBAcceptor', 'HBDonor']
+    cutoff: [3.5, 3.5]
+prolif_tolerance: 10
+```
+
+- **`residue`**: The target residue in the receptor. The format is `[residue_name][number].[chain]`.
+  - `[residue_name]`: The three-letter code for the amino acid.
+  - `[number]`: The residue sequence number.
+  - `[chain]`: The chain identifier.
+
+- **`interaction_type`**: A list of interaction types to be assessed.
+  - Available interaction types are `['Anionic', 'CationPi', 'Cationic', 'EdgeToFace', 'FaceToFace', 'HBAcceptor', 'HBDonor', 'Hydrophobic', 'MetalAcceptor', 'MetalDonor', 'PiCation', 'PiStacking', 'VdWContact', 'XBAcceptor', 'XBDonor']` (confirmed with ProLIF v2.0.3).
+  - For more details, please refer [ProLIF documentation](https://prolif.readthedocs.io/en/latest/source/modules/interaction-fingerprint.html#detecting-interactions-between-residues-prolif-interactions-interactions).
+
+- **`cutoff`**: A list of cutoff distances (in Å) for the specified interaction types. The cutoff distance is the maximium distance at which an interaction is considered to exist. The order of cutoffs should correspond to the order of interaction types.
+
+- **`prolif_tolerance`**: A parameter that sets the upper distance limit (in Å) at which specified interactions will be searched.
