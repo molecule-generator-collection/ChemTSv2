@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 import re
 import string
@@ -506,3 +507,82 @@ def calc_strain_energy(docking_pose_file, conf):
             if os.path.exists(file_path): os.remove(file_path)
 
     return total_strain_energy, max_single_strain_energy
+
+
+# This function currently supports GNINA.
+def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, conf):
+
+    # Import necessary modules
+    plf = sys.modules.get('prolif') or __import__('prolif')
+    mda = sys.modules.get('MDAnalysis') or __import__('MDAnalysis')
+
+    # Load receptor and docked ligand
+    protein_file = receptor_fname.replace('/scr', 'data')
+    u = mda.Universe(protein_file)
+    protein_mol = plf.Molecule.from_mda(u)
+    pose_iterable = plf.sdf_supplier(output_ligand_fname)
+    ligand_mol = pose_iterable[pose_idx]
+
+    # Define the types of interactions to be detected
+    interaction_types = []
+    for c in conf['prolif_interactions']:
+        interaction_types.extend(c['interaction_type'])
+    interaction_types = list(set(interaction_types))
+
+    # Check whether the selected interaction types are valid
+    available_interaction_types = plf.Fingerprint.list_available()
+    invalid_interaction_types = [
+        i for i in interaction_types if i not in available_interaction_types
+    ]
+    if invalid_interaction_types:
+        raise ValueError(
+            f"Invalid interaction types: {invalid_interaction_types}."
+            f"Available interaction types are {available_interaction_types}."
+        )
+
+    # Set the maximum distance of interaction to be detected
+    tolerance = conf['prolif_tolerance']
+    parameters = {}
+    for interaction_type in interaction_types:
+        param_key = 'tolerance' if interaction_type == 'VdWContact' else 'distance'
+        if interaction_type == 'PiStacking':
+            parameters[interaction_type] = {
+                'ftf_kwargs': {param_key: tolerance},
+                'etf_kwargs': {param_key: tolerance}
+            }
+        else:
+            parameters[interaction_type] = {param_key: tolerance}
+
+    # Run detection of interaction
+    fp = plf.Fingerprint(
+        interactions=interaction_types,
+        parameters=parameters,
+        count=True,
+        )
+    residues = [c['residue'] for c in conf['prolif_interactions']]
+    try:
+        fp.run_from_iterable(
+            lig_iterable=[ligand_mol], prot_mol=protein_mol, residues=residues
+        )
+    except:
+        return None
+
+    # Get the minimum distance of detected interactions for each residue
+    min_distance_dict = {}
+    for c in conf['prolif_interactions']:
+        res = c['residue']
+        min_distance_dict[res] = {'interaction_type': None, 'distance': None}
+        metadata = fp.metadata(ligand_mol, protein_mol[res])
+        for interaction_type in metadata.keys():
+            if interaction_type not in c['interaction_type']:
+                continue
+            current_min_distance = min_distance_dict[res]['distance']
+            distance_list = [d['distance'] for d in metadata[interaction_type]]
+            latest_min_distance = min(distance_list)
+            if current_min_distance is None or latest_min_distance < current_min_distance:
+                min_distance_dict[res]['interaction_type'] = interaction_type
+                min_distance_dict[res]['distance'] = latest_min_distance
+            else:
+                continue
+
+    return min_distance_dict
