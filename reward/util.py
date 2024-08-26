@@ -4,6 +4,7 @@ import random
 import re
 import string
 import subprocess
+import tempfile
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
@@ -509,18 +510,36 @@ def calc_strain_energy(docking_pose_file, conf):
     return total_strain_energy, max_single_strain_energy
 
 
-# This function currently supports GNINA.
 def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, conf):
 
     # Import necessary modules
     plf = sys.modules.get('prolif') or __import__('prolif')
     mda = sys.modules.get('MDAnalysis') or __import__('MDAnalysis')
 
-    # Load receptor and docked ligand
-    protein_file = receptor_fname.replace('/scr', 'data')
-    u = mda.Universe(protein_file)
+    # Load receptor
+    if receptor_fname.startswith('/scr'):
+        receptor_fname = receptor_fname.replace('/scr', 'data')
+    u = mda.Universe(receptor_fname)
     protein_mol = plf.Molecule.from_mda(u)
     pose_iterable = plf.sdf_supplier(output_ligand_fname)
+
+    # Load ligand
+    output_ligand_ext = output_ligand_fname.split('.')[-1]
+    if output_ligand_ext == 'pdb':
+        pose_iterable = plf.sdf_supplier(output_ligand_fname)
+    elif output_ligand_ext == 'pdbqt':
+        meeko = sys.modules.get('meeko') or __import__('meeko')
+        with open(output_ligand_fname, 'r') as f:
+            string = f.read()
+        pdbqt_mol = meeko.PDBQTMolecule(string, is_dlg=False, skip_typing=True)
+        sdf_content = meeko.RDKitMolCreate.write_sd_string(pdbqt_mol, only_cluster_leads=False)[0]
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sdf', delete=False) as tf:
+            tf.write(sdf_content)
+            tf_path = tf.name
+        pose_iterable = plf.sdf_supplier(tf.name)
+        os.remove(tf_path)
+    else:
+        raise ValueError(f"Unsupported file format: {output_ligand_ext}")
     ligand_mol = pose_iterable[pose_idx]
 
     # Define the types of interactions to be detected
