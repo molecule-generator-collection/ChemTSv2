@@ -521,11 +521,10 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
         receptor_fname = receptor_fname.replace('/scr', 'data')
     u = mda.Universe(receptor_fname)
     protein_mol = plf.Molecule.from_mda(u)
-    pose_iterable = plf.sdf_supplier(output_ligand_fname)
 
     # Load ligand
     output_ligand_ext = output_ligand_fname.split('.')[-1]
-    if output_ligand_ext == 'pdb':
+    if output_ligand_ext == 'sdf':
         pose_iterable = plf.sdf_supplier(output_ligand_fname)
     elif output_ligand_ext == 'pdbqt':
         meeko = sys.modules.get('meeko') or __import__('meeko')
