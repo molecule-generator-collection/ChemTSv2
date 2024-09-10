@@ -517,7 +517,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
     mda = sys.modules.get('MDAnalysis') or __import__('MDAnalysis')
 
     # Load receptor
-    if receptor_fname.startswith('/scr'):
+    if receptor_fname.startswith('/scr'):   # This process is for cases where GNINA reward is used
         receptor_fname = receptor_fname.replace('/scr', 'data')
     u = mda.Universe(receptor_fname)
     protein_mol = plf.Molecule.from_mda(u)
