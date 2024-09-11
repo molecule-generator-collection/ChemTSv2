@@ -1,0 +1,85 @@
+# Basic setting
+c_val: 1.0
+# threshold_type: [time, generation_num]
+threshold_type: generation_num
+#hours: 0.01
+generation_num: 300
+output_dir: result/example01
+model_setting:
+  model_json: model/model_chembl220k.tf25.json
+  model_weight: model/model_chembl220k.tf25.best.ckpt.h5
+token: model/tokens_chembl220k.pkl
+reward_setting:
+  reward_module: reward.Vina_binary_interaction_reward
+  reward_class: Vina_reward
+
+# Advanced setting
+expansion_threshold: 0.995
+simulation_num: 3
+flush_threshold: -1
+policy_setting: 
+  policy_module: policy.ucb1
+  policy_class: Ucb1
+
+# Restart setting
+save_checkpoint: False
+restart: False
+checkpoint_file: chemtsv2.ckpt.pkl
+
+# Filter setting
+use_lipinski_filter: False
+lipinski_filter:
+  module: filter.lipinski_filter
+  class: LipinskiFilter
+  type: rule_of_5
+use_radical_filter: False
+radical_filter:
+  module: filter.radical_filter
+  class: RadicalFilter
+use_pubchem_filter: False
+pubchem_filter:
+  module: filter.pubchem_filter
+  class: PubchemFilter
+use_sascore_filter: False
+sascore_filter:
+  module: filter.sascore_filter
+  class: SascoreFilter
+  threshold: 3.5
+use_ring_size_filter: False
+ring_size_filter:
+  module: filter.ring_size_filter
+  class: RingSizeFilter
+  threshold: 6
+use_pains_filter: True
+pains_filter:
+  module: filter.pains_filter
+  class: PainsFilter
+  type: [pains_a]
+include_filter_result_in_reward: False
+
+# User setting
+vina_bin_path: /home/app/vina_1.2.3_linux_x86_64
+vina_sf_name: vina
+vina_cpus: 8
+vina_receptor: data/1iep_receptor.pdbqt
+vina_center: [15.190, 53.903, 16.917]
+vina_box_size: [35, 35, 35]
+vina_spacing: 0.375
+vina_exhaustiveness: 32
+vina_num_modes: 9
+vina_energy_range: 3
+vina_base_score: -20
+vina_min_rmsd: 1.0
+vina_max_evals: 0
+
+
+# Setting for prolif
+prolif_receptor: data/1iep_receptor.pdb
+prolif_interactions:
+  - residue: MET318.A
+    interaction_type: ['VdWContact']
+    cutoff: [3.0]
+  - residue: ILE360.A
+    interaction_type: ['HBAcceptor', 'HBDonor']
+    cutoff: [3.5, 3.5]
+prolif_tolerance: 10

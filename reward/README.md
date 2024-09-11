@@ -130,39 +130,45 @@ You also need to install openbabel. Click [here](#here) for instllation instruct
 
 Strainfilter is licensed by the [Irwin](https://irwinlab.compbio.ucsf.edu/) and [Shoichet](https://bkslab.org/) Laboratories in the Department of Pharmaceutical Chemistry at the University of California, San Francisco (UCSF).
 
-### gnina_interaction_reward.py
+### gnina_interaction_reward.py / Vina_binary_interaction_reward.py
 
 This reward function assesses the interactions between the receptor and generated molecules using [ProLIF](https://doi.org/10.1186/s13321-021-00548-6).
-To use this function, you need to install ProLIF and MDAnalysis.
+To use this function, you need to install ProLIF and MDAnalysis. When using `Vina_binary_interaction_reward.py`, you need to install Meeko additionally.
 
 ```bash
 pip install prolif
 pip install MDAnalysis
+pip install meeko   # For Vina_binary_interaction_reward.py
 ```
 
 You can specify parameters for ProLIF in a YAML configuration file.
 An example of configuration is shown below.
 
 ```yaml
+prolif_receptor: data/1iep_receptor.pdb
 prolif_interactions:
-  - residue: VAL803.A
+  - residue: MET318.A
     interaction_type: ['VdWContact']
     cutoff: [3.0]
-  - residue: GLN812.A
+  - residue: ILE360.A
     interaction_type: ['HBAcceptor', 'HBDonor']
     cutoff: [3.5, 3.5]
 prolif_tolerance: 10
 ```
 
-- **`residue`**: The target residue in the receptor. The format is `[residue_name][number].[chain]`.
-  - `[residue_name]`: The three-letter code for the amino acid.
-  - `[number]`: The residue sequence number.
-  - `[chain]`: The chain identifier.
+- **`prolif_receptor`**(Only for use of `Vina_binary_interaction_reward.py`): A path to a pdb formatted receptor file. You need to prepare a receptor file for Vina in pdb format in addition to pdbqt format.
 
-- **`interaction_type`**: A list of interaction types to be assessed.
-  - Available interaction types are `['Anionic', 'CationPi', 'Cationic', 'EdgeToFace', 'FaceToFace', 'HBAcceptor', 'HBDonor', 'Hydrophobic', 'MetalAcceptor', 'MetalDonor', 'PiCation', 'PiStacking', 'VdWContact', 'XBAcceptor', 'XBDonor']` (confirmed with ProLIF v2.0.3).
-  - For more details, please refer [ProLIF documentation](https://prolif.readthedocs.io/en/latest/source/modules/interaction-fingerprint.html#detecting-interactions-between-residues-prolif-interactions-interactions).
+- **`prolif_interactions`**: Setting to detect interactions.
 
-- **`cutoff`**: A list of cutoff distances (in Å) for the specified interaction types. The cutoff distance is the maximium distance at which an interaction is considered to exist. The order of cutoffs should correspond to the order of interaction types.
+  - **`residue`**: The target residue in the receptor. The format is `[residue_name][number].[chain]`.
+    - `[residue_name]`: The three-letter code for the amino acid.
+    - `[number]`: The residue sequence number.
+    - `[chain]`: The chain identifier.
+
+  - **`interaction_type`**: A list of interaction types to be assessed.
+    - Available interaction types are `['Anionic', 'CationPi', 'Cationic', 'EdgeToFace', 'FaceToFace', 'HBAcceptor', 'HBDonor', 'Hydrophobic', 'MetalAcceptor', 'MetalDonor', 'PiCation', 'PiStacking', 'VdWContact', 'XBAcceptor', 'XBDonor']` (confirmed with ProLIF v2.0.3).
+    - For more details, please refer [ProLIF documentation](https://prolif.readthedocs.io/en/latest/source/modules/interaction-fingerprint.html#detecting-interactions-between-residues-prolif-interactions-interactions).
+
+  - **`cutoff`**: A list of cutoff distances (in Å) for the specified interaction types. The cutoff distance is the maximium distance at which an interaction is considered to exist. The order of cutoffs should correspond to the order of interaction types.
 
 - **`prolif_tolerance`**: A parameter that sets the upper distance limit (in Å) at which specified interactions will be searched.
