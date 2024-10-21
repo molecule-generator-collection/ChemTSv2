@@ -197,6 +197,7 @@ class MCTS:
                 self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
             node_index, objective_values, valid_smiles, generated_id_list, filter_check_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
+            print('node_index, objective_values, valid_smiles, generated_id_list, filter_check_list', node_index, objective_values, valid_smiles, generated_id_list, filter_check_list)
             if len(valid_smiles) == 0:
                 back_propagation(node, reward=-1.0)
                 continue
@@ -239,6 +240,20 @@ class MCTS:
                 re_list.append(re)
                 self.logger.debug(f"atom: {atom} re_list: {re_list}")
             self.reward_values_list.extend(re_list)
+
+            """Add candidate nodes whose rollouts were failed"""
+            add_all = True
+            if add_all:
+                re_min = np.min(re_list) if len(re_list)>0 else 0.01
+                for i in expanded:
+                    atom = self.tokens[i]
+                    if atom not in atom_checked:
+                        state_clone = state.clone(include_visit=True, include_total_reward=True)
+                        node.add_node(atom, state_clone, self.policy_evaluator)
+                        node_pool.append(node.state.child_nodes[len(atom_checked)])
+                        atom_checked.append(atom)
+                        print('atom', atom, 're_min', re_min)
+                        re_list.append(re_min)
 
             """backpropation step"""
             for i in range(len(node_pool)):
