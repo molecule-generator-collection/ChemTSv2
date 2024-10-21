@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pickle
 
-from chemtsv2.utils import chem_kn_simulation, build_smiles_from_tokens,\
+from chemtsv2.utils import chem_kn_simulation, chem_just_add_a_node, build_smiles_from_tokens,\
     evaluate_node, node_to_add, expanded_node, back_propagation
 
 
@@ -186,6 +186,15 @@ class MCTS:
                     position_tmp = state.position + [n]
                     all_posible = chem_kn_simulation(self.model, position_tmp, self.tokens, self.conf)
                     new_compound.append(build_smiles_from_tokens(all_posible, self.tokens, use_selfies=self.conf['use_selfies']))
+            
+            """Add just one atom"""
+            if self.conf['add_just_one_atom']:
+                nodeadded_tmp = node_to_add(expanded, self.tokens, self.logger)
+                nodeadded.extend(nodeadded_tmp)
+                for n in nodeadded_tmp:
+                    position_tmp = state.position + [n]
+                    all_possible = chem_just_add_a_node(self.model, position_tmp, self.tokens, self.conf)
+                    new_compound.append(build_smiles_from_tokens(all_possible, self.tokens, use_selfies=self.conf['use_selfies']))
 
             _gids = list(range(self.gid, self.gid+len(new_compound)))
             self.gid += len(new_compound)
@@ -242,8 +251,7 @@ class MCTS:
             self.reward_values_list.extend(re_list)
 
             """Add candidate nodes whose rollouts were failed"""
-            add_all = True
-            if add_all:
+            if self.conf['add_all_nodes']:
                 re_min = np.min(re_list) if len(re_list)>0 else 0.01
                 for i in expanded:
                     atom = self.tokens[i]

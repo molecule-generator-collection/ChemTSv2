@@ -71,6 +71,12 @@ def back_propagation(node, reward):
         node.update(reward)
         node = node.state.parent_node
 
+def chem_just_add_a_node(model, state, val, conf):
+    end = "\n"
+    position = []
+    position.extend(state)
+    get_int = [val.index(position[j]) for j in range(len(position))] + [val.index(end)]
+    return get_int
 
 def chem_kn_simulation(model, state, val, conf):
     end = "\n"
@@ -80,8 +86,18 @@ def chem_kn_simulation(model, state, val, conf):
     x = np.reshape(get_int, (1, len(get_int)))
     model.reset_states()
 
+    #print('x init', x)
     while not get_int[-1] == val.index(end):
         preds = model.predict_on_batch(x)
+        
+        #Rescaling
+        rescaling_method = 'Freezing'
+        rescaling_T = 1.2
+        if rescaling_method in ['Thermal', 'Freezing']:
+            #print(f"preds (original): {preds}")
+            preds = rescaling(np.squeeze(preds), rescaling_method, rescaling_T)
+            #print(f"preds (rescaled): {preds}")
+
         state_pred = np.squeeze(preds)
         next_int = conf['random_generator'].choice(range(len(state_pred)), p=state_pred)
         get_int.append(next_int)

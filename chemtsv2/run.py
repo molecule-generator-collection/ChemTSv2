@@ -78,6 +78,8 @@ def set_default_config(conf):
     conf.setdefault('flush_threshold', -1)
     conf.setdefault('infinite_loop_threshold_for_selection', 1000)
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)
+    conf.setdefault('add_just_one_atom', False)
+    conf.setdefault('add_all_nodes', False)
     conf.setdefault('fix_random_seed', False)
     conf.setdefault('random_seed', -1)
 
