@@ -16,8 +16,11 @@ reward_setting:
 # Advanced setting
 expansion_threshold: 0.995
 rescaling_method: 'Freezing'
-rescaling_T: 0.2
-simulation_num: 3
+rescaling_T: 1.1
+add_just_one_atom: True
+add_all_nodes: True
+simulation_num: 3 #3
+fix_random_seed: True
 flush_threshold: -1
 policy_setting: 
   policy_module: policy.ucb1
