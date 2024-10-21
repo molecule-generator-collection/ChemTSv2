@@ -73,6 +73,8 @@ def set_default_config(conf):
     conf.setdefault('generation_num', 1000)
     conf.setdefault('simulation_num', 3)
     conf.setdefault('expansion_threshold', 0.995)
+    conf.setdefault('rescaling_method', None)
+    conf.setdefault('rescaling_T', None)
     conf.setdefault('flush_threshold', -1)
     conf.setdefault('infinite_loop_threshold_for_selection', 1000)
     conf.setdefault('infinite_loop_threshold_for_expansion', 20)

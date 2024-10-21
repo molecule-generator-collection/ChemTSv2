@@ -162,7 +162,11 @@ class MCTS:
                 self.loop_counter_for_selection = 0
 
             """expansion step"""
-            expanded = expanded_node(self.model, state.position, self.tokens, self.logger, threshold=self.conf['expansion_threshold'])
+            expanded = expanded_node(self.model, state.position, self.tokens, self.logger, threshold=self.conf['expansion_threshold'], rescaling_method=self.conf['rescaling_method'], rescaling_T = self.conf['rescaling_T'])
+            
+            #Remove index of '\n'
+            expanded = [i for i in expanded if self.tokens[i] != '\n']
+
             self.logger.debug(f"infinite loop counter (expansion): {self.loop_counter_for_expansion}")
             if set(expanded) == self.expanded_before:
                 self.loop_counter_for_expansion += 1

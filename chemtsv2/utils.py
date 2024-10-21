@@ -25,12 +25,27 @@ def calc_execution_time(f):
         return result
     return wrapper
 
+def rescaling(dist, rescaling_method, rescaling_T):
+    if rescaling_method == 'Thermal':
+        safe_dist = np.clip(dist/rescaling_T, -50, 50) #Limiting too large values
+        rescaled_dist = np.exp(safe_dist) / np.sum(np.exp(safe_dist))
+    elif rescaling_method == 'Freezing':
+        rescaling_T = np.clip(rescaling_T, 0.1, 100) #Limiting too small T value
+        rescaled_dist = dist**(1/rescaling_T) / np.sum(dist**(1/rescaling_T))
+    return rescaled_dist
 
-def expanded_node(model, state, val, logger, threshold=0.995):
+def expanded_node(model, state, val, logger, threshold=0.995, rescaling_method=None, rescaling_T=1.2):
     get_int = [val.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     model.reset_states()
     preds = model.predict_on_batch(x)
+    
+    #Rescaling
+    if rescaling_method in ['Thermal', 'Freezing']:
+        logger.debug(f"preds (original): {preds}")
+        preds = rescaling(np.squeeze(preds), rescaling_method, rescaling_T)
+        logger.debug(f"preds (rescaled): {preds}")
+
     state_preds = np.squeeze(preds)  # the sum of state_pred is equal to 1
     sorted_idxs = np.argsort(state_preds)[::-1]
     sorted_preds = state_preds[sorted_idxs]
@@ -39,6 +54,9 @@ def expanded_node(model, state, val, logger, threshold=0.995):
             i = i if i != 0 else 1  # return one index if the first prediction value exceeds the threshold.
             break 
     logger.debug(f"indices for expansion: {sorted_idxs[:i]}")
+    
+    #Remove the index of '\n' node
+    #node_cand_idxs = for j in  sorted_idxs[:i]
     return sorted_idxs[:i]
 
 
