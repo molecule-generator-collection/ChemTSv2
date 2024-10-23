@@ -3,7 +3,7 @@ c_val: 1.0
 # threshold_type: [time, generation_num]
 threshold_type: generation_num
 #hours: 0.01
-generation_num: 1000
+generation_num: 300
 output_dir: result/example01
 model_setting:
   model_json: model/model.tf25.json
