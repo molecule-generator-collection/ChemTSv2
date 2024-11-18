@@ -127,12 +127,8 @@ class Tree_Node():
             valid_flag = 1
         else:
             mol = Chem.MolFromSmiles(smi)
-            if mol is None:
-                values_list = [-999 for _ in self.reward_calculator.get_objective_functions(self.conf)]
-                valid_flag = 0
-            else:
-                values_list = [f(mol) for f in self.reward_calculator.get_objective_functions(self.conf)]
-                valid_flag = 1
+            valid_flag = 0 if mol is None else 1
+            values_list = [-999 for _ in self.reward_calculator.get_objective_functions(self.conf)]
             score = 0
             filter_flag = 0
         if valid_flag:
