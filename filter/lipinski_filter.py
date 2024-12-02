@@ -3,6 +3,7 @@ import sys
 from rdkit.Chem import Descriptors, rdMolDescriptors
 
 from chemtsv2.filter import Filter
+from chemtsv2.utils import transform_linker_to_mol
 
 
 class LipinskiFilter(Filter):
@@ -20,3 +21,11 @@ class LipinskiFilter(Filter):
             print("`use_lipinski_filter` only accepts [rule_of_5, rule_of_3]")
             sys.exit(1)
         return cond
+
+
+class LipinskiFilterForXMol(Filter):
+    def check(mol, conf):
+        @transform_linker_to_mol(conf)
+        def _check(mol, conf):
+            return LipinskiFilter.check(mol, conf)
+        return _check(mol, conf)

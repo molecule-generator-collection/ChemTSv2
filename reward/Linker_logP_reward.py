@@ -1,15 +1,14 @@
-import re
-
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 import numpy as np
 
-from chemtsv2.reward import Reward, convert_to_linker_reward
+from chemtsv2.reward import Reward
+from chemtsv2.utils import transform_linker_to_mol
 
 
 class Linker_LogP_reward(Reward):
     def get_objective_functions(conf):
-        @convert_to_linker_reward(conf)
+        @transform_linker_to_mol(conf)
         def LogP(mol):
             return Descriptors.MolLogP(mol)
         return [LogP]

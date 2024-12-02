@@ -2,6 +2,7 @@ from rdkit import Chem
 from rdkit.Chem import rdfiltercatalog
 
 from chemtsv2.filter import Filter
+from chemtsv2.utils import transform_linker_to_mol
 
 
 def get_catalog():
@@ -33,3 +34,11 @@ class CovalentWarheadFilter(Filter):
                 smi = Chem.MolToSmiles(mol)
                 print(f"[DEBUG FILTER] SMILES -> {smi} ; Match -> {','.join(matchs)}")
         return not COVALENT_WARHEAD_FILTER_CATALOG.HasMatch(mol)
+
+
+class CovalentWarheadFilterForXMol(Filter):
+    def check(mol, conf):
+        @transform_linker_to_mol(conf)
+        def _check(mol, conf):
+            return CovalentWarheadFilter.check(mol, conf)
+        return _check(mol, conf)

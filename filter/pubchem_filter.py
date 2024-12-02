@@ -7,6 +7,7 @@ from rdkit.Chem import AllChem
 
 from data import metadata
 from chemtsv2.filter import Filter
+from chemtsv2.utils import transform_linker_to_mol
 
 
 class Neutralizer:
@@ -271,3 +272,9 @@ class PubchemFilter(Filter):
             return False
 
 
+class PubchemFilterForXMol(Filter):
+    def check(mol, conf):
+        @transform_linker_to_mol(conf)
+        def _check(mol, conf):
+            return PubchemFilter.check(mol, conf)
+        return _check(mol, conf)

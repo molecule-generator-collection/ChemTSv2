@@ -4,6 +4,7 @@ from rdkit.Chem import FilterCatalog
 from rdkit.Chem.FilterCatalog import FilterCatalogParams
 
 from chemtsv2.filter import Filter
+from chemtsv2.utils import transform_linker_to_mol
 
 
 class PainsFilter(Filter):
@@ -24,3 +25,11 @@ class PainsFilter(Filter):
             sys.exit(1)
         filter_catalogs = FilterCatalog.FilterCatalog(params)
         return not filter_catalogs.HasMatch(mol)
+
+
+class PainsFilterForXMol(Filter):
+    def check(mol, conf):
+        @transform_linker_to_mol(conf)
+        def _check(mol, conf):
+            return PainsFilter.check(mol, conf)
+        return _check(mol, conf)

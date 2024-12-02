@@ -7,8 +7,9 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors, AllChem
 from mordred import Calculator, descriptors
 
-from chemtsv2.reward import Reward, convert_to_linker_reward
+from chemtsv2.reward import Reward
 from chemtsv2.misc.scaler import max_gauss
+from chemtsv2.utils import transform_linker_to_mol
 
 
 LGBM_PATH = "reward/protac_linker_gen/model_all.pkl"
@@ -22,7 +23,7 @@ CALC_ZAGREB1 = Calculator(descriptors.ZagrebIndex.ZagrebIndex(version=1, variabl
 
 class Linker_permeability_reward(Reward):
     def get_objective_functions(conf):
-        @convert_to_linker_reward(conf)
+        @transform_linker_to_mol(conf)
         def Permeability(mol):
             calc = Calculator(descriptors, ignore_3D=False)
             mol_3D = Chem.AddHs(mol)
