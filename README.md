@@ -23,9 +23,6 @@ ChemTSv2 provides:
 
 ### Requirements :memo:
 
->[!NOTE]
->ARM architecture, e.g., Apple Silicon, is not currently supported
-
 <details>
   <summary>Click to show/hide requirements</summary>
 
