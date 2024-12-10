@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chemtsv2"
-version = "1.0.9"
+version = "1.1.0"
 description = "ChemTSv2 is a flexible and versatile molecule generator based on reinforcement learning with natural language processing."
 authors = [
     "Shoichi Ishida <ishida.sho.nm@yokohama-cu.ac.jp>"
@@ -19,6 +19,8 @@ packages = [{include = "chemtsv2"}]
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
 tensorflow = "~2.14.1"
+tensorflow-macos = {version = "~2.14.1", platform = "darwin", markers = "platform_machine=='arm64'"}
+tensorflow-cpu-aws = {version = "~2.14.1", platform = "linux", markers = "platform_machine=='arm64' or platform_machine=='aarch64'"}
 numpy = "~1.26.2"
 protobuf = "~4.25.1"
 rdkit = "~2023.9.1"
