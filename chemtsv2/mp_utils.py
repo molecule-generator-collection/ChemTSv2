@@ -63,16 +63,16 @@ def compare_ucb_mpmcts(pnode):
     return back_flag
 
 
-def update_selection_ucbtable_tdsdfuct(node_table,node, ind):
+def update_selection_ucbtable_tdsdfuct(node_table, node, ind, root_position=['&']):
     table = []
     final_table = []
     node_info = store_info(node)
     node_info.append(ind)
     table.append(node_info)
-    for i in range(len(node.childNodes)):
-        child_info = store_info(node.childNodes[i])
+    for i in range(len(node.child_nodes)):
+        child_info = store_info(node.child_nodes[i])
         table.append(child_info)
-    if node.state == ['&']:
+    if node.state == root_position:
         final_table.append(table)
     else:
         final_table.extend(node_table)
@@ -80,16 +80,16 @@ def update_selection_ucbtable_tdsdfuct(node_table,node, ind):
     return final_table
 
 
-def update_selection_ucbtable_mpmcts(node, ind):
+def update_selection_ucbtable_mpmcts(node, ind, root_position=['&']):
     table = []
     final_table = []
     node_info = store_info(node)
     node_info.append(ind)
     table.append(node_info)
-    for i in range(len(node.childNodes)):
-        child_info = store_info(node.childNodes[i])
+    for i in range(len(node.child_nodes)):
+        child_info = store_info(node.child_nodes[i])
         table.append(child_info)
-    if node.state == ['&']:
+    if node.state == root_position:
         final_table.append(table)
     else:
         final_table.extend(node.path_ucb)

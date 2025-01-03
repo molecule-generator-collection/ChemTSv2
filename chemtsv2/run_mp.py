@@ -18,8 +18,8 @@ import requests
 import yaml
 
 from chemtsv2.utils import loaded_model, get_model_structure_info
+from chemtsv2.preprocessing import smi_tokenizer, selfies_tokenizer_from_smiles
 from chemtsv2.parallel_mcts import p_mcts
-
 
 def get_parser():
     parser = argparse.ArgumentParser(
@@ -41,6 +41,10 @@ def get_parser():
     parser.add_argument(
         "--use_gpu_only_reward", action='store_true',
         help="use GPUs exclusively for reward calculations"
+    )
+    parser.add_argument(
+        "--input_smiles", type=str,
+        help="SMILES string (Need to put the atom you want to extend at the end of the string)"
     )
     return parser.parse_args()
     
@@ -189,9 +193,18 @@ def main():
 
     chem_model = loaded_model(conf['model_setting']['model_weight'], logger, conf)
 
+    if args.input_smiles is not None:
+        logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
+        conf["input_smiles"] = args.input_smiles
+        conf["tokenized_smiles"] = selfies_tokenizer_from_smiles(conf["input_smiles"]) if conf['use_selfies'] else smi_tokenizer(conf["input_smiles"])
+    
+    root_state = ['&'] if args.input_smiles is None else conf["tokenized_smiles"]
+    print(root_state)
+    
     logger.info(f'Run MPChemTS [rank {rank}]')
     comm.barrier()
-    search = p_mcts(comm, chem_model, reward_calculator, conf, logger)
+    search = p_mcts(communicator=comm, root_position=root_state, chem_model=chem_model,
+                    reward_calculator=reward_calculator, conf=conf, logger=logger)
     if conf['search_type'] == 'TDS_UCT':
         search.TDS_UCT()
     #elif conf['search_type'] == 'TDS_df_UCT':
