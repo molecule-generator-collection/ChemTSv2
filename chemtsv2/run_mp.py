@@ -180,6 +180,11 @@ def main():
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs['reward_module']), rs['reward_class'])
 
+    if args.input_smiles is not None:
+        logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
+        conf["input_smiles"] = args.input_smiles
+        conf["tokenized_smiles"] = selfies_tokenizer_from_smiles(conf["input_smiles"]) if conf['use_selfies'] else smi_tokenizer(conf["input_smiles"])
+    
     if rank == 0:
         logger.info(f"========== Configuration ==========")
         for k, v in conf.items():
@@ -193,13 +198,7 @@ def main():
 
     chem_model = loaded_model(conf['model_setting']['model_weight'], logger, conf)
 
-    if args.input_smiles is not None:
-        logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
-        conf["input_smiles"] = args.input_smiles
-        conf["tokenized_smiles"] = selfies_tokenizer_from_smiles(conf["input_smiles"]) if conf['use_selfies'] else smi_tokenizer(conf["input_smiles"])
-    
     root_state = ['&'] if args.input_smiles is None else conf["tokenized_smiles"]
-    print(root_state)
     
     logger.info(f'Run MPChemTS [rank {rank}]')
     comm.barrier()
