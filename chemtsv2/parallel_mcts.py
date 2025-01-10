@@ -44,12 +44,15 @@ class JobType(Enum):
         return tag >= self.PRIORITY_BORDER.value
 
 
-class Tree_Node():
-    def __init__(self, state, parentNode=None, reward_calculator=None, conf=None):
-        # todo: these should be in a numpy array
+class MPNode():
+    def __init__(self, position=['&'], parentNode=None, reward_calculator=None, conf=None):
+        # todo: the payload of MPI should be in a numpy array. consider using @property for implementation
         # MPI payload [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb]
-        self.state = state
-        self.childNodes = []
+        if position is None:
+            self.state = ['&']
+        else:
+            self.state = position
+        self.child_nodes = []
         self.parentNode = parentNode
         self.wins = 0
         self.visits = 0
@@ -67,22 +70,22 @@ class Tree_Node():
 
     def selection(self):
         ucb = []
-        for i in range(len(self.childNodes)):
-            ucb.append((self.childNodes[i].wins +
-                        self.childNodes[i].virtual_loss) /
-                       (self.childNodes[i].visits +
-                        self.childNodes[i].num_thread_visited) +
+        for i in range(len(self.child_nodes)):
+            ucb.append((self.child_nodes[i].wins +
+                        self.child_nodes[i].virtual_loss) /
+                       (self.child_nodes[i].visits +
+                        self.child_nodes[i].num_thread_visited) +
                        self.conf['c_val'] *
                        sqrt(2 *log(self.visits +self.num_thread_visited) /
-                            (self.childNodes[i].visits +
-                                self.childNodes[i].num_thread_visited)))
+                            (self.child_nodes[i].visits +
+                                self.child_nodes[i].num_thread_visited)))
         self.childucb = ucb
         m = np.amax(ucb)
         indices = np.nonzero(ucb == m)[0]
         ind = self.conf['random_generator'].choice(indices)
-        self.childNodes[ind].num_thread_visited += 1
+        self.child_nodes[ind].num_thread_visited += 1
         self.num_thread_visited += 1
-        return ind, self.childNodes[ind]
+        return ind, self.child_nodes[ind]
 
     def expansion(self, model, logger):
         node_idxs = expanded_node(model, self.state, self.val, logger)
@@ -95,9 +98,9 @@ class Tree_Node():
         added_nodes.extend(self.state)
         added_nodes.append(self.val[m])
         self.num_thread_visited += 1
-        n = Tree_Node(state=added_nodes, parentNode=self, conf=self.conf)
+        n = MPNode(position=added_nodes, parentNode=self, conf=self.conf)
         n.num_thread_visited += 1
-        self.childNodes.append(n)
+        self.child_nodes.append(n)
         return n
 
     def update_local_node(self, score):
@@ -140,11 +143,11 @@ class Tree_Node():
         self.visits += 1
         self.num_thread_visited -= 1
         self.reward = cnode.reward
-        for i in range(len(self.childNodes)):
-            if cnode.state[-1] == self.childNodes[i].state[-1]:
-                self.childNodes[i].wins += cnode.reward
-                self.childNodes[i].num_thread_visited -= 1
-                self.childNodes[i].visits += 1
+        for i in range(len(self.child_nodes)):
+            if cnode.state[-1] == self.child_nodes[i].state[-1]:
+                self.child_nodes[i].wins += cnode.reward
+                self.child_nodes[i].num_thread_visited -= 1
+                self.child_nodes[i].visits += 1
 
 
 class p_mcts:
@@ -153,7 +156,7 @@ class p_mcts:
     """
     # todo: use generated_dict
 
-    def __init__(self, communicator, chem_model, reward_calculator, conf, logger):
+    def __init__(self, communicator, root_position, chem_model, reward_calculator, conf, logger):
         self.comm = communicator
         self.rank = self.comm.Get_rank()
         self.nprocs = self.comm.Get_size()
@@ -163,9 +166,13 @@ class p_mcts:
         self.conf = conf
         self.logger = logger
         self.threshold = 3600 * conf['hours']
-        # Initialize HashTable
-        root_node = Tree_Node(state=['&'], reward_calculator=reward_calculator, conf=conf)
+        if root_position is None:
+            self.root_position = ['&']
+        else:
+            self.root_position = root_position
+        root_node = MPNode(position=self.root_position, reward_calculator=reward_calculator, conf=conf)
         random.seed(conf['zobrist_hash_seed'])
+        # Initialize HashTable
         self.hsm = HashTable(self.nprocs, root_node.val, root_node.max_len, len(root_node.val))
 
         if self.conf['checkpoint_load']:
@@ -288,11 +295,11 @@ class p_mcts:
         status = MPI.Status()
 
         self.start_time = time.time()
-        _, rootdest = self.hsm.hashing(['&'])
+        _, rootdest = self.hsm.hashing(self.root_position)
         jobq = deque()
         timeup = False
         if self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []], dtype=object)
+            root_job_message = np.asarray([self.root_position, None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)
@@ -329,9 +336,9 @@ class p_mcts:
                 if tag == JobType.SEARCH.value:
                     # if node is not in the hash table
                     if self.hsm.search_table(message[0]) is None:
-                        node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                        node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
                         #node.state = message[0]
-                        if node.state == ['&']:
+                        if node.state == self.root_position:
                             node.expansion(self.chem_model, self.logger)
                             m = self.conf['random_generator'].choice(node.expanded_nodes)
                             n = node.addnode(m)
@@ -364,7 +371,7 @@ class p_mcts:
                         node = self.hsm.search_table(message[0])
                         #print("debug:", node.visits,
                         #      node.num_thread_visited, node.wins)
-                        if node.state == ['&']:
+                        if node.state == self.root_position:
                             if node.expanded_nodes != []:
                                 m = self.conf['random_generator'].choice(node.expanded_nodes)
                                 n = node.addnode(m)
@@ -426,10 +433,10 @@ class p_mcts:
                                 self.send_backprop(node, dest)
 
                 elif tag == JobType.BACKPROPAGATION.value:
-                    node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                    node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
                     node.reward = message[1]
                     local_node = self.hsm.search_table(message[0][0:-1])
-                    if local_node.state == ['&']:
+                    if local_node.state == self.root_position:
                         local_node.backpropagation(node)
                         self.hsm.insert(Item(local_node.state, local_node))
                         _, dest = self.hsm.hashing(local_node.state)
@@ -450,11 +457,11 @@ class p_mcts:
         self.start_time = time.time()
         bpm = 0
         bp = []
-        _, rootdest = self.hsm.hashing(['&'])
+        _, rootdest = self.hsm.hashing(self.root_position)
         jobq = deque()
         timeup = False
         if self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []], dtype=object)
+            root_job_message = np.asarray([self.root_position, None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)
@@ -487,10 +494,10 @@ class p_mcts:
                 (tag, message) = jobq.pop()
                 if tag == JobType.SEARCH.value:
                     if self.hsm.search_table(message[0]) == None:
-                        node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                        node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
                         info_table = message[5]
                         #print ("not in table info_table:",info_table)
-                        if node.state == ['&']:
+                        if node.state == self.root_position:
                             node.expansion(self.chem_model, self.logger)
                             m = self.conf['random_generator'].choice(node.expanded_nodes)
                             n = node.addnode(m)
@@ -525,7 +532,7 @@ class p_mcts:
                         node = self.hsm.search_table(message[0])
                         info_table = message[5]
                         #print ("in table info_table:",info_table)
-                        if node.state == ['&']:
+                        if node.state == self.root_position:
                             # print ("in table root:",node.state,node.path_ucb,len(node.state),len(node.path_ucb))
                             if node.expanded_nodes != []:
                                 m = self.conf['random_generator'].choice(node.expanded_nodes)
@@ -537,7 +544,7 @@ class p_mcts:
                                 ind, childnode = node.selection()
                                 self.hsm.insert(Item(node.state, node))
                                 info_table = update_selection_ucbtable_tdsdfuct(
-                                    info_table, node, ind)
+                                    info_table, node, ind, self.root_position)
                                 #print ("info_table after selection:",info_table)
                                 _, dest = self.hsm.hashing(childnode.state)
                                 self.send_message(childnode, dest, tag=JobType.SEARCH.value)
@@ -566,7 +573,7 @@ class p_mcts:
                                             ind, childnode = node.selection()
                                             self.hsm.insert(Item(node.state, node))
                                             info_table = update_selection_ucbtable_tdsdfuct(
-                                                info_table, node, ind)
+                                                info_table, node, ind, self.root_position)
                                             _, dest = self.hsm.hashing(
                                                 childnode.state)
                                             self.send_message(childnode, dest, tag=JobType.SEARCH.value)
@@ -596,14 +603,14 @@ class p_mcts:
 
                 elif tag == JobType.BACKPROPAGATION.value:
                     bpm += 1
-                    node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                    node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
                     node.reward = message[1]
                     local_node = self.hsm.search_table(message[0][0:-1])
                     #print ("report check message[5]:",message[5])
                     #print ("check:",len(message[0]), len(message[5]))
                     #print ("check:",local_node.wins, local_node.visits, local_node.num_thread_visited)
                     info_table=message[5]
-                    if local_node.state == ['&']:
+                    if local_node.state == self.root_position:
                         local_node.backpropagation(node)
                         self.hsm.insert(Item(local_node.state, local_node))
                         _, dest = self.hsm.hashing(local_node.state)
@@ -629,7 +636,7 @@ class p_mcts:
         #self.comm.barrier()
         status = MPI.Status()
         self.start_time = time.time()
-        _, rootdest = self.hsm.hashing(['&'])
+        _, rootdest = self.hsm.hashing(self.root_position)
         jobq = deque()
         timeup = False
         checkpoint_prepare = False
@@ -651,7 +658,7 @@ class p_mcts:
             #self.start_time = cp_obj['start_time']
             jobq = cp_obj['jobq']
         elif self.rank == rootdest:
-            root_job_message = np.asarray([['&'], None, 0, 0, 0, []], dtype=object)
+            root_job_message = np.asarray([self.root_position, None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)
@@ -696,8 +703,8 @@ class p_mcts:
                 (tag, message) = jobq.pop()
                 if tag == JobType.SEARCH.value:
                     if self.hsm.search_table(message[0]) == None:
-                        node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
-                        if node.state == ['&']:
+                        node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                        if node.state == self.root_position:
                             node.expansion(self.chem_model, self.logger)
                             m = self.conf['random_generator'].choice(node.expanded_nodes)
                             n = node.addnode(m)
@@ -725,7 +732,7 @@ class p_mcts:
 
                     else:  # if node already in the local hashtable
                         node = self.hsm.search_table(message[0])
-                        if node.state == ['&']:
+                        if node.state == self.root_position:
                             # print ("in table root:",node.state,node.path_ucb,len(node.state),len(node.path_ucb))
                             if node.expanded_nodes != []:
                                 m = self.conf['random_generator'].choice(node.expanded_nodes)
@@ -736,7 +743,7 @@ class p_mcts:
                             else:
                                 ind, childnode = node.selection()
                                 self.hsm.insert(Item(node.state, node))
-                                ucb_table = update_selection_ucbtable_mpmcts(node, ind)
+                                ucb_table = update_selection_ucbtable_mpmcts(node, ind, self.root_position)
                                 _, dest = self.hsm.hashing(childnode.state)
                                 self.send_message(childnode, dest, tag=JobType.SEARCH.value, data=ucb_table)
                         else:
@@ -761,7 +768,7 @@ class p_mcts:
                                         else:
                                             ind, childnode = node.selection()
                                             self.hsm.insert(Item(node.state, node))
-                                            ucb_table = update_selection_ucbtable_mpmcts(node, ind)
+                                            ucb_table = update_selection_ucbtable_mpmcts(node, ind, self.root_position)
                                             _, dest = self.hsm.hashing(childnode.state)
                                             self.send_message(childnode, dest, tag=JobType.SEARCH.value, data=ucb_table)
                                 else:
@@ -784,10 +791,10 @@ class p_mcts:
                                 self.send_backprop(node, dest)
 
                 elif tag == JobType.BACKPROPAGATION.value:
-                    node = Tree_Node(state=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                    node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
                     node.reward = message[1]
                     local_node = self.hsm.search_table(message[0][0:-1])
-                    if local_node.state == ['&']:
+                    if local_node.state == self.root_position:
                         local_node.backpropagation(node)
                         self.hsm.insert(Item(local_node.state, local_node))
                         _, dest = self.hsm.hashing(local_node.state)
