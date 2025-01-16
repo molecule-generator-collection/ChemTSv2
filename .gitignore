@@ -140,7 +140,7 @@ model/backup/
 *.png
 !img/*.png
 *.pstats
-docs/
+#docs/
 test_/
 Untitled.ipynb
 chemts.yml
