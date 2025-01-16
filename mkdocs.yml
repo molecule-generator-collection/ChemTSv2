@@ -23,3 +23,8 @@ markdown_extensions:
 
 repo_url: https://github.com/molecule-generator-collection/ChemTSv2
 repo_name: ChemTSv2
+
+nav:
+  - Home: index.md
+  - Usage Example:
+    - Home: examples/index.md
