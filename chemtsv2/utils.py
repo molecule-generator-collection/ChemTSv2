@@ -250,6 +250,12 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     return node_index, values_list, valid_compound, generated_ids, filter_check_list
 
 
+def add_atom_index_in_wildcard(smiles: str):
+    c = iter(range(1, smiles.count('*')+1))
+    labeled_smiles = re.sub(r'\*', lambda _: f'[*:{next(c)}]', smiles)
+    return labeled_smiles
+
+
 def transform_linker_to_mol(conf: dict):
     def decorator(func):
         @wraps(func)
@@ -260,7 +266,8 @@ def transform_linker_to_mol(conf: dict):
                 raise KeyError("Must specify SMILES strings corresponding to the key `cores` in the config file.")
             smi = Chem.MolToSmiles(args[0])
             if smi.count("*") != len(conf['cores']):
-                return -1
+                raise ValueError("The number of '*' in smi does not match the number of 'cores' in configuration. "
+                                 "Please set 'use_attachment_points_filter' to True in the configuration when performing linker generation.")
             mol_ = Chem.MolFromSmiles(add_atom_index_in_wildcard(smi))
             rwmol = Chem.RWMol(mol_)
             cores_mol = [Chem.MolFromSmiles(s) for s in conf['cores']]
@@ -270,19 +277,17 @@ def transform_linker_to_mol(conf: dict):
                 prod = Chem.molzip(rwmol)
                 Chem.SanitizeMol(prod)
             except:
-                return -1
+                if func.__code__.co_argcount == 1:  # for reward function
+                    return -1
+                elif func.__code__.co_argcount == 2:  # for filter function
+                    return False
+                else:
+                    raise TypeError("Check that this decorator is placed in the correct position.")
             if func.__code__.co_argcount == 1:  # for reward function
                 return func(prod) 
             elif func.__code__.co_argcount == 2:  # for filter function
                 return func(prod, conf)
             else:
-                raise TypeError("Check this decorator is placed in the correct position.")
-                
+                raise TypeError("Check that this decorator is placed in the correct position.")
         return wrapper
-
-    def add_atom_index_in_wildcard(smiles: str):
-        c = iter(range(1, smiles.count('*')+1))
-        labeled_smiles = re.sub(r'\*', lambda _: f'[*:{next(c)}]', smiles)
-        return labeled_smiles
-    
     return decorator

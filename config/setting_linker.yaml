@@ -55,11 +55,15 @@ pains_filter:
   module: filter.pains_filter
   class: PainsFilter
   type: [pains_a]
-use_attachment_points_filter: False
+use_attachment_points_filter: True
 attachment_points_filter:
   module: filter.attachment_points_filter
   class: AttachmentPointsFilter
   threshold: 2
+use_linker_validation_filter: True
+linker_validation_filter:
+  module: filter.linker_validation_filter
+  class: LinkerValidationFilter
 include_filter_result_in_reward: False
 
 # Settings for linker generation
