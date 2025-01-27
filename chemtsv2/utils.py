@@ -266,8 +266,13 @@ def transform_linker_to_mol(conf: dict):
                 raise KeyError("Must specify SMILES strings corresponding to the key `cores` in the config file.")
             smi = Chem.MolToSmiles(args[0])
             if smi.count("*") != len(conf['cores']):
-                raise ValueError("The number of '*' in smi does not match the number of 'cores' in configuration. "
-                                 "Please set 'use_attachment_points_filter' to True in the configuration when performing linker generation.")
+                if func.__code__.co_argcount == 1:  # for reward function
+                    raise ValueError("The number of '*' in smi does not match the number of 'cores' in configuration. "
+                                     "Please set 'use_attachment_points_filter' to True in the configuration when performing linker generation.")
+                elif func.__code__.co_argcount == 2:  # for filter function
+                    return False
+                else:
+                    raise TypeError("Check that this decorator is placed in the correct position.")
             mol_ = Chem.MolFromSmiles(add_atom_index_in_wildcard(smi))
             rwmol = Chem.RWMol(mol_)
             cores_mol = [Chem.MolFromSmiles(s) for s in conf['cores']]

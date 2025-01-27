@@ -46,6 +46,13 @@ class TestTransformLinkerToMol():
         ):
             func(self.two_attachment_points_linker_mol)
 
+    def test_transform_linker_to_mol_wildcard_count_mismatch_for_filter(self):
+        @transform_linker_to_mol(self.valid_conf)
+        def func(mol, conf):
+            pass
+        result = func(self.two_attachment_points_linker_mol, self.valid_conf)
+        assert result == False, f"Expected output is `False` but got {result}"
+
     def test_transform_linker_to_mol_reward_molzip_failure(self):
         @transform_linker_to_mol(self.valid_conf)
         def func(mol):
