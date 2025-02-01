@@ -248,10 +248,11 @@ class p_mcts:
         status = MPI.Status()
         if self.rank == 0:
             self.logger.info(f"Gather each rank result...")
-        for id in range(1, self.nprocs):
+        for rid in range(1, self.nprocs):
+            self.comm.barrier()
             if self.rank == 0:
                 (valid_smiles_list, depth_list, reward_values_list, elapsed_time_list,
-                 generated_id_list, objective_values_list, filter_check_list) = self.comm.recv(source=id, tag=JobType.GATHER_RESULTS.value, status=status)
+                 generated_id_list, objective_values_list, filter_check_list) = self.comm.recv(source=rid, tag=JobType.GATHER_RESULTS.value, status=status)
                 self.valid_smiles_list.extend(valid_smiles_list)
                 self.depth_list.extend(depth_list)
                 self.reward_values_list.extend(reward_values_list)
@@ -259,7 +260,7 @@ class p_mcts:
                 self.generated_id_list.extend(generated_id_list)
                 self.objective_values_list.extend(objective_values_list)
                 self.filter_check_list.extend(filter_check_list)
-            elif self.rank == id:
+            elif self.rank == rid:
                 self.comm.send((self.valid_smiles_list, self.depth_list, self.reward_values_list, self.elapsed_time_list,
                                 self.generated_id_list, self.objective_values_list, self.filter_check_list),
                                 dest=0, tag=JobType.GATHER_RESULTS.value)

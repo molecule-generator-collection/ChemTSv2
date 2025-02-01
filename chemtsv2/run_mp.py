@@ -206,16 +206,16 @@ def main():
                     reward_calculator=reward_calculator, conf=conf, logger=logger)
     search.MP_MCTS()
 
-    comm.barrier()
-
     logger.info(f"Done MCTS execution [rank {rank}]")
 
+    comm.barrier()
     search.gather_results()
     comm.barrier()
     if rank==0:
         search.flush()
         logger.info("FINISH!")
     comm.barrier()
+    MPI.Detach_buffer()
     MPI.Finalize()
 
 if __name__ == "__main__":
