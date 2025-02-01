@@ -24,13 +24,14 @@ def compare_ucb_mpmcts(pnode):
         for i in range(len(path_ucb)-1):
             ind = path_ucb[0][3]
             ucb.append((path_ucb[i+1][0]+0)/(path_ucb[i+1][1]+path_ucb[i+1][2]) +
-                       1.0*sqrt(2*log(path_ucb[0][1]+path_ucb[0][2])/(path_ucb[i+1][1]+path_ucb[i+1][2])))
-        new_ind = np.argmax(ucb)
-        if new_ind!=ind:
+                       pnode.conf['c_val'] * sqrt(2*log(path_ucb[0][1]+path_ucb[0][2])/(path_ucb[i+1][1]+path_ucb[i+1][2])))
+        m = np.amax(ucb)
+        indices = np.nonzero(ucb == m)[0]
+        if ind in indices:
+            back_flag = 0
+        else:
             back_flag = 1
             break
-        else:
-            back_flag = 0
     return back_flag
 
 
