@@ -45,7 +45,7 @@ class JobType(Enum):
 
 
 class MPNode():
-    def __init__(self, position=['&'], parentNode=None, reward_calculator=None, conf=None):
+    def __init__(self, position=['&'], parentNode=None, conf=None):
         # todo: the payload of MPI should be in a numpy array. consider using @property for implementation
         # MPI payload [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb]
         if position is None:
@@ -64,7 +64,6 @@ class MPNode():
         self.path_ucb = []
         self.childucb = []
         self.conf = conf
-        self.reward_calculator = reward_calculator
         self.val = conf['token']
         self.max_len=conf['max_len']
 
@@ -108,7 +107,7 @@ class MPNode():
         self.wins += score
         self.reward = score
 
-    def simulation(self, chem_model, state, gen_id, generated_dict):
+    def simulation(self, chem_model, state, gen_id, generated_dict, reward_calculator):
         filter_flag = 0
 
         self.conf['gid'] = gen_id
@@ -124,14 +123,14 @@ class MPNode():
 
         if has_passed_through_filters(smi, self.conf):
             mol = Chem.MolFromSmiles(smi)
-            values_list = [f(mol) for f in self.reward_calculator.get_objective_functions(self.conf)]
-            score = self.reward_calculator.calc_reward_from_objective_values(values=values_list, conf=self.conf)
+            values_list = [f(mol) for f in reward_calculator.get_objective_functions(self.conf)]
+            score = reward_calculator.calc_reward_from_objective_values(values=values_list, conf=self.conf)
             filter_flag = 1
             valid_flag = 1
         else:
             mol = Chem.MolFromSmiles(smi)
             valid_flag = 0 if mol is None else 1
-            values_list = [-999 for _ in self.reward_calculator.get_objective_functions(self.conf)]
+            values_list = [-999 for _ in reward_calculator.get_objective_functions(self.conf)]
             score = 0
             filter_flag = 0
         if valid_flag:
@@ -170,7 +169,7 @@ class p_mcts:
             self.root_position = ['&']
         else:
             self.root_position = root_position
-        root_node = MPNode(position=self.root_position, reward_calculator=reward_calculator, conf=conf)
+        root_node = MPNode(position=self.root_position, conf=conf)
         random.seed(conf['zobrist_hash_seed'])
         # Initialize HashTable
         self.hsm = HashTable(self.nprocs, root_node.val, root_node.max_len, len(root_node.val))
@@ -362,7 +361,7 @@ class p_mcts:
                 (tag, message) = jobq.pop()
                 if tag == JobType.SEARCH.value:
                     if self.hsm.search_table(message[0]) == None:
-                        node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                        node = MPNode(position=message[0], conf=self.conf)
                         if node.state == self.root_position:
                             node.expansion(self.chem_model, self.logger)
                             m = self.conf['random_generator'].choice(node.expanded_nodes)
@@ -374,7 +373,7 @@ class p_mcts:
                             if len(node.state) < node.max_len:
                                 gen_id = self.get_generated_id()
                                 values_list, score, smi, filter_flag, is_valid_smi = node.simulation(
-                                    self.chem_model, node.state, gen_id, self.generated_dict)
+                                    self.chem_model, node.state, gen_id, self.generated_dict, self.reward_calculator)
                                 if is_valid_smi:
                                     self.record_result(smiles=smi, depth=len(node.state), reward=score,
                                                        gen_id=gen_id ,raw_reward_list=values_list, filter_flag=filter_flag)
@@ -433,7 +432,7 @@ class p_mcts:
                                 else:
                                     gen_id = self.get_generated_id()
                                     values_list, score, smi, filter_flag, is_valid_smi = node.simulation(
-                                        self.chem_model, node.state, gen_id, self.generated_dict)
+                                        self.chem_model, node.state, gen_id, self.generated_dict, self.reward_calculator)
                                     score = -1
                                     if is_valid_smi:
                                         self.record_result(smiles=smi, depth=len(node.state), reward=score,
@@ -450,7 +449,7 @@ class p_mcts:
                                 self.send_backprop(node, dest)
 
                 elif tag == JobType.BACKPROPAGATION.value:
-                    node = MPNode(position=message[0], reward_calculator=self.reward_calculator, conf=self.conf)
+                    node = MPNode(position=message[0], conf=self.conf)
                     node.reward = message[1]
                     local_node = self.hsm.search_table(message[0][0:-1])
                     if local_node.state == self.root_position:
