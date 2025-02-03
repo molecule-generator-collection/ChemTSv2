@@ -17,7 +17,7 @@ from rdkit import Chem
 from chemtsv2.mp_utils import (
     backtrack_mpmcts, compare_ucb_mpmcts, update_selection_ucbtable_mpmcts, Item, HashTable
 )
-from chemtsv2.utils import chem_kn_simulation, build_smiles_from_tokens, expanded_node, has_passed_through_filters
+from chemtsv2.utils import generate_smiles_as_token_index, build_smiles_from_token_index, get_expanded_node_index, has_passed_through_filters
 
 """
 classes defined distributed parallel mcts
@@ -82,7 +82,7 @@ class MPNode():
         return ind, self.child_nodes[ind]
 
     def expansion(self, model, tokens, logger):
-        node_idxs = expanded_node(model, self.state, tokens, logger)
+        node_idxs = get_expanded_node_index(model, self.state, tokens, logger)
         self.check_childnode.extend(node_idxs)
         self.expanded_nodes.extend(node_idxs)
 
@@ -106,8 +106,8 @@ class MPNode():
         filter_flag = 0
 
         self.conf['gid'] = gen_id
-        all_posible = chem_kn_simulation(chem_model, state, tokens, self.conf)
-        smi = build_smiles_from_tokens(all_posible, tokens, use_selfies=self.conf['use_selfies'])
+        generated_token_indexes = generate_smiles_as_token_index(chem_model, state, tokens, self.conf)
+        smi = build_smiles_from_token_index(generated_token_indexes, tokens, use_selfies=self.conf['use_selfies'])
 
         if smi in generated_dict:
             values_list = generated_dict[smi][0]

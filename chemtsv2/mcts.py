@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pickle
 
-from chemtsv2.utils import chem_kn_simulation, build_smiles_from_tokens,\
-    evaluate_node, node_to_add, expanded_node, back_propagation
+from chemtsv2.utils import generate_smiles_as_token_index, build_smiles_from_token_index,\
+    evaluate_node, get_token_to_add, get_expanded_node_index, back_propagation
 
 
 class State:
@@ -55,9 +55,6 @@ class Node:
         state.parent_node = self
         node = Node(position=m, state=state, conf=self.conf)
         self.state.child_nodes.append(node)
-
-    def simulation(self):
-        raise SystemExit("[ERROR] Do NOT use this method")
 
     def update(self, reward):
         self.state.visits += 1
@@ -161,7 +158,7 @@ class MCTS:
                 self.loop_counter_for_selection = 0
 
             """expansion step"""
-            expanded = expanded_node(self.model, state.position, self.tokens, self.logger, threshold=self.conf['expansion_threshold'])
+            expanded = get_expanded_node_index(self.model, state.position, self.tokens, self.logger, threshold=self.conf['expansion_threshold'])
             self.logger.debug(f"infinite loop counter (expansion): {self.loop_counter_for_expansion}")
             if set(expanded) == self.expanded_before:
                 self.loop_counter_for_expansion += 1
@@ -175,12 +172,12 @@ class MCTS:
             new_compound = []
             nodeadded = []
             for _ in range(self.conf['simulation_num']):
-                nodeadded_tmp = node_to_add(expanded, self.tokens, self.logger)
+                nodeadded_tmp = get_token_to_add(expanded, self.tokens, self.logger)
                 nodeadded.extend(nodeadded_tmp)
                 for n in nodeadded_tmp:
                     position_tmp = state.position + [n]
-                    all_posible = chem_kn_simulation(self.model, position_tmp, self.tokens, self.conf)
-                    new_compound.append(build_smiles_from_tokens(all_posible, self.tokens, use_selfies=self.conf['use_selfies']))
+                    generated_token_indexes = generate_smiles_as_token_index(self.model, position_tmp, self.tokens, self.conf)
+                    new_compound.append(build_smiles_from_token_index(generated_token_indexes, self.tokens, use_selfies=self.conf['use_selfies']))
 
             _gids = list(range(self.gid, self.gid+len(new_compound)))
             self.gid += len(new_compound)

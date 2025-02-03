@@ -18,7 +18,7 @@ tf.compat.v1.disable_eager_execution()
 import requests
 import yaml
 
-from chemtsv2.utils import loaded_model, get_model_structure_info
+from chemtsv2.utils import load_tensorflow_model, get_model_structure_info
 from chemtsv2.preprocessing import smi_tokenizer, selfies_tokenizer_from_smiles
 from chemtsv2.parallel_mcts import p_mcts
 
@@ -196,7 +196,7 @@ def main():
 
     conf['random_generator'] = default_rng(conf['random_seed']) if conf['fix_random_seed'] else default_rng()
 
-    chem_model = loaded_model(conf['model_setting']['model_weight'], logger, conf)
+    chem_model = load_tensorflow_model(conf['model_setting']['model_weight'], logger, conf)
 
     root_state = ['&'] if args.input_smiles is None else conf["tokenized_smiles"]
     

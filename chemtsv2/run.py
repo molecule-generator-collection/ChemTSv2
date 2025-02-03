@@ -17,7 +17,7 @@ import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
 
 from chemtsv2.mcts import MCTS, State
-from chemtsv2.utils import loaded_model, get_model_structure_info
+from chemtsv2.utils import load_tensorflow_model, get_model_structure_info
 from chemtsv2.preprocessing import smi_tokenizer, selfies_tokenizer_from_smiles
 
 
@@ -189,7 +189,7 @@ def main():
     ps = conf['policy_setting']
     policy_evaluator = getattr(import_module(ps['policy_module']), ps['policy_class'])
     conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'], conf['num_gru_units'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
-    model = loaded_model(conf['model_setting']['model_weight'], logger, conf)  #WM300 not tested  
+    model = load_tensorflow_model(conf['model_setting']['model_weight'], logger, conf)  #WM300 not tested  
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles

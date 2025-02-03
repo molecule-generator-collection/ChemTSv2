@@ -28,7 +28,7 @@ def calc_execution_time(f):
     return wrapper
 
 
-def expanded_node(model, state, tokens, logger, threshold=0.995):
+def get_expanded_node_index(model, state, tokens, logger, threshold=0.995):
     get_int = [tokens.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     model.reset_states()
@@ -44,7 +44,7 @@ def expanded_node(model, state, tokens, logger, threshold=0.995):
     return sorted_idxs[:i]
 
 
-def node_to_add(all_nodes, tokens, logger):
+def get_token_to_add(all_nodes, tokens, logger):
     added_nodes = [tokens[all_nodes[i]] for i in range(len(all_nodes))]
     logger.debug(f"Added nodes: {added_nodes}")
     return added_nodes
@@ -56,7 +56,7 @@ def back_propagation(node, reward):
         node = node.state.parent_node
 
 
-def chem_kn_simulation(model, state, tokens, conf):
+def generate_smiles_as_token_index(model, state, tokens, conf):
     end = "\n"
     position = []
     position.extend(state)
@@ -75,9 +75,8 @@ def chem_kn_simulation(model, state, tokens, conf):
     return get_int
 
 
-def build_smiles_from_tokens(all_posible, tokens, use_selfies=False):
-    total_generated = all_posible
-    generate_tokens = [tokens[total_generated[j]] for j in range(len(total_generated) - 1)]
+def build_smiles_from_token_index(generated_token_indexes, tokens, use_selfies=False):
+    generate_tokens = [tokens[generated_token_indexes[j]] for j in range(len(generated_token_indexes) - 1)]
     generate_tokens.remove("&")
     concat_tokens = ''.join(generate_tokens)
     if use_selfies:
@@ -139,7 +138,7 @@ def get_model_structure_info(model_json, logger):
     return input_shape, vocab_size, output_size, num_gru_units
 
     
-def loaded_model(model_weight, logger, conf):
+def load_tensorflow_model(model_weight, logger, conf):
     model = Sequential()
     model.add(Embedding(input_dim=conf['rnn_vocab_size'], output_dim=conf['rnn_vocab_size'],
                         mask_zero=False, batch_size=1))
@@ -148,7 +147,7 @@ def loaded_model(model_weight, logger, conf):
     model.add(GRU(conf['num_gru_units'], activation='tanh', return_sequences=False, stateful=True))
     model.add(Dense(conf['rnn_output_size'], activation='softmax'))
     model.load_weights(model_weight)
-    logger.info(f"Loaded model_weight from {model_weight}")
+    logger.info(f"Model weights loaded from {model_weight}")
 
     return model
 
