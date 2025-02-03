@@ -1,6 +1,6 @@
 from rdkit import Chem
 
-from chemtsv2.filter import Filter
+from chemtsv2.abc import Filter
 from chemtsv2.utils import add_atom_index_in_wildcard
 
 

@@ -6,7 +6,8 @@ from rdkit.Chem import Descriptors
 sys.path.append("./data/")
 import sascorer
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
+
 
 LOGP_BASELINE = np.loadtxt('./data/logP_values.txt')
 LOGP_MEAN = np.mean(LOGP_BASELINE)

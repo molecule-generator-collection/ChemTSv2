@@ -4,7 +4,7 @@ import subprocess
 import pandas as pd
 from rdkit import Chem
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 
 
 class ROCS_reward(Reward):

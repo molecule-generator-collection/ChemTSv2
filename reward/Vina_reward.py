@@ -7,7 +7,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 
 
 class Vina_reward(Reward):

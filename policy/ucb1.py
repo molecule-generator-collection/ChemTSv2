@@ -1,6 +1,6 @@
 from math import log, sqrt
 
-from policy.policy import Policy
+from chemtsv2.abc import Policy
 
 class Ucb1(Policy):
     def evaluate(child_state, conf):

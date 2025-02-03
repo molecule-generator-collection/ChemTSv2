@@ -6,7 +6,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from spython.main import Client
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 
 
 class Gnina_reward(Reward):

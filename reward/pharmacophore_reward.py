@@ -8,7 +8,7 @@ from rdkit.Chem import ChemicalFeatures, rdDistGeom, rdMolTransforms
 from rdkit.Chem.Pharm3D import EmbedLib, Pharmacophore
 from rdkit.Numerics import rdAlignment
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 
 
 def create_pharmacophore():

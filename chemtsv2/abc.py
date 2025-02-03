@@ -1,7 +1,21 @@
 from abc import ABC, abstractmethod
-from typing import List, Callable
+from typing import Dict, List, Callable
 
 from rdkit.Chem import Mol
+
+
+class Filter(ABC):
+    @staticmethod
+    @abstractmethod
+    def check(mol: Mol, config: Dict) -> bool:
+        raise NotImplementedError('Please check your filter file')
+
+
+class Policy(ABC):
+    @staticmethod
+    @abstractmethod
+    def evaluate(child_state, conf):
+        raise NotImplementedError('Please check your policy file')
 
 
 class Reward(ABC):
@@ -26,3 +40,4 @@ class BatchReward(ABC):
     @abstractmethod
     def calc_reward_from_objective_values(values: List[float], conf: dict) -> float:
         raise NotImplementedError('Please check your reward file')
+

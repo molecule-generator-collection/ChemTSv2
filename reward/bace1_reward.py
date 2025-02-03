@@ -3,7 +3,7 @@ import pickle
 from rdkit.Chem import AllChem
 import numpy as np
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 
 
 LGB_MODELS_PATH = 'data/model/lgb_models.pickle'

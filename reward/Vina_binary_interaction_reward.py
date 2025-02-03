@@ -11,8 +11,9 @@ from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D
 
 from chemtsv2.misc.scaler import min_gauss
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 from reward.util import get_interaction_distances
+
 
 class Vina_reward(Reward):
     def get_objective_functions(conf):

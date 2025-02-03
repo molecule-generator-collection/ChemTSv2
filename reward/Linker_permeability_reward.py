@@ -7,7 +7,7 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors, AllChem
 from mordred import Calculator, descriptors
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 from chemtsv2.misc.scaler import max_gauss
 from chemtsv2.utils import transform_linker_to_mol
 

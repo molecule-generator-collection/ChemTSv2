@@ -2,7 +2,7 @@ import sys
 sys.path.append("./data/")
 import sascorer
 
-from chemtsv2.filter import Filter
+from chemtsv2.abc import Filter
 from chemtsv2.utils import transform_linker_to_mol
 
 

@@ -1,7 +1,7 @@
 from rdkit import Chem
 from canonicalize_psmiles.canonicalize import canonicalize, reduce_multiplication
 
-from chemtsv2.filter import Filter
+from chemtsv2.abc import Filter
 
 
 class MonomerFilter(Filter):

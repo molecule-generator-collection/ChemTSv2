@@ -3,7 +3,7 @@
 ## How to define filter function
 
 ChemTSv2 frexibly accept user-defined filter file written in Python3. 
-A user-defined class should inherit from a [Filter base class](./filter.py). 
+A user-defined class should inherit from a [Filter base class](../chemtsv2/abc.py). 
 The filter class contains one static method: `check()`. 
 The method takes a `Mol` object of RDKit and a configuration parameter object in a dictionary format and returns boolean value. 
 In the filter function, the boolean value `True` indicates that an input molecule satisfies the filtering criteria, and `False` indicates otherwise. 
@@ -11,7 +11,7 @@ The molecule satisfying filter criteria continues to a reward calculation step.
 
 Below is a simple example. 
 ```python
-from filter.filter import Filter
+from chemtsv2.abc import Filter
 
 class RingSizeFilter(Filter):
     def check(mol, conf):

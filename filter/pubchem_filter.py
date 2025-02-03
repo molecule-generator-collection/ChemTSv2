@@ -6,7 +6,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from data import metadata
-from chemtsv2.filter import Filter
+from chemtsv2.abc import Filter
 from chemtsv2.utils import transform_linker_to_mol
 
 

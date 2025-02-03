@@ -1,6 +1,6 @@
 from rdkit import Chem
 
-from chemtsv2.filter import Filter
+from chemtsv2.abc import Filter
 
 
 class AttachmentPointsFilter(Filter):

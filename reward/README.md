@@ -3,7 +3,7 @@
 ## How to define reward function
 
 ChemTSv2 frexibly accept user-defined reward file written in Python3.
-A user-defined class should inherit from a [Reward base class](./reward.py).
+A user-defined class should inherit from a [Reward base class](../chemtsv2/abc.py).
 The reward class contains two static methods: `get_objective_functions()` and `calc_reward_from_objective_values()`.
 The former method takes a configuration parameter object in a dictionary format, has at least one inner function that calculates an objective value from a `Mol` object of RDKit, and returns a list of inner functions.
 The latter method takes a list of calculated objective values and the parameter object and returns a float value.
@@ -15,7 +15,7 @@ import sys
 import numpy as np
 from rdkit.Chem import Descriptors
 import sascorer
-from reward.reward import Reward
+from chemtsv2.abc import Reward
 
 class Jscore_reward(Reward):
     def get_objective_functions(conf):

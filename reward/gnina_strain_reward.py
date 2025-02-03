@@ -7,8 +7,9 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from spython.main import Client
 
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 from reward.util import calc_strain_energy
+
 
 class Gnina_strain_reward(Reward):
     def get_objective_functions(conf):

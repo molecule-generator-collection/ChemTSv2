@@ -8,7 +8,7 @@ from rdkit.Chem import AllChem
 from spython.main import Client
 
 from chemtsv2.misc.scaler import min_gauss
-from chemtsv2.reward import Reward
+from chemtsv2.abc import Reward
 from reward.util import get_interaction_distances
 
 

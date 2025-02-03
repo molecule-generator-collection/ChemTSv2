@@ -1,11 +1,13 @@
 from rdkit.Chem import Descriptors
 
-from chemtsv2.filter import Filter
+from chemtsv2.abc import Filter
 from chemtsv2.utils import transform_linker_to_mol
+
 
 class HBAFilter(Filter):
     def check(mol, config): 
         return Descriptors.NumHAcceptors(mol) <= config['hba_filter']['threshold']
+
 
 class HBAFilterForXMol(Filter):
     def check(mol, conf):
