@@ -40,13 +40,13 @@ def expanded_node(model, state, val, logger, threshold=0.995):
         if v > threshold:
             i = i if i != 0 else 1  # return one index if the first prediction value exceeds the threshold.
             break 
-    logger.debug(f"indices for expansion: {sorted_idxs[:i]}")
+    logger.debug(f"Indices for expansion: {sorted_idxs[:i]}")
     return sorted_idxs[:i]
 
 
 def node_to_add(all_nodes, val, logger):
     added_nodes = [val[all_nodes[i]] for i in range(len(all_nodes))]
-    logger.debug(added_nodes)
+    logger.debug(f"Added nodes: {added_nodes}")
     return added_nodes
 
 

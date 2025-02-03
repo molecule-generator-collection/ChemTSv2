@@ -186,11 +186,10 @@ class MCTS:
             _gids = list(range(self.gid, self.gid+len(new_compound)))
             self.gid += len(new_compound)
 
-            self.logger.debug(f"nodeadded {nodeadded}")
-            self.logger.info(f"new compound {new_compound}")
-            self.logger.debug(f"generated_dict {self.generated_dict}") 
-            if self.conf["debug"]:
-                self.logger.debug('\n' + '\n'.join([f"lastcomp {comp[-1]} ... " + str(comp[-1] == '\n') for comp in new_compound]))
+            self.logger.debug(f"Added nodes: {nodeadded}")
+            self.logger.debug(f"Generated molecules dictionary: {self.generated_dict}") 
+            self.logger.info(f"New compounds: {new_compound}")
+            self.logger.debug('\n' + '\n'.join([f"Index {i}: {c} (last character {c[-1]}, line break: " + str(c[-1]=='\n') + ")" for i, c in enumerate(new_compound)]))
             node_index, objective_values, valid_smiles, generated_id_list, filter_check_list = evaluate_node(new_compound, self.generated_dict, self.reward_calculator, self.conf, self.logger, _gids)
 
             if len(valid_smiles) == 0:
@@ -208,8 +207,8 @@ class MCTS:
             self.generated_id_list.extend(generated_id_list)
             self.filter_check_list.extend(filter_check_list)
 
-            self.logger.info(f"Number of valid SMILES: {self.total_valid_num}")
-            self.logger.debug(f"node {node_index} objective_values {objective_values} valid smiles {valid_smiles} time {elapsed_time}")
+            self.logger.info(f"Number of valid SMILES in this cycle: {self.total_valid_num}")
+            self.logger.debug(f"\nNode index: {node_index} \nObjective_values: {objective_values} \nValid smiles: {valid_smiles} \nTime {elapsed_time}")
 
             re_list = []
             atom_checked = []
@@ -225,15 +224,14 @@ class MCTS:
                 else:
                     node_pool.append(node.state.child_nodes[atom_checked.index(atom)])
 
-                if self.conf["debug"]:
-                    self.logger.debug('\n' + '\n'.join([f"Child node position ... {c.position}" for c in node.state.child_nodes]))
+                self.logger.debug('\n' + '\n'.join([f"Child node position: {c.position}" for c in node.state.child_nodes]))
 
                 re = -1 if atom == '\n' else self.reward_calculator.calc_reward_from_objective_values(values=objective_values[i], conf=self.conf)
                 if self.conf['include_filter_result_in_reward']:
                     re *= filter_check_list[i]
                     
                 re_list.append(re)
-                self.logger.debug(f"atom: {atom} re_list: {re_list}")
+                self.logger.debug(f"\nAdded atom: {atom} \nReward list: {re_list}")
             self.reward_values_list.extend(re_list)
 
             """backpropation step"""
@@ -241,8 +239,7 @@ class MCTS:
                 node = node_pool[i]
                 back_propagation(node, reward=re_list[i])
 
-            if self.conf['debug']:
-                self.logger.debug('\n' + '\n'.join([f"child position: {c.position}, total_reward: {c.state.total_reward}, visits: {c.state.visits}" for c in node_pool]))
+            self.logger.debug('\n' + '\n'.join([f"Child node position: {c.position} Total reward: {c.state.total_reward} Visit count: {c.state.visits}" for c in node_pool]))
 
             if len(self.valid_smiles_list) > self.conf['flush_threshold'] and self.conf['flush_threshold'] != -1:
                 self.flush()
