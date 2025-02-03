@@ -204,26 +204,18 @@ def main():
     comm.barrier()
     search = p_mcts(communicator=comm, root_position=root_state, chem_model=chem_model,
                     reward_calculator=reward_calculator, conf=conf, logger=logger)
-    if conf['search_type'] == 'TDS_UCT':
-        search.TDS_UCT()
-    #elif conf['search_type'] == 'TDS_df_UCT':
-    #    search.TDS_df_UCT()
-    elif conf['search_type'] == 'MP_MCTS':
-        search.MP_MCTS()
-    else:
-        logger.error('[ERROR] Select a search type from [TDS_UCT, MP_MCTS]')
-        sys.exit(1)
-
-    comm.barrier()
+    search.MP_MCTS()
 
     logger.info(f"Done MCTS execution [rank {rank}]")
 
+    comm.barrier()
     search.gather_results()
     comm.barrier()
     if rank==0:
         search.flush()
         logger.info("FINISH!")
     comm.barrier()
+    MPI.Detach_buffer()
     MPI.Finalize()
 
 if __name__ == "__main__":
