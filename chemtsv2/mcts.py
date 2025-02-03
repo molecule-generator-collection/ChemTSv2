@@ -32,17 +32,16 @@ class State:
 
 
 class Node:
-    def __init__(self, policy_evaluator, position=None, state=None, conf=None):
+    def __init__(self, position=None, state=None, conf=None):
         self.position = position
         self.state = state
-        self.policy_evaluator = policy_evaluator
         self.conf = conf
 
-    def select_node(self, logger):
+    def select_node(self, policy_evaluator, logger):
         score_list = []
         logger.debug('UCB:')
         for i in range(len(self.state.child_nodes)):
-            score = self.policy_evaluator.evaluate(self.state.child_nodes[i].state, self.conf)
+            score = policy_evaluator.evaluate(self.state.child_nodes[i].state, self.conf)
             score_list.append(score)
             logger.debug(f"{self.state.child_nodes[i].position} {score}") 
         m = np.amax(score_list)
@@ -52,9 +51,9 @@ class Node:
         logger.debug(f"\nindex {ind} {self.position} {m}") 
         return s
 
-    def add_node(self, m, state, policy_evaluator):
+    def add_node(self, m, state):
         state.parent_node = self
-        node = Node(policy_evaluator, position=m, state=state, conf=self.conf)
+        node = Node(position=m, state=state, conf=self.conf)
         self.state.child_nodes.append(node)
 
     def simulation(self):
@@ -68,7 +67,7 @@ class Node:
 class MCTS:
     def __init__(self, root_state, conf, tokens, model, reward_calculator, policy_evaluator, logger):
         self.start_time = time.time()
-        self.rootnode = Node(policy_evaluator, state=root_state, conf=conf)
+        self.rootnode = Node(state=root_state, conf=conf)
         self.conf = conf
         self.tokens = tokens
         self.model = model
@@ -146,7 +145,7 @@ class MCTS:
             """selection step"""
             node_pool = []
             while node.state.child_nodes != []:
-                node = node.select_node(self.logger)
+                node = node.select_node(self.policy_evaluator, self.logger)
                 state.add_position(node.position)
             self.logger.info(f"state position: {state.position}")
 
@@ -218,7 +217,7 @@ class MCTS:
                 state_clone = state.clone(include_visit=True, include_total_reward=True)
 
                 if atom not in atom_checked: 
-                    node.add_node(atom, state_clone, self.policy_evaluator)
+                    node.add_node(atom, state_clone)
                     node_pool.append(node.state.child_nodes[len(atom_checked)])
                     atom_checked.append(atom)
                 else:
