@@ -1,6 +1,5 @@
 # Basic setting
 c_val: 0.2
-search_type: MP_MCTS
 # threshold_type: [time, generation_num]
 #threshold_type: time
 hours: 0.1
