@@ -28,8 +28,8 @@ def calc_execution_time(f):
     return wrapper
 
 
-def expanded_node(model, state, val, logger, threshold=0.995):
-    get_int = [val.index(state[j]) for j in range(len(state))]
+def expanded_node(model, state, tokens, logger, threshold=0.995):
+    get_int = [tokens.index(state[j]) for j in range(len(state))]
     x = np.reshape(get_int, (1, len(get_int)))
     model.reset_states()
     preds = model.predict_on_batch(x)
@@ -44,8 +44,8 @@ def expanded_node(model, state, val, logger, threshold=0.995):
     return sorted_idxs[:i]
 
 
-def node_to_add(all_nodes, val, logger):
-    added_nodes = [val[all_nodes[i]] for i in range(len(all_nodes))]
+def node_to_add(all_nodes, tokens, logger):
+    added_nodes = [tokens[all_nodes[i]] for i in range(len(all_nodes))]
     logger.debug(f"Added nodes: {added_nodes}")
     return added_nodes
 
@@ -56,15 +56,15 @@ def back_propagation(node, reward):
         node = node.state.parent_node
 
 
-def chem_kn_simulation(model, state, val, conf):
+def chem_kn_simulation(model, state, tokens, conf):
     end = "\n"
     position = []
     position.extend(state)
-    get_int = [val.index(position[j]) for j in range(len(position))]
+    get_int = [tokens.index(position[j]) for j in range(len(position))]
     x = np.reshape(get_int, (1, len(get_int)))
     model.reset_states()
 
-    while not get_int[-1] == val.index(end):
+    while not get_int[-1] == tokens.index(end):
         preds = model.predict_on_batch(x)
         state_pred = np.squeeze(preds)
         next_int = conf['random_generator'].choice(range(len(state_pred)), p=state_pred)
@@ -75,9 +75,9 @@ def chem_kn_simulation(model, state, val, conf):
     return get_int
 
 
-def build_smiles_from_tokens(all_posible, val, use_selfies=False):
+def build_smiles_from_tokens(all_posible, tokens, use_selfies=False):
     total_generated = all_posible
-    generate_tokens = [val[total_generated[j]] for j in range(len(total_generated) - 1)]
+    generate_tokens = [tokens[total_generated[j]] for j in range(len(total_generated) - 1)]
     generate_tokens.remove("&")
     concat_tokens = ''.join(generate_tokens)
     if use_selfies:

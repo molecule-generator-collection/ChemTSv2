@@ -85,8 +85,6 @@ def set_default_config(conf):
         'reward_module': 'reward.logP_reward',
         'reward_class': 'LogP_reward'})
 
-    conf.setdefault('search_type', 'MP_MCTS')
-
     conf.setdefault('use_lipinski_filter', False)
     conf.setdefault('lipinski_filter', {
         'module': 'filter.lipinski_filter',
@@ -175,12 +173,12 @@ def main():
 
     with open(conf['token'], 'rb') as f:
         tokens = pickle.load(f)
-    conf['token'] = tokens
     conf['max_len'], conf['rnn_vocab_size'], conf['rnn_output_size'], conf['num_gru_units'] = get_model_structure_info(conf['model_setting']['model_json'], logger)
 
     rs = conf['reward_setting']
     reward_calculator = getattr(import_module(rs['reward_module']), rs['reward_class'])
 
+    comm.barrier()
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
@@ -192,6 +190,7 @@ def main():
             logger.info(f"{k}: {v}")
         logger.info(f"GPU devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
         logger.info(f"===================================")
+        logger.debug(f"Loaded tokens are {tokens}")
 
     conf['filter_list'] = get_filter_modules(conf)
 
@@ -204,7 +203,7 @@ def main():
     logger.info(f'Run MPChemTS [rank {rank}]')
     comm.barrier()
     search = p_mcts(communicator=comm, root_position=root_state, chem_model=chem_model,
-                    reward_calculator=reward_calculator, conf=conf, logger=logger)
+                    reward_calculator=reward_calculator, tokens=tokens, conf=conf, logger=logger)
     search.MP_MCTS()
 
     logger.info(f"Done MCTS execution [rank {rank}]")

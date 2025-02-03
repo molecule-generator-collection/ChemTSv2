@@ -75,7 +75,7 @@ class HashTable:
     alphabetSize = 2 * 26
     hashTable = []
 
-    def __init__(self, nprocs, val, max_len, val_len):
+    def __init__(self, nprocs, tokens, max_len):
         self.hashTable = dict()  # [[] for i in range(size)]
 
         # should be enough for our case, but should be larger for longer search
@@ -83,10 +83,10 @@ class HashTable:
         self.hash_table_max_size = 2**self.hash_index_bits
 
         self.S = max_len
-        self.P = val_len
-        self.val = val
+        self.P = len(tokens)
+        self.tokens = tokens
         self.nprocs = nprocs
-        self.zobristnum = [[0] * self.P for i in range(self.S)]
+        self.zobristnum = [[0] * self.P for _ in range(self.S)]
         for i in range(self.S):
             for j in range(self.P):
                 self.zobristnum[i][j] = randint(0, 2**64-1)
@@ -96,8 +96,8 @@ class HashTable:
         for i in range(self.S):
             piece = None
             if i <= len(board) - 1:
-                if board[i] in self.val:
-                    piece = self.val.index(board[i])
+                if board[i] in self.tokens:
+                    piece = self.tokens.index(board[i])
             if(piece is not None):
                 hashing_value ^= self.zobristnum[i][piece]
 

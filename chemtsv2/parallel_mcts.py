@@ -48,10 +48,7 @@ class MPNode():
     def __init__(self, position=['&'], parentNode=None, conf=None):
         # todo: the payload of MPI should be in a numpy array. consider using @property for implementation
         # MPI payload [node.state, node.reward, node.wins, node.visits, node.num_thread_visited, node.path_ucb]
-        if position is None:
-            self.state = ['&']
-        else:
-            self.state = position
+        self.state = ['&'] if position is None else position
         self.child_nodes = []
         self.parentNode = parentNode
         self.wins = 0
@@ -64,8 +61,6 @@ class MPNode():
         self.path_ucb = []
         self.childucb = []
         self.conf = conf
-        self.val = conf['token']
-        self.max_len=conf['max_len']
 
     def selection(self):
         ucb = []
@@ -86,16 +81,16 @@ class MPNode():
         self.num_thread_visited += 1
         return ind, self.child_nodes[ind]
 
-    def expansion(self, model, logger):
-        node_idxs = expanded_node(model, self.state, self.val, logger)
+    def expansion(self, model, tokens, logger):
+        node_idxs = expanded_node(model, self.state, tokens, logger)
         self.check_childnode.extend(node_idxs)
         self.expanded_nodes.extend(node_idxs)
 
-    def addnode(self, m):
+    def addnode(self, m, tokens):
         self.expanded_nodes.remove(m)
         added_nodes = []
         added_nodes.extend(self.state)
-        added_nodes.append(self.val[m])
+        added_nodes.append(tokens[m])
         self.num_thread_visited += 1
         n = MPNode(position=added_nodes, parentNode=self, conf=self.conf)
         n.num_thread_visited += 1
@@ -107,12 +102,12 @@ class MPNode():
         self.wins += score
         self.reward = score
 
-    def simulation(self, chem_model, state, gen_id, generated_dict, reward_calculator):
+    def simulation(self, chem_model, state, gen_id, generated_dict, reward_calculator, tokens):
         filter_flag = 0
 
         self.conf['gid'] = gen_id
-        all_posible = chem_kn_simulation(chem_model, state, self.val, self.conf)
-        smi = build_smiles_from_tokens(all_posible, self.val, use_selfies=self.conf['use_selfies'])
+        all_posible = chem_kn_simulation(chem_model, state, tokens, self.conf)
+        smi = build_smiles_from_tokens(all_posible, tokens, use_selfies=self.conf['use_selfies'])
 
         if smi in generated_dict:
             values_list = generated_dict[smi][0]
@@ -155,7 +150,7 @@ class p_mcts:
     """
     # todo: use generated_dict
 
-    def __init__(self, communicator, root_position, chem_model, reward_calculator, conf, logger):
+    def __init__(self, communicator, root_position, chem_model, reward_calculator, tokens, conf, logger):
         self.comm = communicator
         self.rank = self.comm.Get_rank()
         self.nprocs = self.comm.Get_size()
@@ -165,14 +160,11 @@ class p_mcts:
         self.conf = conf
         self.logger = logger
         self.threshold = 3600 * conf['hours']
-        if root_position is None:
-            self.root_position = ['&']
-        else:
-            self.root_position = root_position
-        root_node = MPNode(position=self.root_position, conf=conf)
+        self.root_position = ['&'] if root_position is None else root_position
         random.seed(conf['zobrist_hash_seed'])
+        self.tokens = tokens
         # Initialize HashTable
-        self.hsm = HashTable(self.nprocs, root_node.val, root_node.max_len, len(root_node.val))
+        self.hsm = HashTable(self.nprocs, self.tokens, conf['max_len'])
 
         if self.conf['checkpoint_load']:
             dt = datetime.datetime.now()
@@ -363,17 +355,17 @@ class p_mcts:
                     if self.hsm.search_table(message[0]) == None:
                         node = MPNode(position=message[0], conf=self.conf)
                         if node.state == self.root_position:
-                            node.expansion(self.chem_model, self.logger)
+                            node.expansion(self.chem_model, self.tokens, self.logger)
                             m = self.conf['random_generator'].choice(node.expanded_nodes)
-                            n = node.addnode(m)
+                            n = node.addnode(m, self.tokens)
                             self.hsm.insert(Item(node.state, node))
                             _, dest = self.hsm.hashing(n.state)
                             self.send_message(n, dest, tag=JobType.SEARCH.value)
                         else:
-                            if len(node.state) < node.max_len:
+                            if len(node.state) < self.conf['max_len']:
                                 gen_id = self.get_generated_id()
                                 values_list, score, smi, filter_flag, is_valid_smi = node.simulation(
-                                    self.chem_model, node.state, gen_id, self.generated_dict, self.reward_calculator)
+                                    self.chem_model, node.state, gen_id, self.generated_dict, self.reward_calculator, self.tokens)
                                 if is_valid_smi:
                                     self.record_result(smiles=smi, depth=len(node.state), reward=score,
                                                        gen_id=gen_id ,raw_reward_list=values_list, filter_flag=filter_flag)
@@ -394,7 +386,7 @@ class p_mcts:
                             # print ("in table root:",node.state,node.path_ucb,len(node.state),len(node.path_ucb))
                             if node.expanded_nodes != []:
                                 m = self.conf['random_generator'].choice(node.expanded_nodes)
-                                n = node.addnode(m)
+                                n = node.addnode(m, self.tokens)
                                 self.hsm.insert(Item(node.state, node))
                                 _, dest = self.hsm.hashing(n.state)
                                 self.send_message(n, dest, tag=JobType.SEARCH.value)
@@ -407,19 +399,19 @@ class p_mcts:
                         else:
                             node.path_ucb = message[5]
                             #print("check ucb:", node.wins, node.visits, node.num_thread_visited)
-                            if len(node.state) < node.max_len:
+                            if len(node.state) < self.conf['max_len']:
                                 if node.state[-1] != '\n':
                                     if node.expanded_nodes != []:
                                         m = self.conf['random_generator'].choice(node.expanded_nodes)
-                                        n = node.addnode(m)
+                                        n = node.addnode(m, self.tokens)
                                         self.hsm.insert(Item(node.state, node))
                                         _, dest = self.hsm.hashing(n.state)
                                         self.send_message(n, dest, tag=JobType.SEARCH.value)
                                     else:
                                         if node.check_childnode == []:
-                                            node.expansion(self.chem_model, self.logger)
+                                            node.expansion(self.chem_model, self.tokens, self.logger)
                                             m = self.conf['random_generator'].choice(node.expanded_nodes)
-                                            n = node.addnode(m)
+                                            n = node.addnode(m, self.tokens)
                                             self.hsm.insert(Item(node.state, node))
                                             _, dest = self.hsm.hashing(n.state)
                                             self.send_message(n, dest, tag=JobType.SEARCH.value)
@@ -432,7 +424,7 @@ class p_mcts:
                                 else:
                                     gen_id = self.get_generated_id()
                                     values_list, score, smi, filter_flag, is_valid_smi = node.simulation(
-                                        self.chem_model, node.state, gen_id, self.generated_dict, self.reward_calculator)
+                                        self.chem_model, node.state, gen_id, self.generated_dict, self.reward_calculator, self.tokens)
                                     score = -1
                                     if is_valid_smi:
                                         self.record_result(smiles=smi, depth=len(node.state), reward=score,
