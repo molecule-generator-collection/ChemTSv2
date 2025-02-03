@@ -4,6 +4,8 @@ from importlib import import_module
 import os
 import sys
 sys.path.append(os.getcwd())
+if "--debug" not in sys.argv:
+    os.environ['TF_CPP_MIN_LOG_LEVEL']='3'  # Disable Tensorflow debugging information
 import pickle
 import re
 import requests

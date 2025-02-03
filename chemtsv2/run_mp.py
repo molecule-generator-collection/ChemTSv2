@@ -2,11 +2,12 @@ import argparse
 from logging import getLogger, StreamHandler, FileHandler, Formatter, INFO, DEBUG
 from importlib import import_module
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
 import pickle
 import re
 import sys
 sys.path.append(os.getcwd())
+if "--debug" not in sys.argv:
+    os.environ['TF_CPP_MIN_LOG_LEVEL']='3'  # Disable Tensorflow debugging information
 
 from mpi4py import MPI
 import numpy as np
