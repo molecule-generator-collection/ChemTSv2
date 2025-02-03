@@ -12,12 +12,12 @@ class TestPreprocessing():
     def setup_method(self):
         self.smiles_dataset_path = "data/2019PubChemQC_can_nocharge.smi"
         self.test_smiles_list = [
-            "O=C(O)CCCc1cccnc1",
-            "CC[C@H](C)C[C@@H](C)NC(=O)N1CCN(CC(=O)NC2CC2)CC1",
-            "O=[N+]([O-])c1c(Nc2cccc3ncccc23)ncnc1N1CCN(c2cccc(Cl)c2)CC1",
-            "Cc1occc1C(=O)/C(C#N)=C\c1cccc(C(F)(F)F)c1",
-            "C/C(=C1/SC(=O)N(c2ccc(Cl)cc2)C1=O)c1ccc(Br)cc1",
-            "O=C([O-])c1ccc(-c2ccncc2)cn1",
+            r"O=C(O)CCCc1cccnc1",
+            r"CC[C@H](C)C[C@@H](C)NC(=O)N1CCN(CC(=O)NC2CC2)CC1",
+            r"O=[N+]([O-])c1c(Nc2cccc3ncccc23)ncnc1N1CCN(c2cccc(Cl)c2)CC1",
+            r"Cc1occc1C(=O)/C(C#N)=C\c1cccc(C(F)(F)F)c1",
+            r"C/C(=C1/SC(=O)N(c2ccc(Cl)cc2)C1=O)c1ccc(Br)cc1",
+            r"O=C([O-])c1ccc(-c2ccncc2)cn1",
         ] 
         self.tokenized_smiles_list = [
             ['&', 'O', '=', 'C', '(', 'O', ')', 'C', 'C', 'C', 'c', '1', 'c', 'c', 'c', 'n', 'c', '1'],
