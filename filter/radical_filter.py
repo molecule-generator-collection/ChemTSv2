@@ -14,4 +14,5 @@ class RadicalFilterForXMol(Filter):
         @transform_linker_to_mol(conf)
         def _check(mol, conf):
             return RadicalFilter.check(mol, conf)
+
         return _check(mol, conf)

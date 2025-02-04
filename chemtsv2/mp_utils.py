@@ -11,20 +11,27 @@ def backtrack_mpmcts(pnode, cnode):
         path_ucb[0][0] += cnode.reward
         path_ucb[0][1] += 1
         path_ucb[0][2] -= 1
-        path_ucb[ind+1][0] += cnode.reward
-        path_ucb[ind+1][1] += 1
-        path_ucb[ind+1][2] -= 1
+        path_ucb[ind + 1][0] += cnode.reward
+        path_ucb[ind + 1][1] += 1
+        path_ucb[ind + 1][2] -= 1
     return pnode
 
 
 def compare_ucb_mpmcts(pnode):
-    #print ("check info_table:",info_table)
+    # print ("check info_table:",info_table)
     for path_ucb in pnode.path_ucb:
         ucb = []
-        for i in range(len(path_ucb)-1):
+        for i in range(len(path_ucb) - 1):
             ind = path_ucb[0][3]
-            ucb.append((path_ucb[i+1][0]+0)/(path_ucb[i+1][1]+path_ucb[i+1][2]) +
-                       pnode.conf['c_val'] * sqrt(2*log(path_ucb[0][1]+path_ucb[0][2])/(path_ucb[i+1][1]+path_ucb[i+1][2])))
+            ucb.append(
+                (path_ucb[i + 1][0] + 0) / (path_ucb[i + 1][1] + path_ucb[i + 1][2])
+                + pnode.conf["c_val"]
+                * sqrt(
+                    2
+                    * log(path_ucb[0][1] + path_ucb[0][2])
+                    / (path_ucb[i + 1][1] + path_ucb[i + 1][2])
+                )
+            )
         m = np.amax(ucb)
         indices = np.nonzero(ucb == m)[0]
         if ind in indices:
@@ -35,7 +42,7 @@ def compare_ucb_mpmcts(pnode):
     return back_flag
 
 
-def update_selection_ucbtable_mpmcts(node, ind, root_position=['&']):
+def update_selection_ucbtable_mpmcts(node, ind, root_position=["&"]):
     table = []
     final_table = []
     node_info = store_info(node)
@@ -55,6 +62,8 @@ def update_selection_ucbtable_mpmcts(node, ind, root_position=['&']):
 def store_info(node):
     table = [node.wins, node.visits, node.num_thread_visited]
     return table
+
+
 ### END Check UCB Path ###
 
 
@@ -69,7 +78,8 @@ class Item:
 
 
 class HashTable:
-    'Common base class for a hash table'
+    "Common base class for a hash table"
+
     tableSize = 0
     entriesCount = 0
     alphabetSize = 2 * 26
@@ -89,7 +99,7 @@ class HashTable:
         self.zobristnum = [[0] * self.P for _ in range(self.S)]
         for i in range(self.S):
             for j in range(self.P):
-                self.zobristnum[i][j] = randint(0, 2**64-1)
+                self.zobristnum[i][j] = randint(0, 2**64 - 1)
 
     def hashing(self, board):
         hashing_value = 0
@@ -98,7 +108,7 @@ class HashTable:
             if i <= len(board) - 1:
                 if board[i] in self.tokens:
                     piece = self.tokens.index(board[i])
-            if(piece is not None):
+            if piece is not None:
                 hashing_value ^= self.zobristnum[i][piece]
 
         # tail = int(math.log2(self.nprocs))
@@ -135,4 +145,6 @@ class HashTable:
                 if it.key == key:
                     return it.value
         return None
+
+
 ### END Zoblist Hash ###

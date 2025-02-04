@@ -14,4 +14,5 @@ class AromaticRingFilterForXMol(Filter):
         @transform_linker_to_mol(conf)
         def _check(mol, conf):
             return AromaticRingFilter.check(mol, conf)
+
         return _check(mol, conf)

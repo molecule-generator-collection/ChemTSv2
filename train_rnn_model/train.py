@@ -1,7 +1,6 @@
 import argparse
 import os
 import pickle
-import sys
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed
@@ -12,18 +11,15 @@ from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint
 import numpy as np
 import yaml
 
-sys.path.append("../chemtsv2")
-from preprocessing import read_smiles_dataset, tokenize_smiles
+from chemtsv2.preprocessing import read_smiles_dataset, tokenize_smiles
 
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="",
-        usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
+        description="", usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
     )
     parser.add_argument(
-        "-c", "--config", type=str, required=True,
-        help="path to a config file"
+        "-c", "--config", type=str, required=True, help="path to a config file"
     )
     return parser.parse_args()
 
@@ -39,15 +35,19 @@ def prepare_data(smiles, all_smiles):
     y_train = []
     for i in range(len(X_train)):
         x1 = X_train[i]
-        x2 = x1[1:len(x1)]
+        x2 = x1[1 : len(x1)]
         x2.append(0)
         y_train.append(x2)
     return X_train, y_train
 
 
 def save_model(model, output_dir, use_selfies=False):
-    output_json = os.path.join(output_dir, "model_sf.tf25.json" if use_selfies else "model.tf25.json")
-    output_weight = os.path.join(output_dir, "model_sf.tf25.h5" if use_selfies else "model.tf25.h5")
+    output_json = os.path.join(
+        output_dir, "model_sf.tf25.json" if use_selfies else "model.tf25.json"
+    )
+    output_weight = os.path.join(
+        output_dir, "model_sf.tf25.h5" if use_selfies else "model.tf25.h5"
+    )
     model_json = model.to_json()
 
     with open(output_json, "w") as json_file:
@@ -60,22 +60,22 @@ def save_model(model, output_dir, use_selfies=False):
 
 def update_config(conf):
     conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
-    conf.setdefault('output_model_dir', "../model")
-    conf.setdefault('output_token', "../model/tokens.pkl")
-    conf.setdefault('dropout_rate', 0.2)
-    conf.setdefault('learning_rate', 0.01)
-    conf.setdefault('epoch', 100)
-    conf.setdefault('batch_size', 512)
-    conf.setdefault('validation_split', 0.1)
-    conf.setdefault('units', 256)    
-    conf.setdefault('rec_dropout_rate', 0)
-    conf.setdefault('maxlen', 82)
-    conf.setdefault('use_selfies', False)
+    conf.setdefault("output_model_dir", "../model")
+    conf.setdefault("output_token", "../model/tokens.pkl")
+    conf.setdefault("dropout_rate", 0.2)
+    conf.setdefault("learning_rate", 0.01)
+    conf.setdefault("epoch", 100)
+    conf.setdefault("batch_size", 512)
+    conf.setdefault("validation_split", 0.1)
+    conf.setdefault("units", 256)
+    conf.setdefault("rec_dropout_rate", 0)
+    conf.setdefault("maxlen", 82)
+    conf.setdefault("use_selfies", False)
 
 
 def main():
     args = get_parser()
-    
+
     # Setup configuration
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
@@ -85,70 +85,124 @@ def main():
         print(f"{k}: {v}")
     print(f"===================================")
 
-    os.makedirs(conf['output_model_dir'], exist_ok=True)
+    os.makedirs(conf["output_model_dir"], exist_ok=True)
 
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
-    vocabulary, all_smiles = tokenize_smiles(original_smiles, use_selfies=conf['use_selfies'])
-    if conf['use_selfies']:
-        base, ext = os.path.splitext(conf['output_token'])
-        conf['output_token'] = f"{base}_sf{ext}"
-    with open(conf['output_token'], 'wb') as f:
+    vocabulary, all_smiles = tokenize_smiles(
+        original_smiles, use_selfies=conf["use_selfies"]
+    )
+    if conf["use_selfies"]:
+        base, ext = os.path.splitext(conf["output_token"])
+        conf["output_token"] = f"{base}_sf{ext}"
+    with open(conf["output_token"], "wb") as f:
         pickle.dump(vocabulary, f)
-    if conf['use_selfies']:
-        print(f"[INFO] Save generated tokens to {conf['output_token']}. Note that the file name was modified because `use_selfies` was specified.")
+    if conf["use_selfies"]:
+        print(
+            f"[INFO] Save generated tokens to {conf['output_token']}. Note that the file name was modified because `use_selfies` was specified."
+        )
     else:
         print(f"[INFO] Save generated tokens to {conf['output_token']}")
-        
-    print(f"vocabulary:\n{vocabulary}\n"
-          f"size of molecule list: {len(all_smiles)}")
-    X_train, y_train = prepare_data(vocabulary, all_smiles) 
-    X = sequence.pad_sequences(X_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
-    y = sequence.pad_sequences(y_train, maxlen=conf['maxlen'], dtype='int32', padding='post', truncating='pre', value=0.)
-    y_train_one_hot = np.array([to_categorical(sent_label, num_classes=len(vocabulary)) for sent_label in y])
+
+    print(f"vocabulary:\n{vocabulary}\nsize of molecule list: {len(all_smiles)}")
+    X_train, y_train = prepare_data(vocabulary, all_smiles)
+    X = sequence.pad_sequences(
+        X_train,
+        maxlen=conf["maxlen"],
+        dtype="int32",
+        padding="post",
+        truncating="pre",
+        value=0.0,
+    )
+    y = sequence.pad_sequences(
+        y_train,
+        maxlen=conf["maxlen"],
+        dtype="int32",
+        padding="post",
+        truncating="pre",
+        value=0.0,
+    )
+    y_train_one_hot = np.array([
+        to_categorical(sent_label, num_classes=len(vocabulary)) for sent_label in y
+    ])
     print(f"shape of y_train_one_hot: {y_train_one_hot.shape}")
 
     # Build model
     model = Sequential()
-    model.add(Embedding(input_dim=len(vocabulary), output_dim=len(vocabulary), input_length=X.shape[1], mask_zero=False))
-    model.add(GRU(conf['units'], input_shape=(X.shape[1], len(vocabulary)), activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
-    model.add(GRU(conf['units'], activation='tanh', dropout=conf['dropout_rate'], recurrent_dropout=conf['rec_dropout_rate'], return_sequences=True))
-    model.add(TimeDistributed(Dense(len(vocabulary), activation='softmax')))
+    model.add(
+        Embedding(
+            input_dim=len(vocabulary),
+            output_dim=len(vocabulary),
+            input_length=X.shape[1],
+            mask_zero=False,
+        )
+    )
+    model.add(
+        GRU(
+            conf["units"],
+            input_shape=(X.shape[1], len(vocabulary)),
+            activation="tanh",
+            dropout=conf["dropout_rate"],
+            recurrent_dropout=conf["rec_dropout_rate"],
+            return_sequences=True,
+        )
+    )
+    model.add(
+        GRU(
+            conf["units"],
+            activation="tanh",
+            dropout=conf["dropout_rate"],
+            recurrent_dropout=conf["rec_dropout_rate"],
+            return_sequences=True,
+        )
+    )
+    model.add(
+        TimeDistributed(
+            Dense(
+                len(vocabulary),
+                activation="softmax",
+            )
+        )
+    )
     model.summary()
     # Create callbacks
-    log_path = os.path.join(conf['output_model_dir'], "training_log.csv")
+    log_path = os.path.join(conf["output_model_dir"], "training_log.csv")
     logger = CSVLogger(log_path)
-    early_stopping = EarlyStopping(
-        monitor="val_accuracy",
-        patience=5
-    )
+    early_stopping = EarlyStopping(monitor="val_accuracy", patience=5)
     model_ckpt = ModelCheckpoint(
-        filepath = os.path.join(conf['output_model_dir'], "model_sf.tf25.best.ckpt.h5" if conf['use_selfies'] else"model.tf25.best.ckpt.h5"),
-        monitor='val_accuracy',
+        filepath=os.path.join(
+            conf["output_model_dir"],
+            "model_sf.tf25.best.ckpt.h5"
+            if conf["use_selfies"]
+            else "model.tf25.best.ckpt.h5",
+        ),
+        monitor="val_accuracy",
         verbose=1,
         save_best_only=True,
         save_weights_only=False,
-        mode='max',
-        save_freq='epoch'
+        mode="max",
+        save_freq="epoch",
     )
     callbacks = [logger, early_stopping, model_ckpt]
 
     model.compile(
-        loss='categorical_crossentropy',
-        optimizer=Adam(learning_rate=conf['learning_rate']),
-        metrics=['accuracy'],)
+        loss="categorical_crossentropy",
+        optimizer=Adam(learning_rate=conf["learning_rate"]),
+        metrics=["accuracy"],
+    )
 
     # Training
     _ = model.fit(
-        X, 
+        X,
         y_train_one_hot,
-        batch_size=conf['batch_size'],
-        epochs=conf['epoch'],
+        batch_size=conf["batch_size"],
+        epochs=conf["epoch"],
         verbose=1,
         callbacks=callbacks,
-        validation_split=conf['validation_split'],
-        shuffle=True,)
-    save_model(model, conf["output_model_dir"], use_selfies=conf['use_selfies'])
+        validation_split=conf["validation_split"],
+        shuffle=True,
+    )
+    save_model(model, conf["output_model_dir"], use_selfies=conf["use_selfies"])
     print(f"[INFO] Save a training log to {log_path}")
 
 

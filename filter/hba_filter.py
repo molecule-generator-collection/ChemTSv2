@@ -5,8 +5,8 @@ from chemtsv2.utils import transform_linker_to_mol
 
 
 class HBAFilter(Filter):
-    def check(mol, config): 
-        return Descriptors.NumHAcceptors(mol) <= config['hba_filter']['threshold']
+    def check(mol, config):
+        return Descriptors.NumHAcceptors(mol) <= config["hba_filter"]["threshold"]
 
 
 class HBAFilterForXMol(Filter):
@@ -14,4 +14,5 @@ class HBAFilterForXMol(Filter):
         @transform_linker_to_mol(conf)
         def _check(mol, conf):
             return HBAFilter.check(mol, conf)
+
         return _check(mol, conf)

@@ -7,7 +7,7 @@ from chemtsv2.abc import Filter
 class MonomerFilter(Filter):
     def check(mol, conf):
         smiles = Chem.MolToSmiles(mol)
-        if conf['monomer_filter']['canonicalize']:
+        if conf["monomer_filter"]["canonicalize"]:
             monomer = canonicalize(smiles)
         else:
             monomer = reduce_multiplication(smiles)

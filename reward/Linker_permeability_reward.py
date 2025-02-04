@@ -14,9 +14,9 @@ from chemtsv2.utils import transform_linker_to_mol
 
 LGBM_PATH = "reward/protac_linker_gen/model_all.pkl"
 FEAT_NAME_PATH = "reward/protac_linker_gen/feature_names.pkl"
-with open(FEAT_NAME_PATH, mode='rb') as f:
+with open(FEAT_NAME_PATH, mode="rb") as f:
     FEAT_NAMES = pickle.load(f)
-with open(LGBM_PATH, mode='rb') as f:
+with open(LGBM_PATH, mode="rb") as f:
     LGB_MODEL = pickle.load(f)
 CALC_ZAGREB1 = Calculator(descriptors.ZagrebIndex.ZagrebIndex(version=1, variable=1))
 
@@ -28,7 +28,7 @@ class Linker_permeability_reward(Reward):
             calc = Calculator(descriptors, ignore_3D=False)
             mol_3D = Chem.AddHs(mol)
             AllChem.EmbedMolecule(mol_3D, useRandomCoords=True, randomSeed=0)
-            try: 
+            try:
                 AllChem.MMFFOptimizeMolecule(mol_3D)
             except:
                 return -3
@@ -41,18 +41,17 @@ class Linker_permeability_reward(Reward):
 
         def First_Zagreb_Index(mol):
             smi = Chem.MolToSmiles(mol)
-            if smi.count("*") != len(conf['cores']):
+            if smi.count("*") != len(conf["cores"]):
                 return -1
-            _mol = Chem.MolFromSmiles(smi.strip('*'))
+            _mol = Chem.MolFromSmiles(smi.strip("*"))
             if _mol is None:
                 return -1
             zi = CALC_ZAGREB1(_mol)[0]
             na = _mol.GetNumAtoms()
             return zi / na
-        
+
         return [Permeability, First_Zagreb_Index]
-    
-    
+
     def calc_reward_from_objective_values(values, conf):
         perm, zagreb_norm = values
         lt_thr = zagreb_norm <= 4.2

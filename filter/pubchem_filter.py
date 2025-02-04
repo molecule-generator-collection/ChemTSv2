@@ -15,7 +15,9 @@ class Neutralizer:
 
     def __init__(self):
         patts = metadata.reaction_patterns
-        self.reactions = [(Chem.MolFromSmarts(x), Chem.MolFromSmiles(y, False)) for x, y in patts]
+        self.reactions = [
+            (Chem.MolFromSmarts(x), Chem.MolFromSmiles(y, False)) for x, y in patts
+        ]
 
     def NeutraliseCharges(self, mol, reactions=None):
         replaced = False
@@ -24,7 +26,7 @@ class Neutralizer:
                 replaced = True
                 rms = AllChem.ReplaceSubstructs(mol, reactant, product)
                 mol = rms[0]
-        mol.SetProp('neutralized', str(replaced))
+        mol.SetProp("neutralized", str(replaced))
         return mol
 
 
@@ -39,16 +41,16 @@ class Evaluater:
     dict_atEstate = metadata.atEstate
 
     def __init__(self):
-        data_dir = os.path.join(os.getcwd(), 'data')
-        dfb = pd.read_csv(os.path.join(data_dir, 'bonds_dict.txt'), delimiter='\t')
+        data_dir = os.path.join(os.getcwd(), "data")
+        dfb = pd.read_csv(os.path.join(data_dir, "bonds_dict.txt"), delimiter="\t")
         for i, f in dfb.iterrows():
-            if f['BondIs'] == 1:
-                self.b_dict[f['ES_Index_Bond']] = f['BondIs']
+            if f["BondIs"] == 1:
+                self.b_dict[f["ES_Index_Bond"]] = f["BondIs"]
 
-        dfa = pd.read_csv(os.path.join(data_dir, 'atoms_dict.txt'), delimiter='\t')
+        dfa = pd.read_csv(os.path.join(data_dir, "atoms_dict.txt"), delimiter="\t")
         for i, f in dfa.iterrows():
-            if f['AtomIs'] == 1:
-                self.a_dict[f['ES_Index_AtomBond']] = f['AtomIs']
+            if f["AtomIs"] == 1:
+                self.a_dict[f["ES_Index_AtomBond"]] = f["AtomIs"]
 
         rawV = self._rawD
 
@@ -56,7 +58,9 @@ class Evaluater:
         for i, (name, sma) in enumerate(rawV):
             patt = Chem.MolFromSmarts(sma)
             if patt is None:
-                sys.stderr.write(f"WARNING: problems with pattern {sma} (name: {name}), skipped.\n")
+                sys.stderr.write(
+                    f"WARNING: problems with pattern {sma} (name: {name}), skipped.\n"
+                )
             else:
                 esPatterns[i] = name, patt
         self.esPatterns = esPatterns
@@ -69,7 +73,7 @@ class Evaluater:
         return mol
 
     def TypeAtoms(self, mol):
-        """  assigns each atom in a molecule to an EState type
+        """assigns each atom in a molecule to an EState type
         **Returns:**
         list of tuples (atoms can possibly match multiple patterns) with atom types
         """
@@ -103,13 +107,13 @@ class Evaluater:
             else:
                 aE_key.append(-1)
         return aE_key
- 
+
     def atEstateMol(self, mol):
         aE_atoms = self.TypeAtoms(mol)
         atE_key = []
         for aE_atom in aE_atoms:
             if aE_atom != ():
-                c=list(aE_atom)
+                c = list(aE_atom)
                 if c[0] in self.dict_atEstate:
                     atE_key.append(self.dict_atEstate[c[0]])
                 else:
@@ -123,7 +127,7 @@ class Evaluater:
         cfalse = 0
         a_list = []
         aE_list = self.aEstateMol(mol)
-        a_string = ''
+        a_string = ""
         for atom in mol.GetAtoms():
             idx1 = atom.GetIdx()
             key1 = aE_list[idx1]
@@ -134,17 +138,17 @@ class Evaluater:
                 ctrue += 1
         if len(a_list) > 0:
             aa = map(str, a_list)
-            a_string = ';'.join(aa)
-        mol.SetProp('UnknownAtoms', a_string)
+            a_string = ";".join(aa)
+        mol.SetProp("UnknownAtoms", a_string)
         if cfalse > 0:
-            mol.SetProp('UnknownAtomIs', '1')
+            mol.SetProp("UnknownAtomIs", "1")
         else:
-            mol.SetProp('UnknownAtomIs', '0')
+            mol.SetProp("UnknownAtomIs", "0")
 
     def Det_InvalidBonds(self, mol):
         aE_list = self.aEstateMol(mol)
         bonds = mol.GetBonds()
-        a_string = ''
+        a_string = ""
         invalid_atoms = []
         ctrue = 0
         cfalse = 0
@@ -154,7 +158,7 @@ class Evaluater:
             idx2 = bond.GetEndAtomIdx()
             key1 = aE_list[idx1]
             key2 = aE_list[idx2]
-            query_bE = str(key1) + '_' + str(key2)
+            query_bE = str(key1) + "_" + str(key2)
             if not query_bE in self.b_dict:
                 cfalse += 1
                 invalid_atoms.append(idx1)
@@ -165,19 +169,19 @@ class Evaluater:
         if len(invalid_atoms) > 0:
             a_list = list(set(invalid_atoms))
             a_list.sort()
-            aa = map(str,a_list)
-            a_string = ';'.join(aa)
+            aa = map(str, a_list)
+            a_string = ";".join(aa)
 
-        mol.SetProp('InvalidBonds', a_string)
+        mol.SetProp("InvalidBonds", a_string)
         if cfalse > 0:
-            mol.SetProp('InvalidBondIs', '1')
+            mol.SetProp("InvalidBondIs", "1")
         else:
-            mol.SetProp('InvalidBondIs', '0')
+            mol.SetProp("InvalidBondIs", "0")
 
     def Det_InvalidAtoms(self, mol):
         aE_list = self.aEstateMol(mol)
         atE_list = self.atEstateMol(mol)
-        a_string = ''
+        a_string = ""
         invalid_atoms = []
         ctrue = 0
         cfalse = 0
@@ -192,8 +196,8 @@ class Evaluater:
                 b.append(key2)
             b.sort()
             b = list(map(str, b))
-            b = '_'.join(b)
-            query_aE = str(key1) + ':' + str(b)
+            b = "_".join(b)
+            query_aE = str(key1) + ":" + str(b)
             if not query_aE in self.a_dict:
                 cfalse += 1
                 invalid_atoms.append(idx1)
@@ -204,67 +208,71 @@ class Evaluater:
             a_list = list(set(invalid_atoms))
             a_list.sort()
             aa = map(str, a_list)
-            a_string = ';'.join(aa)
+            a_string = ";".join(aa)
 
-        mol.SetProp('InvalidAtoms', a_string)
+        mol.SetProp("InvalidAtoms", a_string)
         if cfalse > 0:
-            mol.SetProp('InvalidAtomIs', '1')
+            mol.SetProp("InvalidAtomIs", "1")
         else:
-            mol.SetProp('InvalidAtomIs', '0')
+            mol.SetProp("InvalidAtomIs", "0")
 
     def Det_FailMol(self, mol):
         c = 0
         atoms = []
-        atoms_string = ''
-        if mol.HasProp('UnknownAtomIs'):
-            if int(mol.GetProp('UnknownAtomIs')) != 0 :
+        atoms_string = ""
+        if mol.HasProp("UnknownAtomIs"):
+            if int(mol.GetProp("UnknownAtomIs")) != 0:
                 c += 1
-                if mol.HasProp('UnknownAtomIs'):
-                    if mol.GetProp('UnknownAtoms') is not '':
-                        a1 = mol.GetProp('UnknownAtoms')
-                        for idx in a1.split(';'):
+                if mol.HasProp("UnknownAtomIs"):
+                    if mol.GetProp("UnknownAtoms") is not "":
+                        a1 = mol.GetProp("UnknownAtoms")
+                        for idx in a1.split(";"):
                             atoms.append(idx)
-        if mol.HasProp('InvalidBondIs'):
-            if int(mol.GetProp('InvalidBondIs')) != 0 :
+        if mol.HasProp("InvalidBondIs"):
+            if int(mol.GetProp("InvalidBondIs")) != 0:
                 c += 1
-                if mol.HasProp('InvalidBonds'):
-                    if mol.GetProp('InvalidBonds') is not '':
-                        a2 = mol.GetProp('InvalidBonds')
-                        for idx in a2.split(';'):
+                if mol.HasProp("InvalidBonds"):
+                    if mol.GetProp("InvalidBonds") is not "":
+                        a2 = mol.GetProp("InvalidBonds")
+                        for idx in a2.split(";"):
                             atoms.append(idx)
-        if mol.HasProp('InvalidAtomIs'):
-            if int(mol.GetProp('InvalidAtomIs')) != 0 :
+        if mol.HasProp("InvalidAtomIs"):
+            if int(mol.GetProp("InvalidAtomIs")) != 0:
                 c += 1
-                if mol.HasProp('InvalidAtoms'):
-                    if mol.GetProp('InvalidAtoms') is not '':
-                        a3 = mol.GetProp('InvalidAtoms')
-                        for idx in a3.split(';'):
+                if mol.HasProp("InvalidAtoms"):
+                    if mol.GetProp("InvalidAtoms") is not "":
+                        a3 = mol.GetProp("InvalidAtoms")
+                        for idx in a3.split(";"):
                             atoms.append(idx)
         if c == 0:
-            mol.SetProp('ErrorAtoms', '')
-            mol.SetProp('ErrorIs', '0')
+            mol.SetProp("ErrorAtoms", "")
+            mol.SetProp("ErrorIs", "0")
         else:
             atoms = set(atoms)
             atoms = list(map(int, atoms))
             atoms.sort()
-            atoms_string = ';'.join(map(str, atoms))
-            mol.SetProp('ErrorAtoms', atoms_string)
-            mol.SetProp('ErrorIs', '1')
+            atoms_string = ";".join(map(str, atoms))
+            mol.SetProp("ErrorAtoms", atoms_string)
+            mol.SetProp("ErrorIs", "1")
+
 
 NEUTRALIZER = Neutralizer()
 EVALUATER = Evaluater()
+
 
 class PubchemFilter(Filter):
     def check(mol, conf):
         try:
             mol1 = NEUTRALIZER.NeutraliseCharges(mol)
 
-            neutralized = mol1.GetProp('neutralized')
-            mol1 = Chem.MolFromSmiles(Chem.MolToSmiles(mol1))  # Got an error in Evaluate() for some reason if not re-generating Mol object from SMILES.
-            mol1.SetProp('neutralized', neutralized)
+            neutralized = mol1.GetProp("neutralized")
+            mol1 = Chem.MolFromSmiles(
+                Chem.MolToSmiles(mol1)
+            )  # Got an error in Evaluate() for some reason if not re-generating Mol object from SMILES.
+            mol1.SetProp("neutralized", neutralized)
 
             mol2 = EVALUATER.Evaluate(mol1)
-            if mol2 and int(mol2.GetProp('ErrorIs')) == 0:
+            if mol2 and int(mol2.GetProp("ErrorIs")) == 0:
                 return True
             else:
                 return False
@@ -277,4 +285,5 @@ class PubchemFilterForXMol(Filter):
         @transform_linker_to_mol(conf)
         def _check(mol, conf):
             return PubchemFilter.check(mol, conf)
+
         return _check(mol, conf)

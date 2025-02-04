@@ -5,8 +5,8 @@ from chemtsv2.utils import transform_linker_to_mol
 
 
 class TPSAFilter(Filter):
-    def check(mol, config): 
-        return Descriptors.TPSA(mol) <= config['tpsa_filter']['threshold']
+    def check(mol, config):
+        return Descriptors.TPSA(mol) <= config["tpsa_filter"]["threshold"]
 
 
 class TPSAFilterForXMol(Filter):
@@ -14,4 +14,5 @@ class TPSAFilterForXMol(Filter):
         @transform_linker_to_mol(conf)
         def _check(mol, conf):
             return TPSAFilter.check(mol, conf)
+
         return _check(mol, conf)

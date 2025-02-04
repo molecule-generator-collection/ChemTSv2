@@ -11,13 +11,13 @@ class PainsFilter(Filter):
     def check(mol, conf):
         params = FilterCatalogParams()
         is_valid_key = False
-        if 'pains_a' in conf['pains_filter']['type']:
+        if "pains_a" in conf["pains_filter"]["type"]:
             params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS_A)
             is_valid_key = True
-        if 'pains_b' in conf['pains_filter']['type']:
+        if "pains_b" in conf["pains_filter"]["type"]:
             params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS_B)
             is_valid_key = True
-        if 'pains_c' in conf['pains_filter']['type']:
+        if "pains_c" in conf["pains_filter"]["type"]:
             params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS_C)
             is_valid_key = True
         if not is_valid_key:
@@ -32,4 +32,5 @@ class PainsFilterForXMol(Filter):
         @transform_linker_to_mol(conf)
         def _check(mol, conf):
             return PainsFilter.check(mol, conf)
+
         return _check(mol, conf)

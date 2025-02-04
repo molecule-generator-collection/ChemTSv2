@@ -6,16 +6,21 @@ from rdkit import Chem
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="",
-        usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
+        description="", usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
     )
     parser.add_argument(
-        "--dataset", type=str, required=True,
-        help="path to a dataset file"
+        "--dataset",
+        type=str,
+        required=True,
+        help="path to a dataset file",
     )
     parser.add_argument(
-        "-n", "--num_augment", type=int, default=4, required=True,
-        help="number of randomized SMILES strings. note that a canonical SMILES is included in augmented dataset"
+        "-n",
+        "--num_augment",
+        type=int,
+        default=4,
+        required=True,
+        help="number of randomized SMILES strings. note that a canonical SMILES is included in augmented dataset",
     )
     return parser.parse_args()
 
@@ -33,8 +38,10 @@ def randomize_smiles(mol):
 
 def main():
     args = get_parser()
-    print(f"[INFO] Original dataset: {args.dataset}\n"
-          f"[INFO] #randomized SMILES/SMILES: {args.num_augment}")
+    print(
+        f"[INFO] Original dataset: {args.dataset}\n"
+        f"[INFO] #randomized SMILES/SMILES: {args.num_augment}"
+    )
 
     print("[INFO] Process Start...")
     suppl = Chem.SmilesMolSupplier(args.dataset, titleLine=False, nameColumn=False)
@@ -46,11 +53,11 @@ def main():
             smi_out.append(randomize_smiles(m))
     base, ext = os.path.splitext(args.dataset)
     ofname = f"{base}_randomized{ext}"
-    with open(ofname, 'w') as f:
-        f.write('\n'.join(smi_out))
+    with open(ofname, "w") as f:
+        f.write("\n".join(smi_out))
     print(f"[INFO] Augmented dataset: {ofname}")
     print("[INFO] DONE!")
 
 
-if __name__=='__main__':
+if __name__ == "__main__":
     main()

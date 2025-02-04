@@ -13,15 +13,21 @@ from chemtsv2.abc import Reward
 from chemtsv2.scaler import minmax, max_gauss, min_gauss, rectangular
 
 
-LGB_MODELS_PATH = 'data/model/lgb_models.pickle'
-SURE_CHEMBL_ALERTS_PATH = 'data/sure_chembl_alerts.txt'
-CHEMBL_FPS_PATH = 'data/chembl_fps.npy'
-with open(LGB_MODELS_PATH, mode='rb') as models,\
-    open(SURE_CHEMBL_ALERTS_PATH, mode='rb') as alerts, \
-    open(CHEMBL_FPS_PATH, mode='rb') as fps:
+LGB_MODELS_PATH = "data/model/lgb_models.pickle"
+SURE_CHEMBL_ALERTS_PATH = "data/sure_chembl_alerts.txt"
+CHEMBL_FPS_PATH = "data/chembl_fps.npy"
+with (
+    open(LGB_MODELS_PATH, mode="rb") as models,
+    open(SURE_CHEMBL_ALERTS_PATH, mode="rb") as alerts,
+    open(CHEMBL_FPS_PATH, mode="rb") as fps,
+):
     lgb_models = pickle.load(models)
-    smarts = pd.read_csv(alerts, header=None, sep='\t')[1].tolist()
-    alert_mols = [Chem.MolFromSmarts(smart) for smart in smarts if Chem.MolFromSmarts(smart) is not None]
+    smarts = pd.read_csv(alerts, header=None, sep="\t")[1].tolist()
+    alert_mols = [
+        Chem.MolFromSmarts(smart)
+        for smart in smarts
+        if Chem.MolFromSmarts(smart) is not None
+    ]
     chebml_fps = np.load(fps, allow_pickle=True).item()
 
 
@@ -38,7 +44,9 @@ def scale_objective_value(params, value):
     elif scaling == "identity":
         return value
     else:
-        raise ValueError("Set the scaling function from one of 'max_gauss', 'min_gauss', 'minimax', rectangular, or 'identity'")
+        raise ValueError(
+            "Set the scaling function from one of 'max_gauss', 'min_gauss', 'minimax', rectangular, or 'identity'"
+        )
 
 
 class Dscore_reward(Reward):
@@ -149,17 +157,36 @@ class Dscore_reward(Reward):
         def has_chembl_substruct(mol):
             """0 for molecuels with substructures (ECFP2 that occur less often than 5 times in ChEMBL."""
             fp_query = AllChem.GetMorganFingerprint(mol, 1, useCounts=False)
-            if np.any([bit not in chebml_fps for bit in fp_query.GetNonzeroElements().keys()]):
+            if np.any([
+                bit not in chebml_fps
+                for bit in fp_query.GetNonzeroElements().keys()
+            ]):
                 return 0
             else:
                 return 1
 
-        return [EGFR, ERBB2, ABL, SRC, LCK, PDGFRbeta, VEGFR2, FGFR1, EPHB4, Solubility, Permeability, Metabolic_stability,
-                Toxicity, SAscore, QED, molecular_weight, tox_alert, has_chembl_substruct]
-
+        return [
+            EGFR,
+            ERBB2,
+            ABL,
+            SRC,
+            LCK,
+            PDGFRbeta,
+            VEGFR2,
+            FGFR1,
+            EPHB4,
+            Solubility,
+            Permeability,
+            Metabolic_stability,
+            Toxicity,
+            SAscore,
+            QED,
+            molecular_weight,
+            tox_alert,
+            has_chembl_substruct,
+        ]
 
     def calc_reward_from_objective_values(values, conf):
-
         if None in values:
             return -1
 
@@ -171,14 +198,18 @@ class Dscore_reward(Reward):
         for objective, value in zip(objectives, values):
             if objective == "SAscore":
                 # SAscore is made negative when scaling because a smaller value is more desirable.
-                scaled_values.append(scale_objective_value(dscore_params[objective], -1 * value))
+                scaled_values.append(
+                    scale_objective_value(dscore_params[objective], -1 * value)
+                )
             else:
-                scaled_values.append(scale_objective_value(dscore_params[objective], value))
+                scaled_values.append(
+                    scale_objective_value(dscore_params[objective], value)
+                )
             weights.append(dscore_params[objective]["weight"])
 
         multiplication_value = 1
         for v, w in zip(scaled_values, weights):
             multiplication_value *= v**w
-        dscore = multiplication_value ** (1/sum(weights))
+        dscore = multiplication_value ** (1 / sum(weights))
 
         return dscore

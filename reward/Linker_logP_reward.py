@@ -11,8 +11,8 @@ class Linker_LogP_reward(Reward):
         @transform_linker_to_mol(conf)
         def LogP(mol):
             return Descriptors.MolLogP(mol)
+
         return [LogP]
-    
-    
+
     def calc_reward_from_objective_values(values, conf):
-        return np.tanh(values[0]/10)
+        return np.tanh(values[0] / 10)
