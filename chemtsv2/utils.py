@@ -14,8 +14,6 @@ from rdkit.Chem import Mol
 from rdkit.Chem.MolStandardize import rdMolStandardize
 import selfies as sf
 
-from chemtsv2.misc.manage_qsub_parallel import run_qsub_parallel
-
 
 def calc_execution_time(f):
     @wraps(f)
@@ -218,13 +216,8 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         return [f(mol) for f in reward_calculator.get_objective_functions(conf)]
 
     if conf['leaf_parallel']:
-        if conf['qsub_parallel']:
-            if len(valid_mol_list) > 0:
-                values_list = run_qsub_parallel(valid_mol_list, reward_calculator, valid_conf_list)
-        else:
-            # standard parallelization
-            values_list = joblib.Parallel(n_jobs=conf['leaf_parallel_num'])(
-                joblib.delayed(_get_objective_values)(m, c) for m, c in zip(valid_mol_list, valid_conf_list))
+        values_list = joblib.Parallel(n_jobs=conf['leaf_parallel_num'])(
+            joblib.delayed(_get_objective_values)(m, c) for m, c in zip(valid_mol_list, valid_conf_list))
     elif conf['batch_reward_calculation']:
         values_list = [f(valid_mol_list, valid_conf_list) for f in reward_calculator.get_batch_objective_functions()]
         values_list = np.array(values_list).T.tolist()
