@@ -1,5 +1,16 @@
 # ChemTSv2
 
+>[!IMPORTANT]
+> :construction: **Work in Progress: Major Version Upgrade** :construction:  
+> We are currently preparing for a major version upgrade of this project.
+> The latest development version of this repository may not be stable, and the current repository state might cause errors with the existing Python package (=<v1.1.2).
+> For now, please checkout the stable version of this repository before use:
+> ```bash
+> git checkout tags/v1.1.2
+> ```
+> We appreciate your patience and contributions! Stay tuned for updates. :rocket:
+
+
 <div align="center">
   <img src="https://github.com/molecule-generator-collection/ChemTSv2/blob/master/img/logo.png" width="95%">
 </div>
