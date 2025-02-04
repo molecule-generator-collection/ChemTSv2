@@ -10,7 +10,7 @@ sys.path.append("./data/")
 import sascorer
 
 from chemtsv2.abc import Reward
-from chemtsv2.misc.scaler import minmax, max_gauss, min_gauss, rectangular
+from chemtsv2.scaler import minmax, max_gauss, min_gauss, rectangular
 
 
 LGB_MODELS_PATH = 'data/model/lgb_models.pickle'
