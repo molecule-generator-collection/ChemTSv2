@@ -164,9 +164,7 @@ class MCTS:
         while (
             time.time() if self.conf["threshold_type"] == "time" else self.total_valid_num
         ) <= self.threshold:
-            # important! This node is different with state / node is the tree node
             node = self.rootnode
-            # but this state is the state of the initialization. Too important!
             state = node.state.clone()
 
             """selection step"""
@@ -219,6 +217,7 @@ class MCTS:
                 self.loop_counter_for_expansion = 0
             self.expanded_before = set(expanded)
 
+            """simulation step"""
             new_compound = []
             nodeadded = []
             for _ in range(self.conf["simulation_num"]):

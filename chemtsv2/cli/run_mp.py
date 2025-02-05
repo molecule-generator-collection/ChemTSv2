@@ -15,7 +15,6 @@ from numpy.random import default_rng
 from rdkit import RDLogger
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
-import requests
 import yaml
 
 from chemtsv2.utils import load_tensorflow_model, get_model_structure_info
