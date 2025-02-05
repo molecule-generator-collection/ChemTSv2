@@ -51,7 +51,7 @@ class TestTransformLinkerToMol():
         def func(mol, conf):
             pass
         result = func(self.two_attachment_points_linker_mol, self.valid_conf)
-        assert result == False, f"Expected output is `False` but got {result}"
+        assert not result, f"Expected output is `False` but got {result}"
 
     def test_transform_linker_to_mol_reward_molzip_failure(self):
         @transform_linker_to_mol(self.valid_conf)
@@ -65,7 +65,7 @@ class TestTransformLinkerToMol():
         def func(mol, conf):
             pass
         result = func(self.invalid_linker_mol, self.valid_conf)
-        assert result == False, f"Expected output is `False` but got {result}"
+        assert not result, f"Expected output is `False` but got {result}"
 
     def test_transform_linker_to_mol_with_one_argument(self):  # for reward function
         @transform_linker_to_mol(self.valid_conf)

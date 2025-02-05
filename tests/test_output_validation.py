@@ -10,7 +10,7 @@ def setup_and_cleanup():
     if os.path.exists(output_file_path):
         print(f"[INFO] Old output file exists: {output_file_path}")
         os.remove(output_file_path)
-        print(f"[INFO] Deleted the file.")
+        print("[INFO] Deleted the file.")
     print("[INFO] ChemTSv2 running...")
     yield
     if os.path.exists(output_file_path):

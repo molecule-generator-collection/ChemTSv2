@@ -9,7 +9,7 @@ import yaml
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="", usage=f"chemtsv2-add_cores_to_linker -c PATH_TO_CONFIG_FILE"
+        description="", usage="chemtsv2-add_cores_to_linker -c PATH_TO_CONFIG_FILE"
     )
     parser.add_argument(
         "-c",
@@ -36,7 +36,7 @@ def main():
             rwmol.InsertMol(m)
         try:
             prod = Chem.molzip(rwmol)
-        except:
+        except Exception:
             return None
         return Chem.MolToSmiles(prod)
 

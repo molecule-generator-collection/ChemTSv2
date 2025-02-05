@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from rdkit.Chem import Descriptors
 sys.path.append("./data/")
-import sascorer
+import sascorer # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 

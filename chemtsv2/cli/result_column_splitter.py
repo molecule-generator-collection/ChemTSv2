@@ -8,7 +8,7 @@ import pandas as pd
 def get_parser():
     parser = argparse.ArgumentParser(
         description="",
-        usage=f"chemtsv2-column-splitter -i INPUT_FILE -t TARGET_COL_NAME -n NEW_COL_NAMES01 NEW_COL_NAMES02 ...",
+        usage="chemtsv2-column-splitter -i INPUT_FILE -t TARGET_COL_NAME -n NEW_COL_NAMES01 NEW_COL_NAMES02 ...",
     )
     parser.add_argument(
         "-i",

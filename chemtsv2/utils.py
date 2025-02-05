@@ -6,8 +6,8 @@ import sys
 import time
 
 import joblib
-from tensorflow.keras.models import Sequential, model_from_json
-from tensorflow.keras.layers import Dense, Embedding, GRU
+from tensorflow.keras.models import Sequential, model_from_json # pyright: ignore[reportMissingImports]
+from tensorflow.keras.layers import Dense, Embedding, GRU # pyright: ignore[reportMissingImports]
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Mol
@@ -51,7 +51,7 @@ def get_token_to_add(all_nodes, tokens, logger):
 
 
 def back_propagation(node, reward):
-    while node != None:
+    while node is not None:
         node.update(reward)
         node = node.state.parent_node
 
@@ -326,7 +326,7 @@ def transform_linker_to_mol(conf: dict):
             try:
                 prod = Chem.molzip(rwmol)
                 Chem.SanitizeMol(prod)
-            except:
+            except Exception:
                 if func.__code__.co_argcount == 1:  # for reward function
                     return -1
                 elif func.__code__.co_argcount == 2:  # for filter function

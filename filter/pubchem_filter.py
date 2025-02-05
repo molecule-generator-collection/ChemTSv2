@@ -159,7 +159,7 @@ class Evaluater:
             key1 = aE_list[idx1]
             key2 = aE_list[idx2]
             query_bE = str(key1) + "_" + str(key2)
-            if not query_bE in self.b_dict:
+            if query_bE not in self.b_dict:
                 cfalse += 1
                 invalid_atoms.append(idx1)
                 invalid_atoms.append(idx2)
@@ -198,7 +198,7 @@ class Evaluater:
             b = list(map(str, b))
             b = "_".join(b)
             query_aE = str(key1) + ":" + str(b)
-            if not query_aE in self.a_dict:
+            if query_aE not in self.a_dict:
                 cfalse += 1
                 invalid_atoms.append(idx1)
             else:
@@ -224,7 +224,7 @@ class Evaluater:
             if int(mol.GetProp("UnknownAtomIs")) != 0:
                 c += 1
                 if mol.HasProp("UnknownAtomIs"):
-                    if mol.GetProp("UnknownAtoms") is not "":
+                    if mol.GetProp("UnknownAtoms") != "":
                         a1 = mol.GetProp("UnknownAtoms")
                         for idx in a1.split(";"):
                             atoms.append(idx)
@@ -232,7 +232,7 @@ class Evaluater:
             if int(mol.GetProp("InvalidBondIs")) != 0:
                 c += 1
                 if mol.HasProp("InvalidBonds"):
-                    if mol.GetProp("InvalidBonds") is not "":
+                    if mol.GetProp("InvalidBonds") != "":
                         a2 = mol.GetProp("InvalidBonds")
                         for idx in a2.split(";"):
                             atoms.append(idx)
@@ -240,7 +240,7 @@ class Evaluater:
             if int(mol.GetProp("InvalidAtomIs")) != 0:
                 c += 1
                 if mol.HasProp("InvalidAtoms"):
-                    if mol.GetProp("InvalidAtoms") is not "":
+                    if mol.GetProp("InvalidAtoms") != "":
                         a3 = mol.GetProp("InvalidAtoms")
                         for idx in a3.split(";"):
                             atoms.append(idx)
@@ -276,7 +276,7 @@ class PubchemFilter(Filter):
                 return True
             else:
                 return False
-        except:
+        except Exception:
             return False
 
 

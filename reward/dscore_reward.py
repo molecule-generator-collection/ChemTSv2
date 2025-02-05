@@ -1,4 +1,3 @@
-import os
 import pickle
 import sys
 
@@ -7,7 +6,7 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
 sys.path.append("./data/")
-import sascorer
+import sascorer # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 from chemtsv2.scaler import minmax, max_gauss, min_gauss, rectangular

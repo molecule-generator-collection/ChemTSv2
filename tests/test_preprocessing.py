@@ -1,5 +1,3 @@
-import pytest
-
 from chemtsv2.preprocessing import (
     tokenize_smiles,
     read_smiles_dataset,

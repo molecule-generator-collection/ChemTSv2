@@ -2,7 +2,6 @@ import os
 import sys
 sys.path.append(os.getcwd())
 
-import pytest
 from rdkit import Chem
 
 from filter import linker_validation_filter
@@ -18,9 +17,9 @@ class TestFilter():
     def test_linker_validation_filter_is_success(self):
         filter = linker_validation_filter.LinkerValidationFilter
         result = filter.check(self.valid_linker_mol, self.valid_conf)
-        assert result == True, "Expected output is `True` but got {result}"
+        assert result, f"Expected output is `True` but got {result}"
 
     def test_linker_validation_filter_is_failed(self):
         filter = linker_validation_filter.LinkerValidationFilter
         result = filter.check(self.invalid_linker_mol, self.valid_conf)
-        assert result == False, "Expected output is `False` but got {result}"
+        assert not result, f"Expected output is `False` but got {result}"

@@ -18,7 +18,7 @@ def tokenize_smiles(smiles_list, use_selfies=False):
 
 def read_smiles_dataset(filepath):
     with open(filepath, "r") as f:
-        smiles_list = [l.strip("\n") for l in f.readlines()]
+        smiles_list = [line.strip("\n") for line in f.readlines()]
     return smiles_list
 
 

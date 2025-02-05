@@ -1,4 +1,4 @@
-from rdkit.Chem import Descriptors, rdMolDescriptors
+from rdkit.Chem import Descriptors
 
 from chemtsv2.abc import Filter
 from chemtsv2.utils import transform_linker_to_mol

@@ -1,18 +1,17 @@
+import gc
 import os
 import sys
+import shutil
 
-from rdkit.Chem import Descriptors, RDConfig
+from rdkit.Chem import AllChem, Descriptors
 sys.path.append("./data/")
-import sascorer
+import sascorer # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 
-import GaussianRunPack
+import GaussianRunPack # pyright: ignore[reportMissingImports]
 from rdkit import Chem
-from rdkit.Chem import AllChem, Descriptors
-import gc, shutil
 import numpy as np
-import datetime
 import pickle
 
 
@@ -37,9 +36,9 @@ class IPE_reward(Reward):
 
             Chem.MolToMolFile(mol_wH, SDFinput)
             try:
-                opt = AllChem.UFFOptimizeMolecule(mol_wH, maxIters=200)
-            except:
-                opt = None
+                _ = AllChem.UFFOptimizeMolecule(mol_wH, maxIters=200)
+            except Exception:
+                _ = None
 
             Chem.MolToMolFile(mol_wH, SDFinput_opt)
 

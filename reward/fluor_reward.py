@@ -1,17 +1,13 @@
 import os
 import pickle
 import shutil
-import sys
 
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 
-sys.path.append("./data/")
-import sascorer
-
 from chemtsv2.abc import Reward
-from qcforever.gaussian_run import GaussianRunPack
+from qcforever.gaussian_run import GaussianRunPack # pyright: ignore[reportMissingImports]
 
 
 class Fluor_UV_reward(Reward):
@@ -24,7 +20,7 @@ class Fluor_UV_reward(Reward):
             try:
                 AllChem.UFFOptimizeMolecule(mol_wH, maxIters=200)
                 sdf_input_opt = f"InputMolopt_ok_{conf['gid']}.sdf"
-            except:
+            except Exception:
                 sdf_input_opt = f"InputMolopt_fail_{conf['gid']}.sdf"
             Chem.MolToMolFile(mol_wH, sdf_input_opt)
 

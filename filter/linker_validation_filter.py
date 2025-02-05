@@ -15,6 +15,6 @@ class LinkerValidationFilter(Filter):
         try:
             prod = Chem.molzip(rwmol)
             Chem.SanitizeMol(prod)
-        except:
+        except Exception:
             return False
         return True

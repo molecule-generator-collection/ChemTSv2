@@ -2,12 +2,12 @@ import argparse
 import os
 import pickle
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.preprocessing import sequence
-from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint
+from tensorflow.keras.models import Sequential # pyright: ignore[reportMissingImports]
+from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed # pyright: ignore[reportMissingImports]
+from tensorflow.keras.optimizers import Adam # pyright: ignore[reportMissingImports]
+from tensorflow.keras.utils import to_categorical # pyright: ignore[reportMissingImports]
+from tensorflow.keras.preprocessing import sequence # pyright: ignore[reportMissingImports]
+from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint # pyright: ignore[reportMissingImports]
 import numpy as np
 import yaml
 
@@ -80,10 +80,10 @@ def main():
     with open(args.config, "r") as f:
         conf = yaml.load(f, Loader=yaml.SafeLoader)
     update_config(conf)
-    print(f"========== Configuration ==========")
+    print("========== Configuration ==========")
     for k, v in conf.items():
         print(f"{k}: {v}")
-    print(f"===================================")
+    print("===================================")
 
     os.makedirs(conf["output_model_dir"], exist_ok=True)
 

@@ -4,7 +4,7 @@ import shutil
 import tempfile
 
 # from vina import Vina
-from meeko import MoleculePreparation, PDBQTMolecule
+from meeko import MoleculePreparation, PDBQTMolecule # pyright: ignore[reportMissingImports]
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms

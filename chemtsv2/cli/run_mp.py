@@ -5,7 +5,6 @@ import os
 import pickle
 import re
 import sys
-
 sys.path.append(os.getcwd())
 if "--debug" not in sys.argv:
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Disable Tensorflow debugging information
@@ -15,7 +14,6 @@ import numpy as np
 from numpy.random import default_rng
 from rdkit import RDLogger
 import tensorflow as tf
-
 tf.compat.v1.disable_eager_execution()
 import requests
 import yaml
@@ -163,7 +161,7 @@ def get_filter_modules(conf):
     pat = re.compile(r"^use.*filter$")
     module_list = []
     for k, frag in conf.items():
-        if not pat.search(k) or frag != True:
+        if not pat.search(k) or not frag:
             continue
         _k = k.replace("use_", "")
         module_list.append(
@@ -176,8 +174,6 @@ def main():
     # Initialize MPI environment
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
-    nprocs = comm.Get_size()
-    status = MPI.Status()
     mem = np.zeros(1024 * 10 * 1024)
     MPI.Attach_buffer(mem)
 
@@ -240,11 +236,11 @@ def main():
         )
 
     if rank == 0:
-        logger.info(f"========== Configuration ==========")
+        logger.info("========== Configuration ==========")
         for k, v in conf.items():
             logger.info(f"{k}: {v}")
         logger.info(f"GPU devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
-        logger.info(f"===================================")
+        logger.info("===================================")
         logger.debug(f"Loaded tokens are {tokens}")
 
     conf["filter_list"] = get_filter_modules(conf)

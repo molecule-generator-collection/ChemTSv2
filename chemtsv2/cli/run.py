@@ -183,7 +183,7 @@ def get_filter_modules(conf):
     pat = re.compile(r"^use.*filter$")
     module_list = []
     for k, frag in conf.items():
-        if not pat.search(k) or frag != True:
+        if not pat.search(k) or not frag:
             continue
         _k = k.replace("use_", "")
         module_list.append(
@@ -255,11 +255,11 @@ def main():
     elif conf["threshold_type"] == "generation_num":
         conf.pop("hours")
 
-    logger.info(f"========== Configuration ==========")
+    logger.info("========== Configuration ==========")
     for k, v in conf.items():
         logger.info(f"{k}: {v}")
     logger.info(f"GPU devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
-    logger.info(f"===================================")
+    logger.info("===================================")
 
     conf["filter_list"] = get_filter_modules(conf)
 

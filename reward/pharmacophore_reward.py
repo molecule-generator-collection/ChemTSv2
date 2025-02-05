@@ -140,7 +140,7 @@ class Pharmacophore_reward(Reward):
                 _, embeddings, _ = EmbedLib.EmbedPharmacophore(
                     molH, atom_match, PCOPHORE, count=20, randomSeed=42, silent=True
                 )
-            except ValueError as e:
+            except ValueError:
                 return [match_list, None]
 
             ssds = transform_embeddings(PCOPHORE, embeddings, atom_match)

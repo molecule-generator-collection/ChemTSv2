@@ -1,8 +1,7 @@
 import pprint
 import os
-from vina import Vina
-from meeko import MoleculePreparation
-from meeko import PDBQTMolecule
+from vina import Vina # pyright: ignore[reportMissingImports]
+from meeko import MoleculePreparation, PDBQTMolecule # pyright: ignore[reportMissingImports]
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms
 from rdkit.Geometry import Point3D

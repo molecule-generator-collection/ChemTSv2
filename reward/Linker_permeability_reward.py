@@ -1,11 +1,9 @@
-import re
 import pickle
 import numpy as np
 import pandas as pd
-import math
 from rdkit import Chem
-from rdkit.Chem import Descriptors, AllChem
-from mordred import Calculator, descriptors
+from rdkit.Chem import AllChem
+from mordred import Calculator, descriptors # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 from chemtsv2.scaler import max_gauss
@@ -30,7 +28,7 @@ class Linker_permeability_reward(Reward):
             AllChem.EmbedMolecule(mol_3D, useRandomCoords=True, randomSeed=0)
             try:
                 AllChem.MMFFOptimizeMolecule(mol_3D)
-            except:
+            except Exception:
                 return -3
             mordred = calc.pandas([mol_3D])
             df_mordred = pd.DataFrame(mordred)

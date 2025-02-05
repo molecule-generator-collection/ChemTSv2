@@ -56,7 +56,7 @@ def calc_canon_tautomer(smiles):
     enumerator = rdMolStandardize.TautomerEnumerator()
     try:
         tmp_smiles = Chem.MolToSmiles(enumerator.Canonicalize(mol))
-    except:
+    except Exception:
         tmp_smiles = smiles
 
     return tmp_smiles
@@ -79,7 +79,7 @@ def neutralize_atoms(smiles):
             atom.UpdatePropertyCache()
         try:
             mol_norm = norm.normalize(mol)
-        except:
+        except Exception:
             mol_norm = Chem.MolFromSmiles(smiles)
         smiles_tmp = Chem.MolToSmiles(mol_norm)
     else:
@@ -130,7 +130,7 @@ def mod_tautomer_smiles(tautomer_smiles, canon_smiles):
                     if match_count > 2:
                         break
 
-        except:
+        except Exception:
             print(tmp_smiles)
     return tmp_smiles
 
@@ -168,7 +168,7 @@ def mod_protomer(smiles, reaction_list, ss_list):
                             prev_smiles2 = tmp_smiles
                     if match_count > 2:
                         break
-        except:
+        except Exception:
             print(tmp_smiles)
 
     return tmp_smiles
@@ -325,7 +325,7 @@ def calc_stereo_centor(smiles, reaction_a_list, reaction_aa_list, ss_list, mol_t
             elif num_match > 1:
                 mod_mol_list = []
                 include_flag = False
-        except:
+        except Exception:
             print(tmp_smiles)
     if not (mod_mol_list):
         mod_mol_list.append(Chem.MolFromSmiles(smiles))
@@ -413,7 +413,7 @@ def calc_3dstructure(smiles):
                     mol_list, ss_flag = calc_stereo_centor(
                         smiles, reaction_a_list, reaction_aa_list, ss_list, "smiles"
                     )
-            except:
+            except Exception:
                 charge_error = True
                 mol_list, ss_flag = calc_stereo_centor(
                     smiles, reaction_a_list, reaction_aa_list, ss_list, "smiles"
@@ -443,7 +443,7 @@ def calc_3dstructure(smiles):
                     command1, capture_output=True, text=True, timeout=threshold_time
                 ).stdout
                 file_list.append(d3_file)
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 no3d_file_name = str(mol_id) + "_chiral" + str(i) + "_no3d.sdf"
                 no3d_file = os.path.join(dest_dir, no3d_file_name)
                 command0 = ["obabel", "-:" + smi, "-p", "7.4", "-osdf", "-O", no3d_file]
@@ -689,7 +689,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
         fp.run_from_iterable(
             lig_iterable=[ligand_mol], prot_mol=protein_mol, residues=residues
         )
-    except:
+    except Exception:
         return None
 
     # Get the minimum distance of detected interactions for each residue

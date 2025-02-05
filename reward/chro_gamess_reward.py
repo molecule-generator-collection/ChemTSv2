@@ -7,10 +7,10 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 sys.path.append("./data/")
-import sascorer
+import sascorer # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
-from qcforever.gamess_run import GamessRunPack
+from qcforever.gamess_run import GamessRunPack # pyright: ignore[reportMissingImports]
 
 
 class UV_reward(Reward):
@@ -26,7 +26,7 @@ class UV_reward(Reward):
             try:
                 AllChem.UFFOptimizeMolecule(mol_wH, maxIters=200)
                 sdf_input_opt = f"InputMolopt_ok_{conf['gid']}.sdf"
-            except:
+            except Exception:
                 sdf_input_opt = f"InputMolopt_fail_{conf['gid']}.sdf"
             Chem.MolToMolFile(mol_wH, sdf_input_opt)
 

@@ -40,6 +40,16 @@ chemtsv2-add_cores_to_linker = "chemtsv2.cli.add_cores_to_linker:main"
 [tool.poetry.extras]
 mp = ["mpi4py"]
 
+[tool.ruff]
+line-length = 120
+indent-width = 4
+
+[tool.ruff.lint]
+ignore = [
+    "E402",
+    "F841",
+]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

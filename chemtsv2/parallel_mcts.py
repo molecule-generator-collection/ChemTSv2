@@ -339,7 +339,7 @@ class p_mcts:
     def gather_results(self):
         status = MPI.Status()
         if self.rank == 0:
-            self.logger.info(f"Gather each rank result...")
+            self.logger.info("Gather each rank result...")
         for rid in range(1, self.nprocs):
             self.comm.barrier()
             if self.rank == 0:
@@ -465,7 +465,7 @@ class p_mcts:
                 ret = self.comm.Iprobe(
                     source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status
                 )
-                if ret == False:
+                if not ret:
                     break
                 else:
                     message = self.comm.recv(
@@ -488,7 +488,7 @@ class p_mcts:
                         continue
                 (tag, message) = jobq.pop()
                 if tag == JobType.SEARCH.value:
-                    if self.hsm.search_table(message[0]) == None:
+                    if self.hsm.search_table(message[0]) is None:
                         node = MPNode(position=message[0], conf=self.conf)
                         if node.state == self.root_position:
                             node.expansion(self.chem_model, self.tokens, self.logger)
