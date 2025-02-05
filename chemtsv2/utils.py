@@ -188,10 +188,8 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     valid_compound = []
     generated_ids = []
     filter_check_list = []
-
     valid_conf_list = []
     valid_mol_list = []
-    valid_filter_check_value_list = []
     dup_compound_info = {}
 
     for i in range(len(new_compound)):
@@ -238,7 +236,6 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
 
         valid_conf_list.append(_conf)
         valid_mol_list.append(mol)
-        valid_filter_check_value_list.append(filter_check_value)
 
     if len(valid_mol_list) == 0:
         return [], [], [], [], []
@@ -260,12 +257,10 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
     else:
         values_list = [_get_objective_values(m, c) for m, c in zip(valid_mol_list, valid_conf_list)]
 
-    # record values and other data
-    for i in range(len(valid_mol_list)):
-        values = values_list[i]
-        filter_check_value = valid_filter_check_value_list[i]
-        generated_dict[valid_compound[i]] = [values, filter_check_value]
-    # add duplicate compounds' data if duplicated compounds are generated
+    assert len(valid_compound) == len(values_list) == len(filter_check_list)
+    for c, vs, fc in zip(valid_compound, values_list, filter_check_list):
+        generated_dict[c] = [vs, fc]
+    # add duplicate compounds' data if duplicates are generated
     for k, v in sorted(dup_compound_info.items()):
         node_index.append(k)
         valid_compound.append(v["valid_compound"])
