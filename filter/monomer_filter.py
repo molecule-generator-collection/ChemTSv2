@@ -1,5 +1,5 @@
 from rdkit import Chem
-from canonicalize_psmiles.canonicalize import canonicalize, reduce_multiplication
+from canonicalize_psmiles.canonicalize import canonicalize, reduce_multiplication # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Filter
 

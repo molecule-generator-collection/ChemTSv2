@@ -186,9 +186,7 @@ def get_filter_modules(conf):
         if not pat.search(k) or not frag:
             continue
         _k = k.replace("use_", "")
-        module_list.append(
-            getattr(import_module(conf[_k]["module"]), conf[_k]["class"])
-        )
+        module_list.append(getattr(import_module(conf[_k]["module"]), conf[_k]["class"]))
     return module_list
 
 
@@ -238,9 +236,7 @@ def main():
         conf["rnn_output_size"],
         conf["num_gru_units"],
     ) = get_model_structure_info(conf["model_setting"]["model_json"], logger)
-    model = load_tensorflow_model(
-        conf["model_setting"]["model_weight"], logger, conf
-    )
+    model = load_tensorflow_model(conf["model_setting"]["model_weight"], logger, conf)
     if args.input_smiles is not None:
         logger.info(f"Extend mode: input SMILES = {args.input_smiles}")
         conf["input_smiles"] = args.input_smiles
@@ -271,11 +267,7 @@ def main():
         tokens = pickle.load(f)
     logger.debug(f"Loaded tokens are {tokens}")
 
-    state = (
-        State()
-        if args.input_smiles is None
-        else State(position=conf["tokenized_smiles"])
-    )
+    state = State() if args.input_smiles is None else State(position=conf["tokenized_smiles"])
     mcts = MCTS(
         root_state=state,
         conf=conf,

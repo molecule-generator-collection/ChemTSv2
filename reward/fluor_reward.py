@@ -7,7 +7,7 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 
 from chemtsv2.abc import Reward
-from qcforever.gaussian_run import GaussianRunPack # pyright: ignore[reportMissingImports]
+from qcforever.gaussian_run import GaussianRunPack  # pyright: ignore[reportMissingImports]
 
 
 class Fluor_UV_reward(Reward):
@@ -56,9 +56,7 @@ class Fluor_UV_reward(Reward):
             shutil.move(calc_dir, result_dir)
             shutil.move(sdf_input, result_dir)
             shutil.move(sdf_input_opt, result_dir)
-            with open(
-                os.path.join(result_dir, "gaussian_result.pickle"), mode="wb"
-            ) as f:
+            with open(os.path.join(result_dir, "gaussian_result.pickle"), mode="wb") as f:
                 pickle.dump(result_dict, f)
 
             if "uv" in result_dict and len(result_dict["uv"]) > 0:

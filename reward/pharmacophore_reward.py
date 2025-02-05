@@ -53,9 +53,7 @@ def create_pharmacophore():
     for i, j in zip(*np.where(np.triu(bmatrix) > 0)):
         i_type = pcophore.getFeature(i).GetFamily()
         j_type = pcophore.getFeature(j).GetFamily()
-        pcophore.setUpperBound(
-            i, j, bmatrix[i, j] + (radi_dict[i_type] + radi_dict[j_type])
-        )
+        pcophore.setUpperBound(i, j, bmatrix[i, j] + (radi_dict[i_type] + radi_dict[j_type]))
     for i, j in zip(*np.where(np.tril(bmatrix) > 0)):
         i_type = pcophore.getFeature(i).GetFamily()
         j_type = pcophore.getFeature(j).GetFamily()
@@ -106,9 +104,7 @@ class Pharmacophore_reward(Reward):
             can_match, all_matches = EmbedLib.MatchPharmacophoreToMol(
                 mol, FEATURE_FACTORY, PCOPHORE
             )
-            ph4_feat_counter = collections.Counter([
-                f.GetFamily() for f in PCOPHORE.getFeatures()
-            ])
+            ph4_feat_counter = collections.Counter([f.GetFamily() for f in PCOPHORE.getFeatures()])
             if can_match:
                 lig_feat_counter = collections.Counter([
                     f.GetFamily() for f in itertools.chain.from_iterable(all_matches)
@@ -151,9 +147,7 @@ class Pharmacophore_reward(Reward):
             embeddings[best_fit_idx].SetDoubleProp("ssd", ssds[best_fit_idx])
             output_conf_dir = os.path.join(conf["output_dir"], "conformer")
             os.makedirs(output_conf_dir, exist_ok=True)
-            writer = Chem.SDWriter(
-                os.path.join(output_conf_dir, f"mol_{conf['gid']}.sdf")
-            )
+            writer = Chem.SDWriter(os.path.join(output_conf_dir, f"mol_{conf['gid']}.sdf"))
             writer.write(embeddings[best_fit_idx])
             writer.close()
 

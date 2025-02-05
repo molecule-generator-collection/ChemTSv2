@@ -2,12 +2,12 @@ import argparse
 import os
 import pickle
 
-from tensorflow.keras.models import Sequential # pyright: ignore[reportMissingImports]
-from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed # pyright: ignore[reportMissingImports]
-from tensorflow.keras.optimizers import Adam # pyright: ignore[reportMissingImports]
-from tensorflow.keras.utils import to_categorical # pyright: ignore[reportMissingImports]
-from tensorflow.keras.preprocessing import sequence # pyright: ignore[reportMissingImports]
-from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint # pyright: ignore[reportMissingImports]
+from tensorflow.keras.models import Sequential  # pyright: ignore[reportMissingImports]
+from tensorflow.keras.layers import Dense, Embedding, GRU, TimeDistributed  # pyright: ignore[reportMissingImports]
+from tensorflow.keras.optimizers import Adam  # pyright: ignore[reportMissingImports]
+from tensorflow.keras.utils import to_categorical  # pyright: ignore[reportMissingImports]
+from tensorflow.keras.preprocessing import sequence  # pyright: ignore[reportMissingImports]
+from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint  # pyright: ignore[reportMissingImports]
 import numpy as np
 import yaml
 
@@ -18,9 +18,7 @@ def get_parser():
     parser = argparse.ArgumentParser(
         description="", usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
     )
-    parser.add_argument(
-        "-c", "--config", type=str, required=True, help="path to a config file"
-    )
+    parser.add_argument("-c", "--config", type=str, required=True, help="path to a config file")
     return parser.parse_args()
 
 
@@ -45,9 +43,7 @@ def save_model(model, output_dir, use_selfies=False):
     output_json = os.path.join(
         output_dir, "model_sf.tf25.json" if use_selfies else "model.tf25.json"
     )
-    output_weight = os.path.join(
-        output_dir, "model_sf.tf25.h5" if use_selfies else "model.tf25.h5"
-    )
+    output_weight = os.path.join(output_dir, "model_sf.tf25.h5" if use_selfies else "model.tf25.h5")
     model_json = model.to_json()
 
     with open(output_json, "w") as json_file:
@@ -89,9 +85,7 @@ def main():
 
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
-    vocabulary, all_smiles = tokenize_smiles(
-        original_smiles, use_selfies=conf["use_selfies"]
-    )
+    vocabulary, all_smiles = tokenize_smiles(original_smiles, use_selfies=conf["use_selfies"])
     if conf["use_selfies"]:
         base, ext = os.path.splitext(conf["output_token"])
         conf["output_token"] = f"{base}_sf{ext}"
@@ -172,9 +166,7 @@ def main():
     model_ckpt = ModelCheckpoint(
         filepath=os.path.join(
             conf["output_model_dir"],
-            "model_sf.tf25.best.ckpt.h5"
-            if conf["use_selfies"]
-            else "model.tf25.best.ckpt.h5",
+            "model_sf.tf25.best.ckpt.h5" if conf["use_selfies"] else "model.tf25.best.ckpt.h5",
         ),
         monitor="val_accuracy",
         verbose=1,

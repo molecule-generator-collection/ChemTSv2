@@ -5,7 +5,7 @@ import math
 
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from spython.main import Client # pyright: ignore[reportMissingImports]
+from spython.main import Client  # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 from reward.util import calc_strain_energy

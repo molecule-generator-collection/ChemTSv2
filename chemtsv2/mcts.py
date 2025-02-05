@@ -53,9 +53,7 @@ class Node:
         score_list = []
         logger.debug("UCB:")
         for i in range(len(self.state.child_nodes)):
-            score = policy_evaluator.evaluate(
-                self.state.child_nodes[i].state, self.conf
-            )
+            score = policy_evaluator.evaluate(self.state.child_nodes[i].state, self.conf)
             score_list.append(score)
             logger.debug(f"{self.state.child_nodes[i].position} {score}")
         m = np.amax(score_list)
@@ -107,17 +105,13 @@ class MCTS:
 
         if conf["batch_reward_calculation"]:
             self.obj_column_names = [
-                f.__name__
-                for f in self.reward_calculator.get_batch_objective_functions()
+                f.__name__ for f in self.reward_calculator.get_batch_objective_functions()
             ]
         else:
             self.obj_column_names = [
-                f.__name__
-                for f in self.reward_calculator.get_objective_functions(self.conf)
+                f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)
             ]
-        self.output_path = os.path.join(
-            conf["output_dir"], f"result_C{conf['c_val']}.csv"
-        )
+        self.output_path = os.path.join(conf["output_dir"], f"result_C{conf['c_val']}.csv")
         if os.path.exists(self.output_path) and not conf["restart"]:
             sys.exit(
                 f"[ERROR] {self.output_path} already exists. Please specify a different file name."
@@ -168,9 +162,7 @@ class MCTS:
             self.load_checkpoint()
 
         while (
-            time.time()
-            if self.conf["threshold_type"] == "time"
-            else self.total_valid_num
+            time.time() if self.conf["threshold_type"] == "time" else self.total_valid_num
         ) <= self.threshold:
             # important! This node is different with state / node is the tree node
             node = self.rootnode
@@ -290,9 +282,7 @@ class MCTS:
             self.generated_id_list.extend(generated_id_list)
             self.filter_check_list.extend(filter_check_list)
 
-            self.logger.info(
-                f"Number of valid SMILES in this cycle: {self.total_valid_num}"
-            )
+            self.logger.info(f"Number of valid SMILES in this cycle: {self.total_valid_num}")
             self.logger.debug(
                 f"\nNode index: {node_index} \nObjective_values: {objective_values} \nValid smiles: {valid_smiles} \nTime {elapsed_time}"
             )
@@ -314,8 +304,7 @@ class MCTS:
                 self.logger.debug(
                     "\n"
                     + "\n".join([
-                        f"Child node position: {c.position}"
-                        for c in node.state.child_nodes
+                        f"Child node position: {c.position}" for c in node.state.child_nodes
                     ])
                 )
 

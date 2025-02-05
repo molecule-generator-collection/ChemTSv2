@@ -7,10 +7,10 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 sys.path.append("./data/")
-import sascorer # pyright: ignore[reportMissingImports]
+import sascorer  # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
-from qcforever.gamess_run import GamessRunPack # pyright: ignore[reportMissingImports]
+from qcforever.gamess_run import GamessRunPack  # pyright: ignore[reportMissingImports]
 
 
 class UV_reward(Reward):
@@ -64,11 +64,7 @@ class UV_reward(Reward):
             with open(os.path.join(result_dir, "gamess_result.pickle"), mode="wb") as f:
                 pickle.dump(result_dict, f)
 
-            if (
-                "uv" in result_dict
-                and len(result_dict["uv"]) > 0
-                and result_dict["uv"][0] != []
-            ):
+            if "uv" in result_dict and len(result_dict["uv"]) > 0 and result_dict["uv"][0] != []:
                 uv_abs_wl = result_dict["uv"][0][0]
             else:
                 uv_abs_wl = 0

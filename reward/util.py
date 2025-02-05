@@ -238,9 +238,7 @@ def calc_protomer(smiles):
     return tmp_smiles
 
 
-def read_sdfs_make_confs_sdf(
-    sdf_inp_list, sdf_out, num_conformers=40, num_opt_iters=1000
-):
+def read_sdfs_make_confs_sdf(sdf_inp_list, sdf_out, num_conformers=40, num_opt_iters=1000):
     result_id = []
     mol_list = []
     for i, sdf_inp in enumerate(sdf_inp_list):
@@ -271,9 +269,7 @@ def read_sdfs_make_confs_sdf(
     for result in result_id:
         mol_H = mol_list[result[2]]
         mol_H.SetProp("Energy", "")
-        mol_H.SetProp(
-            "_Name", "conformer_" + str(result[1]) + "_chiral" + str(result[2])
-        )
+        mol_H.SetProp("_Name", "conformer_" + str(result[1]) + "_chiral" + str(result[2]))
         mol_H.SetProp("optimized_energy", str(result[0]))
         writer.write(mol_H, confId=result[1])
         break
@@ -343,9 +339,7 @@ def calc_stereo_centor(smiles, reaction_a_list, reaction_aa_list, ss_list, mol_t
 
 
 def calc_3dstructure(smiles):
-    mol_id = "".join([
-        random.choice(string.ascii_letters + string.digits) for i in range(8)
-    ])
+    mol_id = "".join([random.choice(string.ascii_letters + string.digits) for i in range(8)])
     ss_cyclohexane = Chem.MolFromSmiles("CC1CCCCC1")
     file_list = []
     threshold_time = 180
@@ -547,8 +541,7 @@ def calc_scaffold_rmsd(dock_mol, conf):
     # Extract coordinates (Reference structure)
     ref_scaf_match_index = reference_mol.GetSubstructMatch(scaffold_mol)
     ref_match_coords = np.array([
-        reference_mol.GetConformer(0).GetAtomPosition(idx)
-        for idx in ref_scaf_match_index
+        reference_mol.GetConformer(0).GetAtomPosition(idx) for idx in ref_scaf_match_index
     ])
 
     # Extract coordinates (Docking pose)
@@ -622,7 +615,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
 
     # Load receptor
     # This process is for cases where GNINA reward is used
-    if receptor_fname.startswith("/scr"):  
+    if receptor_fname.startswith("/scr"):
         receptor_fname = receptor_fname.replace("/scr", "data")
     u = mda.Universe(receptor_fname)
     protein_mol = plf.Molecule.from_mda(u)
@@ -636,9 +629,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
         with open(output_ligand_fname, "r") as f:
             string = f.read()
         pdbqt_mol = meeko.PDBQTMolecule(string, is_dlg=False, skip_typing=True)
-        sdf_content = meeko.RDKitMolCreate.write_sd_string(
-            pdbqt_mol, only_cluster_leads=False
-        )[0]
+        sdf_content = meeko.RDKitMolCreate.write_sd_string(pdbqt_mol, only_cluster_leads=False)[0]
         with tempfile.NamedTemporaryFile(mode="w", suffix=".sdf", delete=False) as tf:
             tf.write(sdf_content)
             tf_path = tf.name
@@ -686,9 +677,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
     )
     residues = [c["residue"] for c in conf["prolif_interactions"]]
     try:
-        fp.run_from_iterable(
-            lig_iterable=[ligand_mol], prot_mol=protein_mol, residues=residues
-        )
+        fp.run_from_iterable(lig_iterable=[ligand_mol], prot_mol=protein_mol, residues=residues)
     except Exception:
         return None
 
@@ -704,10 +693,7 @@ def get_interaction_distances(receptor_fname, output_ligand_fname, pose_idx, con
             current_min_distance = min_distance_dict[res]["distance"]
             distance_list = [d["distance"] for d in metadata[interaction_type]]
             latest_min_distance = min(distance_list)
-            if (
-                current_min_distance is None
-                or latest_min_distance < current_min_distance
-            ):
+            if current_min_distance is None or latest_min_distance < current_min_distance:
                 min_distance_dict[res]["interaction_type"] = interaction_type
                 min_distance_dict[res]["distance"] = latest_min_distance
             else:

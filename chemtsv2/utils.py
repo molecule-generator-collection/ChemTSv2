@@ -6,8 +6,8 @@ import sys
 import time
 
 import joblib
-from tensorflow.keras.models import Sequential, model_from_json # pyright: ignore[reportMissingImports]
-from tensorflow.keras.layers import Dense, Embedding, GRU # pyright: ignore[reportMissingImports]
+from tensorflow.keras.models import Sequential, model_from_json  # pyright: ignore[reportMissingImports]
+from tensorflow.keras.layers import Dense, Embedding, GRU  # pyright: ignore[reportMissingImports]
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Mol
@@ -77,8 +77,7 @@ def generate_smiles_as_token_index(model, state, tokens, conf):
 
 def build_smiles_from_token_index(generated_token_indexes, tokens, use_selfies=False):
     generate_tokens = [
-        tokens[generated_token_indexes[j]]
-        for j in range(len(generated_token_indexes) - 1)
+        tokens[generated_token_indexes[j]] for j in range(len(generated_token_indexes) - 1)
     ]
     generate_tokens.remove("&")
     concat_tokens = "".join(generate_tokens)
@@ -136,12 +135,7 @@ def get_model_structure_info(model_json, logger):
             num_gru_units = config["units"]
         if layer.get("class_name") == "TimeDistributed":
             output_size = config["layer"]["config"]["units"]
-    if (
-        input_shape is None
-        or vocab_size is None
-        or output_size is None
-        or num_gru_units is None
-    ):
+    if input_shape is None or vocab_size is None or output_size is None or num_gru_units is None:
         logger.error(
             "Confirm if the version of Tensorflow is 2.14. If so, please consult with ChemTSv2 developers on the GitHub repository. At that time, please attach the file specified as `model_json`"
         )
@@ -264,10 +258,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
         ]
         values_list = np.array(values_list).T.tolist()
     else:
-        values_list = [
-            _get_objective_values(m, c)
-            for m, c in zip(valid_mol_list, valid_conf_list)
-        ]
+        values_list = [_get_objective_values(m, c) for m, c in zip(valid_mol_list, valid_conf_list)]
 
     # record values and other data
     for i in range(len(valid_mol_list)):
@@ -298,9 +289,7 @@ def transform_linker_to_mol(conf: dict):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not isinstance(args[0], Mol):
-                raise TypeError(
-                    "Check this decorator is placed in the correct position."
-                )
+                raise TypeError("Check this decorator is placed in the correct position.")
             if "cores" not in conf:
                 raise KeyError(
                     "Must specify SMILES strings corresponding to the key `cores` in the config file."
@@ -315,9 +304,7 @@ def transform_linker_to_mol(conf: dict):
                 elif func.__code__.co_argcount == 2:  # for filter function
                     return False
                 else:
-                    raise TypeError(
-                        "Check that this decorator is placed in the correct position."
-                    )
+                    raise TypeError("Check that this decorator is placed in the correct position.")
             mol_ = Chem.MolFromSmiles(add_atom_index_in_wildcard(smi))
             rwmol = Chem.RWMol(mol_)
             cores_mol = [Chem.MolFromSmiles(s) for s in conf["cores"]]
@@ -332,17 +319,13 @@ def transform_linker_to_mol(conf: dict):
                 elif func.__code__.co_argcount == 2:  # for filter function
                     return False
                 else:
-                    raise TypeError(
-                        "Check that this decorator is placed in the correct position."
-                    )
+                    raise TypeError("Check that this decorator is placed in the correct position.")
             if func.__code__.co_argcount == 1:  # for reward function
                 return func(prod)
             elif func.__code__.co_argcount == 2:  # for filter function
                 return func(prod, conf)
             else:
-                raise TypeError(
-                    "Check that this decorator is placed in the correct position."
-                )
+                raise TypeError("Check that this decorator is placed in the correct position.")
 
         return wrapper
 

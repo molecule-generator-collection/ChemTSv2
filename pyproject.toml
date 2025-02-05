@@ -41,7 +41,7 @@ chemtsv2-add_cores_to_linker = "chemtsv2.cli.add_cores_to_linker:main"
 mp = ["mpi4py"]
 
 [tool.ruff]
-line-length = 120
+line-length = 100
 indent-width = 4
 
 [tool.ruff.lint]
@@ -49,6 +49,9 @@ ignore = [
     "E402",
     "F841",
 ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

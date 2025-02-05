@@ -34,9 +34,7 @@ class ROCS_reward(Reward):
                 "false",
             ]
             try:
-                subprocess.run(
-                    cmd_omega, check=True, cwd=openeye_out_dir, env=os.environ
-                )
+                subprocess.run(cmd_omega, check=True, cwd=openeye_out_dir, env=os.environ)
             except subprocess.CalledProcessError as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}, in OMEGA calculation")
                 print(e)
@@ -56,9 +54,7 @@ class ROCS_reward(Reward):
                 omega_db_fname,
             ]
             try:
-                subprocess.run(
-                    cmd_rocs, check=True, cwd=openeye_out_dir, env=os.environ
-                )
+                subprocess.run(cmd_rocs, check=True, cwd=openeye_out_dir, env=os.environ)
             except subprocess.CalledProcessError as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}, in ROCS calculation.")
                 print(e)

@@ -6,7 +6,7 @@ import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
 sys.path.append("./data/")
-import sascorer # pyright: ignore[reportMissingImports]
+import sascorer  # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 from chemtsv2.scaler import minmax, max_gauss, min_gauss, rectangular
@@ -23,9 +23,7 @@ with (
     lgb_models = pickle.load(models)
     smarts = pd.read_csv(alerts, header=None, sep="\t")[1].tolist()
     alert_mols = [
-        Chem.MolFromSmarts(smart)
-        for smart in smarts
-        if Chem.MolFromSmarts(smart) is not None
+        Chem.MolFromSmarts(smart) for smart in smarts if Chem.MolFromSmarts(smart) is not None
     ]
     chebml_fps = np.load(fps, allow_pickle=True).item()
 
@@ -156,10 +154,7 @@ class Dscore_reward(Reward):
         def has_chembl_substruct(mol):
             """0 for molecuels with substructures (ECFP2 that occur less often than 5 times in ChEMBL."""
             fp_query = AllChem.GetMorganFingerprint(mol, 1, useCounts=False)
-            if np.any([
-                bit not in chebml_fps
-                for bit in fp_query.GetNonzeroElements().keys()
-            ]):
+            if np.any([bit not in chebml_fps for bit in fp_query.GetNonzeroElements().keys()]):
                 return 0
             else:
                 return 1
@@ -197,13 +192,9 @@ class Dscore_reward(Reward):
         for objective, value in zip(objectives, values):
             if objective == "SAscore":
                 # SAscore is made negative when scaling because a smaller value is more desirable.
-                scaled_values.append(
-                    scale_objective_value(dscore_params[objective], -1 * value)
-                )
+                scaled_values.append(scale_objective_value(dscore_params[objective], -1 * value))
             else:
-                scaled_values.append(
-                    scale_objective_value(dscore_params[objective], value)
-                )
+                scaled_values.append(scale_objective_value(dscore_params[objective], value))
             weights.append(dscore_params[objective]["weight"])
 
         multiplication_value = 1

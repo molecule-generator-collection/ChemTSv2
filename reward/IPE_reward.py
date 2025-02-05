@@ -5,11 +5,11 @@ import shutil
 
 from rdkit.Chem import AllChem, Descriptors
 sys.path.append("./data/")
-import sascorer # pyright: ignore[reportMissingImports]
+import sascorer  # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 
-import GaussianRunPack # pyright: ignore[reportMissingImports]
+import GaussianRunPack  # pyright: ignore[reportMissingImports]
 from rdkit import Chem
 import numpy as np
 import pickle
@@ -87,14 +87,10 @@ class IPE_reward(Reward):
 
             if os.path.isdir(os.path.join(result_dir, calc_dir)):
                 shutil.rmtree(os.path.join(result_dir, calc_dir))
-            print(
-                "shutil.move(calc_dir, result_dir)", shutil.move(calc_dir, result_dir)
-            )
+            print("shutil.move(calc_dir, result_dir)", shutil.move(calc_dir, result_dir))
             shutil.move(SDFinput, os.path.join(result_dir, calc_dir))
             shutil.move(SDFinput_opt, os.path.join(result_dir, calc_dir))
-            with open(
-                os.path.join(result_dir, calc_dir, "gaussian_result.pickle"), mode="wb"
-            ) as f:
+            with open(os.path.join(result_dir, calc_dir, "gaussian_result.pickle"), mode="wb") as f:
                 pickle.dump(outdic, f)
 
             # Extract values

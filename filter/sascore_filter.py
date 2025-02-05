@@ -1,6 +1,6 @@
 import sys
 sys.path.append("./data/")
-import sascorer
+import sascorer # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Filter
 from chemtsv2.utils import transform_linker_to_mol

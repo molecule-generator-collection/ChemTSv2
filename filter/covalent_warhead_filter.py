@@ -30,10 +30,7 @@ COVALENT_WARHEAD_FILTER_CATALOG = get_catalog()
 class CovalentWarheadFilter(Filter):
     def check(mol, conf):
         if conf["debug"]:
-            matchs = [
-                e.GetDescription()
-                for e in COVALENT_WARHEAD_FILTER_CATALOG.GetMatches(mol)
-            ]
+            matchs = [e.GetDescription() for e in COVALENT_WARHEAD_FILTER_CATALOG.GetMatches(mol)]
             if matchs != []:
                 smi = Chem.MolToSmiles(mol)
                 print(f"[DEBUG FILTER] SMILES -> {smi} ; Match -> {','.join(matchs)}")

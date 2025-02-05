@@ -15,9 +15,7 @@ class Neutralizer:
 
     def __init__(self):
         patts = metadata.reaction_patterns
-        self.reactions = [
-            (Chem.MolFromSmarts(x), Chem.MolFromSmiles(y, False)) for x, y in patts
-        ]
+        self.reactions = [(Chem.MolFromSmarts(x), Chem.MolFromSmiles(y, False)) for x, y in patts]
 
     def NeutraliseCharges(self, mol, reactions=None):
         replaced = False
@@ -58,9 +56,7 @@ class Evaluater:
         for i, (name, sma) in enumerate(rawV):
             patt = Chem.MolFromSmarts(sma)
             if patt is None:
-                sys.stderr.write(
-                    f"WARNING: problems with pattern {sma} (name: {name}), skipped.\n"
-                )
+                sys.stderr.write(f"WARNING: problems with pattern {sma} (name: {name}), skipped.\n")
             else:
                 esPatterns[i] = name, patt
         self.esPatterns = esPatterns

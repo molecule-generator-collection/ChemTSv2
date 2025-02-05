@@ -1,8 +1,8 @@
 import pprint
 import os
 
-from vina import Vina # pyright: ignore[reportMissingImports]
-from meeko import MoleculePreparation, PDBQTMolecule # pyright: ignore[reportMissingImports]
+from vina import Vina  # pyright: ignore[reportMissingImports]
+from meeko import MoleculePreparation, PDBQTMolecule  # pyright: ignore[reportMissingImports]
 from rdkit import Chem
 from rdkit.Chem import rdMolTransforms
 from rdkit.Geometry import Point3D
@@ -15,9 +15,7 @@ class Vina_use_appropriate_lingand3d_reward(Reward):
     def get_objective_functions(conf):
         def VinaScore(mol):
             verbosity = 1 if conf["debug"] else 0
-            v = Vina(
-                sf_name=conf["vina_sf_name"], cpu=conf["vina_cpus"], verbosity=verbosity
-            )
+            v = Vina(sf_name=conf["vina_sf_name"], cpu=conf["vina_cpus"], verbosity=verbosity)
             v.set_receptor(rigid_pdbqt_filename=conf["vina_receptor"])
 
             try:
@@ -26,9 +24,7 @@ class Vina_use_appropriate_lingand3d_reward(Reward):
                 centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
                 tr = [conf["vina_center"][i] - centroid[i] for i in range(3)]
                 for i, p in enumerate(mol_conf.GetPositions()):
-                    mol_conf.SetAtomPosition(
-                        i, Point3D(p[0] + tr[0], p[1] + tr[1], p[2] + tr[2])
-                    )
+                    mol_conf.SetAtomPosition(i, Point3D(p[0] + tr[0], p[1] + tr[1], p[2] + tr[2]))
                 mol_prep = MoleculePreparation()
                 mol_prep.prepare(mol)
                 mol_pdbqt = mol_prep.write_pdbqt_string()
@@ -65,9 +61,7 @@ class Vina_use_appropriate_lingand3d_reward(Reward):
                 pose_dir = f"{conf['output_dir']}/3D_pose"
                 if not os.path.exists(pose_dir):
                     os.mkdir(pose_dir)
-                pose_file_name = (
-                    f"{pose_dir}/mol_{conf['gid']}_3D_pose_{best_model}.pdbqt"
-                )
+                pose_file_name = f"{pose_dir}/mol_{conf['gid']}_3D_pose_{best_model}.pdbqt"
                 v.write_poses(
                     f"{pose_dir}/vina_temp_out.pdbqt",
                     n_poses=conf["vina_n_poses"],
@@ -81,9 +75,7 @@ class Vina_use_appropriate_lingand3d_reward(Reward):
                         pose.write_pdbqt_file(pose_file_name)
 
                 if conf["debug"]:
-                    print(
-                        f"min_inter_score: {min_inter_score}, best pose num is {best_model}"
-                    )
+                    print(f"min_inter_score: {min_inter_score}, best pose num is {best_model}")
                 return min_inter_score
             except Exception as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")

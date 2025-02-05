@@ -4,7 +4,7 @@ import sys
 
 from rdkit.Chem import Descriptors
 sys.path.append("./data/")
-import sascorer # pyright: ignore[reportMissingImports]
+import sascorer  # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import BatchReward
 

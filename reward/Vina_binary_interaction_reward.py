@@ -4,7 +4,7 @@ import shutil
 import tempfile
 
 # from vina import Vina
-from meeko import MoleculePreparation, PDBQTMolecule # pyright: ignore[reportMissingImports]
+from meeko import MoleculePreparation, PDBQTMolecule  # pyright: ignore[reportMissingImports]
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem, rdMolTransforms
@@ -39,9 +39,7 @@ class Vina_reward(Reward):
             centroid = list(rdMolTransforms.ComputeCentroid(mol_conf))
             tr = [conf["vina_center"][i] - centroid[i] for i in range(3)]
             for i, p in enumerate(mol_conf.GetPositions()):
-                mol_conf.SetAtomPosition(
-                    i, Point3D(p[0] + tr[0], p[1] + tr[1], p[2] + tr[2])
-                )
+                mol_conf.SetAtomPosition(i, Point3D(p[0] + tr[0], p[1] + tr[1], p[2] + tr[2]))
             mol_prep = MoleculePreparation()
             mol_prep.prepare(mol)
             mol_prep.write_pdbqt_file(temp_ligand_fname)
@@ -93,9 +91,7 @@ class Vina_reward(Reward):
                     shutil.rmtree(temp_dir)
                 return None
             try:
-                pdbqt_mols = PDBQTMolecule.from_file(
-                    output_ligand_fname, skip_typing=True
-                )
+                pdbqt_mols = PDBQTMolecule.from_file(output_ligand_fname, skip_typing=True)
             except RuntimeError as e:
                 print(f"Error SMILES: {Chem.MolToSmiles(mol)}")
                 print(e)

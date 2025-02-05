@@ -164,9 +164,7 @@ def get_filter_modules(conf):
         if not pat.search(k) or not frag:
             continue
         _k = k.replace("use_", "")
-        module_list.append(
-            getattr(import_module(conf[_k]["module"]), conf[_k]["class"])
-        )
+        module_list.append(getattr(import_module(conf[_k]["module"]), conf[_k]["class"]))
     return module_list
 
 
@@ -249,9 +247,7 @@ def main():
         default_rng(conf["random_seed"]) if conf["fix_random_seed"] else default_rng()
     )
 
-    chem_model = load_tensorflow_model(
-        conf["model_setting"]["model_weight"], logger, conf
-    )
+    chem_model = load_tensorflow_model(conf["model_setting"]["model_weight"], logger, conf)
 
     root_state = ["&"] if args.input_smiles is None else conf["tokenized_smiles"]
 

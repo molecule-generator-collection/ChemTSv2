@@ -26,9 +26,9 @@ def get_parser():
 
 
 def randomize_smiles(mol):
-    # This code is a part of the followin function: 
+    # This code is a part of the followin function:
     # https://github.com/undeadpixel/reinvent-randomized/blob/df63cab67df2a331afaedb4d0cea93428ef8a9f7/utils/chem.py#L90
-    # Ref. Randomized SMILES strings improve the quality of molecular generative models. 
+    # Ref. Randomized SMILES strings improve the quality of molecular generative models.
     # J Cheminform 11, 71 (2019). https://doi.org/10.1186/s13321-019-0393-0
     if not mol:
         return None

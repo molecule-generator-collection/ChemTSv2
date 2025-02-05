@@ -7,9 +7,7 @@ def tokenize_smiles(smiles_list, use_selfies=False):
     tokenized_smiles_list = []
     unique_token_set = set()
     for smi in smiles_list:
-        tokenized_smiles = (
-            selfies_tokenizer_from_smiles(smi) if use_selfies else smi_tokenizer(smi)
-        )
+        tokenized_smiles = selfies_tokenizer_from_smiles(smi) if use_selfies else smi_tokenizer(smi)
         tokenized_smiles.append("\n")
         unique_token_set |= set(tokenized_smiles)
         tokenized_smiles_list.append(tokenized_smiles)

@@ -84,10 +84,7 @@ class MPNode:
                 * sqrt(
                     2
                     * log(self.visits + self.num_thread_visited)
-                    / (
-                        self.child_nodes[i].visits
-                        + self.child_nodes[i].num_thread_visited
-                    )
+                    / (self.child_nodes[i].visits + self.child_nodes[i].num_thread_visited)
                 )
             )
         self.childucb = ucb
@@ -119,9 +116,7 @@ class MPNode:
         self.wins += score
         self.reward = score
 
-    def simulation(
-        self, chem_model, state, gen_id, generated_dict, reward_calculator, tokens
-    ):
+    def simulation(self, chem_model, state, gen_id, generated_dict, reward_calculator, tokens):
         filter_flag = 0
 
         self.conf["gid"] = gen_id
@@ -142,9 +137,7 @@ class MPNode:
 
         if has_passed_through_filters(smi, self.conf):
             mol = Chem.MolFromSmiles(smi)
-            values_list = [
-                f(mol) for f in reward_calculator.get_objective_functions(self.conf)
-            ]
+            values_list = [f(mol) for f in reward_calculator.get_objective_functions(self.conf)]
             score = reward_calculator.calc_reward_from_objective_values(
                 values=values_list, conf=self.conf
             )
@@ -153,9 +146,7 @@ class MPNode:
         else:
             mol = Chem.MolFromSmiles(smi)
             valid_flag = 0 if mol is None else 1
-            values_list = [
-                -999 for _ in reward_calculator.get_objective_functions(self.conf)
-            ]
+            values_list = [-999 for _ in reward_calculator.get_objective_functions(self.conf)]
             score = 0
             filter_flag = 0
         if valid_flag:
@@ -213,9 +204,7 @@ class p_mcts:
                 conf["output_dir"], f"result_C{conf['c_val']}_{stime}.csv"
             )
         else:
-            self.output_path = os.path.join(
-                conf["output_dir"], f"result_C{conf['c_val']}.csv"
-            )
+            self.output_path = os.path.join(conf["output_dir"], f"result_C{conf['c_val']}.csv")
         if self.rank == 0:
             if os.path.exists(self.output_path):
                 print(
@@ -243,8 +232,7 @@ class p_mcts:
         self.generated_dict = {}  # dictionary of generated compounds
         self.filter_check_list = []  # only needed for output (at rank 0)
         self.obj_column_names = [
-            f.__name__
-            for f in self.reward_calculator.get_objective_functions(self.conf)
+            f.__name__ for f in self.reward_calculator.get_objective_functions(self.conf)
         ]
 
     def get_generated_id(self):
@@ -325,9 +313,7 @@ class p_mcts:
             tag=JobType.BACKPROPAGATION.value,
         )
 
-    def record_result(
-        self, smiles, depth, reward, gen_id, raw_reward_list, filter_flag
-    ):
+    def record_result(self, smiles, depth, reward, gen_id, raw_reward_list, filter_flag):
         self.valid_smiles_list.append(smiles)
         self.depth_list.append(depth)
         self.reward_values_list.append(reward)
@@ -351,9 +337,7 @@ class p_mcts:
                     generated_id_list,
                     objective_values_list,
                     filter_check_list,
-                ) = self.comm.recv(
-                    source=rid, tag=JobType.GATHER_RESULTS.value, status=status
-                )
+                ) = self.comm.recv(source=rid, tag=JobType.GATHER_RESULTS.value, status=status)
                 self.valid_smiles_list.extend(valid_smiles_list)
                 self.depth_list.extend(depth_list)
                 self.reward_values_list.extend(reward_values_list)
@@ -430,9 +414,7 @@ class p_mcts:
             # self.start_time = cp_obj['start_time']
             jobq = cp_obj["jobq"]
         elif self.rank == rootdest:
-            root_job_message = np.asarray(
-                [self.root_position, None, 0, 0, 0, []], dtype=object
-            )
+            root_job_message = np.asarray([self.root_position, None, 0, 0, 0, []], dtype=object)
             for i in range(3 * self.nprocs):
                 temp = deepcopy(root_job_message)
                 root_job = (JobType.SEARCH.value, temp)
@@ -450,9 +432,7 @@ class p_mcts:
                     # print('Checkpoint prepare')
                     for dest in range(1, self.nprocs):
                         dummy_data = tag = JobType.CHECKPOINT_PREPARE.value
-                        self.comm.bsend(
-                            dummy_data, dest=dest, tag=JobType.CHECKPOINT_PREPARE.value
-                        )
+                        self.comm.bsend(dummy_data, dest=dest, tag=JobType.CHECKPOINT_PREPARE.value)
                 if self.elapsed_time() > self.threshold and (
                     not self.conf["save_checkpoint"] or checkpoint_saved
                 ):
@@ -462,15 +442,11 @@ class p_mcts:
                         self.comm.bsend(dummy_data, dest=dest, tag=JobType.TIMEUP.value)
 
             while True:
-                ret = self.comm.Iprobe(
-                    source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status
-                )
+                ret = self.comm.Iprobe(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
                 if not ret:
                     break
                 else:
-                    message = self.comm.recv(
-                        source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status
-                    )
+                    message = self.comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
                     cur_status = status
                     tag = cur_status.Get_tag()
                     job = (tag, message)
@@ -492,9 +468,7 @@ class p_mcts:
                         node = MPNode(position=message[0], conf=self.conf)
                         if node.state == self.root_position:
                             node.expansion(self.chem_model, self.tokens, self.logger)
-                            m = self.conf["random_generator"].choice(
-                                node.expanded_nodes
-                            )
+                            m = self.conf["random_generator"].choice(node.expanded_nodes)
                             n = node.addnode(m, self.tokens)
                             self.hsm.insert(Item(node.state, node))
                             _, dest = self.hsm.hashing(n.state)
@@ -537,9 +511,7 @@ class p_mcts:
                         if node.state == self.root_position:
                             # print ("in table root:",node.state,node.path_ucb,len(node.state),len(node.path_ucb))
                             if node.expanded_nodes != []:
-                                m = self.conf["random_generator"].choice(
-                                    node.expanded_nodes
-                                )
+                                m = self.conf["random_generator"].choice(node.expanded_nodes)
                                 n = node.addnode(m, self.tokens)
                                 self.hsm.insert(Item(node.state, node))
                                 _, dest = self.hsm.hashing(n.state)
@@ -569,9 +541,7 @@ class p_mcts:
                                         n = node.addnode(m, self.tokens)
                                         self.hsm.insert(Item(node.state, node))
                                         _, dest = self.hsm.hashing(n.state)
-                                        self.send_message(
-                                            n, dest, tag=JobType.SEARCH.value
-                                        )
+                                        self.send_message(n, dest, tag=JobType.SEARCH.value)
                                     else:
                                         if node.check_childnode == []:
                                             node.expansion(
@@ -585,16 +555,12 @@ class p_mcts:
                                             n = node.addnode(m, self.tokens)
                                             self.hsm.insert(Item(node.state, node))
                                             _, dest = self.hsm.hashing(n.state)
-                                            self.send_message(
-                                                n, dest, tag=JobType.SEARCH.value
-                                            )
+                                            self.send_message(n, dest, tag=JobType.SEARCH.value)
                                         else:
                                             ind, childnode = node.selection()
                                             self.hsm.insert(Item(node.state, node))
-                                            ucb_table = (
-                                                update_selection_ucbtable_mpmcts(
-                                                    node, ind, self.root_position
-                                                )
+                                            ucb_table = update_selection_ucbtable_mpmcts(
+                                                node, ind, self.root_position
                                             )
                                             _, dest = self.hsm.hashing(childnode.state)
                                             self.send_message(
@@ -659,9 +625,7 @@ class p_mcts:
                             self.send_backprop(local_node, dest)
                         if back_flag == 0:
                             _, dest = self.hsm.hashing(local_node.state)
-                            self.send_message(
-                                local_node, dest, tag=JobType.SEARCH.value
-                            )
+                            self.send_message(local_node, dest, tag=JobType.SEARCH.value)
 
                 elif tag == JobType.TIMEUP.value:
                     # print('Timeup', self.rank)
@@ -670,9 +634,7 @@ class p_mcts:
                     checkpoint_prepare = True
                     # print('Checkpoint prepare', self.rank)
                     dummy_data = JobType.CHECKPOINT_READY.value
-                    self.comm.bsend(
-                        dummy_data, dest=0, tag=JobType.CHECKPOINT_READY.value
-                    )
+                    self.comm.bsend(dummy_data, dest=0, tag=JobType.CHECKPOINT_READY.value)
                 elif tag == JobType.CHECKPOINT_READY.value:
                     assert self.rank == 0
                     checkpoint_ready_count += 1

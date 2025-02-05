@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from mordred import Calculator, descriptors # pyright: ignore[reportMissingImports]
+from mordred import Calculator, descriptors  # pyright: ignore[reportMissingImports]
 
 from chemtsv2.abc import Reward
 from chemtsv2.scaler import max_gauss

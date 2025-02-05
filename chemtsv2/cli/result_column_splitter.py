@@ -45,9 +45,7 @@ def main():
 
     df = pd.read_csv(args.input_file)
     df[args.target_column] = df[args.target_column].apply(ast.literal_eval)
-    df[args.new_column_names] = pd.DataFrame(
-        df[args.target_column].tolist(), index=df.index
-    )
+    df[args.new_column_names] = pd.DataFrame(df[args.target_column].tolist(), index=df.index)
     df.drop(args.target_column, axis=1, inplace=True)
 
     stem, ext = os.path.splitext(args.input_file)
