@@ -36,6 +36,7 @@ chemtsv2-mp = "chemtsv2.cli.run_mp:main"
 chemtsv2-debug-check = "chemtsv2.cli.debug_check:main"
 chemtsv2-column-splitter = "chemtsv2.cli.result_column_splitter:main"
 chemtsv2-add-cores-to-linker = "chemtsv2.cli.add_cores_to_linker:main"
+chemtsv2-train-rnn = "chemtsv2.cli.train_rnn:main"
 chemtsv2-augment-dataset = "chemtsv2.cli.augment_dataset_with_randomized_smiles:main"
 
 [tool.poetry.extras]

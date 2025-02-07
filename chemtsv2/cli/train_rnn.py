@@ -16,7 +16,7 @@ from chemtsv2.preprocessing import read_smiles_dataset, tokenize_smiles
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="", usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
+        description="", usage="chemtsv2-train-rnn -c CONFIG_FILE"
     )
     parser.add_argument("-c", "--config", type=str, required=True, help="path to a config file")
     return parser.parse_args()
@@ -55,9 +55,9 @@ def save_model(model, output_dir, use_selfies=False):
 
 
 def update_config(conf):
-    conf.setdefault("dataset", "../data/250k_rndm_zinc_drugs_clean.smi")
-    conf.setdefault("output_model_dir", "../model")
-    conf.setdefault("output_token", "../model/tokens.pkl")
+    conf.setdefault("dataset", "data/250k_rndm_zinc_drugs_clean.smi")
+    conf.setdefault("output_model_dir", "model/user_trained_model")
+    conf.setdefault("output_token", "model/user_trained_model/tokens.pkl")
     conf.setdefault("dropout_rate", 0.2)
     conf.setdefault("learning_rate", 0.01)
     conf.setdefault("epoch", 100)
@@ -86,19 +86,22 @@ def main():
     # Prepare training dataset
     original_smiles = read_smiles_dataset(conf["dataset"])
     vocabulary, all_smiles = tokenize_smiles(original_smiles, use_selfies=conf["use_selfies"])
+    assert len(original_smiles) == len(all_smiles)
+    print(f"[INFO] Size of training dataset: {len(original_smiles)}")
     if conf["use_selfies"]:
         base, ext = os.path.splitext(conf["output_token"])
         conf["output_token"] = f"{base}_sf{ext}"
     with open(conf["output_token"], "wb") as f:
         pickle.dump(vocabulary, f)
+    print(f"[INFO] Generated tokens: {vocabulary}")
     if conf["use_selfies"]:
         print(
-            f"[INFO] Save generated tokens to {conf['output_token']}. Note that the file name was modified because `use_selfies` was specified."
+            f"[INFO] Save generated tokens to {conf['output_token']}. "
+            "Note that the file name was modified because `use_selfies` was specified."
         )
     else:
         print(f"[INFO] Save generated tokens to {conf['output_token']}")
 
-    print(f"vocabulary:\n{vocabulary}\nsize of molecule list: {len(all_smiles)}")
     X_train, y_train = prepare_data(vocabulary, all_smiles)
     X = sequence.pad_sequences(
         X_train,
