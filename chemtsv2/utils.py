@@ -98,20 +98,22 @@ def has_passed_through_filters(smiles, conf):
     return all(checks)
 
 
-def neutralize_atoms(mol):
-    # https://baoilleach.blogspot.com/2019/12/no-charge-simple-approach-to.html
-    # https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules
-    pattern = Chem.MolFromSmarts("[+1!h0!$([*]~[-1,-2,-3,-4]),-1!$([*]~[+1,+2,+3,+4])]")
-    at_matches = mol.GetSubstructMatches(pattern)
-    at_matches_list = [y[0] for y in at_matches]
-    if len(at_matches_list) > 0:
-        for at_idx in at_matches_list:
-            atom = mol.GetAtomWithIdx(at_idx)
-            chg = atom.GetFormalCharge()
-            hcount = atom.GetTotalNumHs()
-            atom.SetFormalCharge(0)
-            atom.SetNumExplicitHs(hcount - chg)
-            atom.UpdatePropertyCache()
+def neutralize_monovalent_charges(mol):
+    """ 
+    Neutralizes monovalent charges in a molecule while ignoring charge-delocalized functional 
+    groups (e.g., nitro).
+    This function is inspired by the work by Noel O’Boyle (https://www.rdkit.org/docs/Cookbook.html#neutralizing-molecules).
+    """
+    for atom in mol.GetAtoms():
+        charge = atom.GetFormalCharge()
+        num_total_hs = atom.GetTotalNumHs()
+        if (charge != 1 and charge != -1) or (charge == 1 and num_total_hs == 0):
+            continue
+        if any(natom.GetFormalCharge() == -charge for natom in atom.GetNeighbors()):
+            continue
+        atom.SetFormalCharge(0)
+        atom.SetNumExplicitHs(num_total_hs - charge)
+        atom.UpdatePropertyCache()
     return mol
 
 
@@ -206,7 +208,7 @@ def evaluate_node(new_compound, generated_dict, reward_calculator, conf, logger,
                 un = rdMolStandardize.Uncharger()
                 un.uncharge(mol)
             elif conf["neutralization_strategy"] == "nocharge":
-                neutralize_atoms(mol)
+                neutralize_monovalent_charges(mol)
             new_compound[i] = Chem.MolToSmiles(mol)
 
         if new_compound[i] in generated_dict:
