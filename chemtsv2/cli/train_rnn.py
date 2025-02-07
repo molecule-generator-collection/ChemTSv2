@@ -15,14 +15,13 @@ from chemtsv2.preprocessing import read_smiles_dataset, tokenize_smiles
 
 
 def get_parser():
-    parser = argparse.ArgumentParser(
-        description="", usage="chemtsv2-train-rnn -c CONFIG_FILE"
-    )
+    parser = argparse.ArgumentParser(description="", usage="chemtsv2-train-rnn -c CONFIG_FILE")
     parser.add_argument("-c", "--config", type=str, required=True, help="path to a config file")
     return parser.parse_args()
 
 
 def prepare_data(smiles, all_smiles):
+    """TODO: need to be refactored"""
     all_smiles_index = []
     for i in range(len(all_smiles)):
         smiles_index = []
@@ -84,16 +83,16 @@ def main():
     os.makedirs(conf["output_model_dir"], exist_ok=True)
 
     # Prepare training dataset
-    original_smiles = read_smiles_dataset(conf["dataset"])
-    vocabulary, all_smiles = tokenize_smiles(original_smiles, use_selfies=conf["use_selfies"])
-    assert len(original_smiles) == len(all_smiles)
-    print(f"[INFO] Size of training dataset: {len(original_smiles)}")
+    original_smiles_list = read_smiles_dataset(conf["dataset"])
+    token_list, tokenized_smiles_list = tokenize_smiles(original_smiles_list, use_selfies=conf["use_selfies"])
+    assert len(original_smiles_list) == len(tokenized_smiles_list)
+    print(f"[INFO] Size of training dataset: {len(original_smiles_list)}")
     if conf["use_selfies"]:
         base, ext = os.path.splitext(conf["output_token"])
         conf["output_token"] = f"{base}_sf{ext}"
     with open(conf["output_token"], "wb") as f:
-        pickle.dump(vocabulary, f)
-    print(f"[INFO] Generated tokens: {vocabulary}")
+        pickle.dump(token_list, f)
+    print(f"[INFO] Generated tokens: {token_list}")
     if conf["use_selfies"]:
         print(
             f"[INFO] Save generated tokens to {conf['output_token']}. "
@@ -102,7 +101,7 @@ def main():
     else:
         print(f"[INFO] Save generated tokens to {conf['output_token']}")
 
-    X_train, y_train = prepare_data(vocabulary, all_smiles)
+    X_train, y_train = prepare_data(token_list, tokenized_smiles_list)
     X = sequence.pad_sequences(
         X_train,
         maxlen=conf["maxlen"],
@@ -120,16 +119,16 @@ def main():
         value=0.0,
     )
     y_train_one_hot = np.array([
-        to_categorical(sent_label, num_classes=len(vocabulary)) for sent_label in y
+        to_categorical(sent_label, num_classes=len(token_list)) for sent_label in y
     ])
-    print(f"shape of y_train_one_hot: {y_train_one_hot.shape}")
+    print(f"[DEBUG] Shape of y_train_one_hot: {y_train_one_hot.shape}")
 
     # Build model
     model = Sequential()
     model.add(
         Embedding(
-            input_dim=len(vocabulary),
-            output_dim=len(vocabulary),
+            input_dim=len(token_list),
+            output_dim=len(token_list),
             input_length=X.shape[1],
             mask_zero=False,
         )
@@ -137,7 +136,7 @@ def main():
     model.add(
         GRU(
             conf["units"],
-            input_shape=(X.shape[1], len(vocabulary)),
+            input_shape=(X.shape[1], len(token_list)),
             activation="tanh",
             dropout=conf["dropout_rate"],
             recurrent_dropout=conf["rec_dropout_rate"],
@@ -156,7 +155,7 @@ def main():
     model.add(
         TimeDistributed(
             Dense(
-                len(vocabulary),
+                len(token_list),
                 activation="softmax",
             )
         )
