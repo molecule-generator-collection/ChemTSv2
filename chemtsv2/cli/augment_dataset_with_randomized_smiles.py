@@ -6,7 +6,7 @@ from rdkit import Chem
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description="", usage=f"python {os.path.basename(__file__)} -c CONFIG_FILE"
+        description="", usage="chemtsv2-augment-dataset -d PATH_TO_DATASET"
     )
     parser.add_argument(
         "--dataset",
@@ -19,7 +19,7 @@ def get_parser():
         "--num_augment",
         type=int,
         default=4,
-        required=True,
+        required=False,
         help="number of randomized SMILES strings. note that a canonical SMILES is included in augmented dataset",
     )
     return parser.parse_args()
@@ -28,6 +28,7 @@ def get_parser():
 def randomize_smiles(mol):
     # This code is a part of the followin function:
     # https://github.com/undeadpixel/reinvent-randomized/blob/df63cab67df2a331afaedb4d0cea93428ef8a9f7/utils/chem.py#L90
+    # MIT License
     # Ref. Randomized SMILES strings improve the quality of molecular generative models.
     # J Cheminform 11, 71 (2019). https://doi.org/10.1186/s13321-019-0393-0
     if not mol:
@@ -42,7 +43,7 @@ def main():
     args = get_parser()
     print(
         f"[INFO] Original dataset: {args.dataset}\n"
-        f"[INFO] #randomized SMILES/SMILES: {args.num_augment}"
+        f"[INFO] Number of generated randomized SMILES: {args.num_augment}"
     )
 
     print("[INFO] Process Start...")
