@@ -1,15 +1,19 @@
 # ChemTSv2
 
 >[!IMPORTANT]
-> :construction: **Work in Progress: Major Version Upgrade** :construction:  
-> We are currently preparing for a major version upgrade of this project.
-> The latest development version of this repository may not be stable, and the current repository state might cause errors with the existing Python package (=<v1.1.2).
-> For now, please checkout the stable version of this repository before use:
-> ```bash
-> git checkout tags/v1.1.2
+> **Major Version Upgrade**  
+> ChemTSv2 has been updated to v2.0.0, introducing breaking changes to the import paths of key classes.
+> If you're upgrading from v1.x.x, please update and review your custom reward, filter, policy files accordingly:  
+> 
 > ```
-> We appreciate your patience and contributions! Stay tuned for updates. :rocket:
-
+> # v1.x.x
+> from chemtsv2.reward import Reward
+> from filter.filter import Filter
+> from policy.policy import Policy
+>
+> # v2.x.x
+> from chemtsv2.abc import Reward, Filter, Policy
+> ```
 
 <div align="center">
   <img src="https://github.com/molecule-generator-collection/ChemTSv2/blob/master/img/logo.png" width="95%">
@@ -132,24 +136,21 @@ If you want to pass any value to `calc_reward_from_objective_values` (e.g., weig
 #### ChemTSv2 with single process mode :red_car:
 
 ```bash
+# Run via CLI
 chemtsv2 -c config/setting.yaml
+
+# Run directly
+python chemtsv2/cli/run.py -c config/setting.yaml 
 ```
 
 #### ChemTSv2 with massive parallel mode :airplane:
 
 ```bash
+# Run via CLI
 mpiexec -n 4 chemtsv2-mp --config config/setting_mp.yaml
-```
 
-#### ChemTSv2 with Docker
-
-```bash
-docker build -t chemtsv2:1.0.0 .
-docker run -u $(id -u):$(id -g) \
-           --rm \
-           --mount type=bind,source=./,target=/app/ \
-           chemtsv2:1.0.0 \
-           chemtsv2 -c config/setting.yaml
+# Run directly
+mpiexec -n 4 python -m mpi4py chemtsv2/cli/run_mp.py -c config/setting_mp.yaml
 ```
 
 ## Example usage :pushpin:
@@ -210,7 +211,11 @@ You can extend the SMILES string you input.
 In this case, you need to put the atom you want to extend at the end of the string and run ChemTS with `--input_smiles` argument as follows.
 
 ```bash
+# Single process mode
 chemtsv2 -c config/setting.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
+
+# Massive parallel mode
+mpiexec -n 4 chemtsv2-mp -c config/setting_mp.yaml --input_smiles 'C1=C(C)N=CC(N)=C1C'
 ```
 
 #### Specify the last atom of SMILES string using OpenBabel
@@ -234,8 +239,7 @@ If you want to use the RNN models trained on your own datasets, use [train_rnn_m
 You need to prepare a dataset that only contains SMILES string and modify the path in `dataset` key in `model_setting.yaml`. And then, run the following command:
 
 ```bash
-cd train_rnn_model/
-python train.py -c model_setting.yaml
+chemtsv2-train-rnn -c config/rnn_model_setting.yaml
 ```
 
 Please note that the current version of ChemTSv2 does not support the change for RNN model structures, and users can only change the parameters described in `model_setting.yaml`.
@@ -275,7 +279,3 @@ chemtsv2 -c config/setting_gnina_singularity.yaml --gpu 0 --use_gpu_only_reward
 
 This package is distributed under the MIT License.
 
-## Contact :pushpin:
-
-- Shoichi Ishida (ishida.sho.nm@yokohama-cu.ac.jp)
-- Kei Terayama (terayama@yokohama-cu.ac.jp).
