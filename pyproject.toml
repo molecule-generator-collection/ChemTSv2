@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chemtsv2"
-version = "2.0.0.rc2"
+version = "2.0.0"
 description = "ChemTSv2 is a flexible and versatile molecule generator based on reinforcement learning with natural language processing."
 authors = [
     "Shoichi Ishida <ishida.sho.nm@yokohama-cu.ac.jp>"
