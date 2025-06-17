@@ -310,6 +310,7 @@ def transform_linker_to_mol(conf: dict):
             try:
                 prod = Chem.molzip(rwmol)
                 Chem.SanitizeMol(prod)
+                prod = Chem.MolFromSmiles(Chem.MolToSmiles(prod))  # Clear props
             except Exception:
                 if func.__code__.co_argcount == 1:  # for reward function
                     return -1
