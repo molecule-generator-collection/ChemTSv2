@@ -1,7 +1,7 @@
 from rdkit.Chem import Descriptors
 
 from chemtsv2.abc import Filter
-from chemtsv2.utils import transform_linker_to_mol
+from chemtsv2.utils import transform_linker_to_mol, attach_fragment_to_all_sites
 
 
 class TPSAFilter(Filter):
@@ -12,6 +12,15 @@ class TPSAFilter(Filter):
 class TPSAFilterForXMol(Filter):
     def check(mol, conf):
         @transform_linker_to_mol(conf)
+        def _check(mol, conf):
+            return TPSAFilter.check(mol, conf)
+
+        return _check(mol, conf)
+
+
+class TPSAFilterForDecoration(Filter):
+    def check(mol, conf):
+        @attach_fragment_to_all_sites(conf)
         def _check(mol, conf):
             return TPSAFilter.check(mol, conf)
 
