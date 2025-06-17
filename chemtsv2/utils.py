@@ -328,3 +328,59 @@ def transform_linker_to_mol(conf: dict):
         return wrapper
 
     return decorator
+
+
+def set_wildcard_index(smiles: str, idx: int = 1):
+    return re.sub(r"\*", lambda _: f"[*:{idx}]", smiles)
+
+
+def attach_fragment_to_all_sites(conf: dict):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if not isinstance(args[0], Mol):
+                raise TypeError("Check this decorator is placed in the correct position.")
+            if "scaffold" not in conf:
+                raise KeyError(
+                    "Must specify SMILES strings corresponding to the key `scaffold` in the config file."
+                )
+            smi = Chem.MolToSmiles(args[0])
+            if smi.count("*") != 1:
+                if func.__code__.co_argcount == 1:  # for reward function
+                    raise ValueError(
+                        "The number of '*' in a smiles string must be 1. "
+                        "Please set 'use_attachment_points_filter' to True and threshold to 1 in the configuration."
+                    )
+                elif func.__code__.co_argcount == 2:  # for filter function
+                    return False
+                else:
+                    raise TypeError("Check that this decorator is placed in the correct position.")
+            scaffold_mol = Chem.MolFromSmiles(conf["scaffold"])
+            rwmol = Chem.RWMol(scaffold_mol)
+            fragment_mols = [
+                Chem.MolFromSmiles(set_wildcard_index(smi, i))
+                for i in range(1, conf["scaffold"].count("*")+1)
+            ]
+            for m in fragment_mols:
+                rwmol.InsertMol(m)
+            try:
+                prod = Chem.molzip(rwmol)
+                Chem.SanitizeMol(prod)
+                prod = Chem.MolFromSmiles(Chem.MolToSmiles(prod))  # Clear props
+            except Exception:
+                if func.__code__.co_argcount == 1:  # for reward function
+                    return -1
+                elif func.__code__.co_argcount == 2:  # for filter function
+                    return False
+                else:
+                    raise TypeError("Check that this decorator is placed in the correct position.")
+            if func.__code__.co_argcount == 1:  # for reward function
+                return func(prod)
+            elif func.__code__.co_argcount == 2:  # for filter function
+                return func(prod, conf)
+            else:
+                raise TypeError("Check that this decorator is placed in the correct position.")
+
+        return wrapper
+
+    return decorator
