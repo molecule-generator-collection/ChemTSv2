@@ -30,7 +30,7 @@ checkpoint_file: chemtsv2.ckpt.pkl
 use_lipinski_filter: False
 lipinski_filter:
   module: filter.lipinski_filter
-  class: LipinskiFilter
+  class: LipinskiFilterForDecoration
   type: rule_of_5
 use_radical_filter: True
 radical_filter:
@@ -39,21 +39,21 @@ radical_filter:
 use_pubchem_filter: False
 pubchem_filter:
   module: filter.pubchem_filter
-  class: PubchemFilter
-use_sascore_filter: False
+  class: PubchemFilterForDecoration
+use_sascore_filter: True
 sascore_filter:
   module: filter.sascore_filter
-  class: SascoreFilter
-  threshold: 3.5
+  class: SascoreFilterForDecoration
+  threshold: 6.0
 use_ring_size_filter: False
 ring_size_filter:
   module: filter.ring_size_filter
-  class: RingSizeFilter
+  class: RingSizeFilterForDecoration
   threshold: 6
 use_pains_filter: False
 pains_filter:
   module: filter.pains_filter
-  class: PainsFilter
+  class: PainsFilterForDecoration
   type: [pains_a]
 use_attachment_points_filter: True
 attachment_points_filter:
