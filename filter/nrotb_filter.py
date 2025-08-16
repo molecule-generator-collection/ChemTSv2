@@ -17,7 +17,7 @@ class NRotBFilterForXMol(Filter):
 
         return _check(mol, conf)
 
-class NRotBFilterForXMol(Filter):
+class NRotBFilterForDecoration(Filter):
     def check(mol, conf):
         @attach_fragment_to_all_sites(conf)
         def _check(mol, conf):

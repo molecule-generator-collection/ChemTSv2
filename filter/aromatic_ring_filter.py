@@ -20,7 +20,7 @@ class AromaticRingFilterForXMol(Filter):
 
 class AromaticRingFilterForDecoration(Filter):
     def check(mol, conf):
-        @attatch_fragment_to_all_sites(conf)
+        @attach_fragment_to_all_sites(conf)
         def _check(mol, conf):
             return AromaticRingFilter.check(mol, conf)
 
