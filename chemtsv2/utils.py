@@ -305,9 +305,9 @@ def transform_linker_to_mol(conf: dict):
             mol_ = Chem.MolFromSmiles(add_atom_index_in_wildcard(smi))
             rwmol = Chem.RWMol(mol_)
             cores_mol = [Chem.MolFromSmiles(s) for s in conf["cores"]]
-            for m in cores_mol:
-                rwmol.InsertMol(m)
             try:
+                for m in cores_mol:
+                    rwmol.InsertMol(m)
                 prod = Chem.molzip(rwmol)
                 Chem.SanitizeMol(prod)
                 prod = Chem.MolFromSmiles(Chem.MolToSmiles(prod))  # Clear props
@@ -361,9 +361,9 @@ def attach_fragment_to_all_sites(conf: dict):
                 Chem.MolFromSmiles(set_wildcard_index(smi, i))
                 for i in range(1, conf["scaffold"].count("*")+1)
             ]
-            for m in fragment_mols:
-                rwmol.InsertMol(m)
             try:
+                for m in fragment_mols:
+                    rwmol.InsertMol(m)
                 prod = Chem.molzip(rwmol)
                 Chem.SanitizeMol(prod)
                 prod = Chem.MolFromSmiles(Chem.MolToSmiles(prod))  # Clear props
