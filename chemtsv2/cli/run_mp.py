@@ -17,6 +17,7 @@ import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
 import yaml
 
+import chemtsv2
 from chemtsv2.utils import load_tensorflow_model, get_model_structure_info
 from chemtsv2.preprocessing import smi_tokenizer, selfies_tokenizer_from_smiles
 from chemtsv2.parallel_mcts import p_mcts
@@ -54,6 +55,11 @@ def get_parser():
         "--input_smiles",
         type=str,
         help="SMILES string (Need to put the atom you want to extend at the end of the string)",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"{chemtsv2.__version__}"
     )
     return parser.parse_args()
 
