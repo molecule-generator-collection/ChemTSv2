@@ -29,30 +29,31 @@ def get_parser():
         "-c",
         "--config",
         type=str,
+        metavar="FILE",
         required=True,
-        help="path to a config file",
+        help="Path to a config file (e.g., config/setting.yaml).",
     )
     parser.add_argument(
-        "-d",
         "--debug",
         action="store_true",
-        help="debug mode",
+        help="Enable debug logging",
     )
     parser.add_argument(
-        "-g",
         "--gpu",
         type=str,
-        help="constrain gpu. (e.g. 0,1)",
+        metavar="IDX[,IDX...]",
+        help="Use only these GPUs indices (e.g. 0,1). Omit to run on CPU only.",
     )
     parser.add_argument(
         "--use_gpu_only_reward",
         action="store_true",
-        help="use GPUs exclusively for reward calculations",
+        help="Run reward calculation on GPU only; others stay on CPU. Requires --gpu.",
     )
     parser.add_argument(
         "--input_smiles",
         type=str,
-        help="SMILES string (Need to put the atom you want to extend at the end of the string)",
+        metavar="SMILES",
+        help="Seed SMILES; extend from the last atom (e.g., 'CCO' -> from O).",
     )
     parser.add_argument(
         "--version",
