@@ -235,14 +235,14 @@ Please refer to the [official documentation](https://openbabel.org/docs/current/
 
 ### Train RNN models using your own dataset
 
-If you want to use the RNN models trained on your own datasets, use [train_rnn_model/train.py](train_rnn_model/train.py) and [train_rnn_model/model_setting.yaml](train_rnn_model/model_setting.yaml) to train the models.
-You need to prepare a dataset that only contains SMILES string and modify the path in `dataset` key in `model_setting.yaml`. And then, run the following command:
+If you want to use the RNN models trained on your own datasets, use `chemtsv2-train-rnn` command and [config/rnn_model_setting.yaml](config/rnn_model_setting.yaml) to train the models.
+You need to prepare a dataset that only contains SMILES string and modify the path in `dataset` key in `rnn_model_setting.yaml`. And then, run the following command:
 
 ```bash
 chemtsv2-train-rnn -c config/rnn_model_setting.yaml
 ```
 
-Please note that the current version of ChemTSv2 does not support the change for RNN model structures, and users can only change the parameters described in `model_setting.yaml`.
+Please note that the current version of ChemTSv2 does not support the change for RNN model structures, and users can only change the parameters described in `rnn_model_setting.yaml`.
 
 Once you train the RNN model, specify the path to the checkpoint and token files in `model_setting` and `token` keys in ChemTSv2 config files to run ChemTSv2 with your own RNN model.
 
