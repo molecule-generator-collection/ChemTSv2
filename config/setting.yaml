@@ -59,4 +59,9 @@ use_covalent_warhead_filter: False
 covalent_warhead_filter:
   module: filter.covalent_warhead_filter
   class: CovalentWarheadFilter
+use_fused_ring_filter: False
+fused_ring_filter:
+  module: filter.fused_ring_filter
+  class: FusedRingFilter
+  has_fused_ring: True
 include_filter_result_in_reward: False
