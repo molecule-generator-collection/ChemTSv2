@@ -1,17 +1,17 @@
 # Basic setting
-c_val: 0.1
+c_val: 0.01
 # threshold_type: [time, generation_num]
 threshold_type: generation_num
 #hours: 0.01
-generation_num: 300
-output_dir: result/example01
+generation_num: 1000
+output_dir: result/example_conjugation01
 model_setting:
   model_json: model/model.tf25.json
   model_weight: model/model.tf25.best.ckpt.h5
 token: model/tokens.pkl
 reward_setting: 
-  reward_module: reward.logP_reward
-  reward_class: LogP_reward
+  reward_module: reward.conjugation_reward
+  reward_class: Conjugation_reward
 
 # Advanced setting
 expansion_threshold: 0.995
@@ -27,7 +27,7 @@ restart: False
 checkpoint_file: chemtsv2.ckpt.pkl
 
 # Filter setting
-use_lipinski_filter: True
+use_lipinski_filter: False
 lipinski_filter:
   module: filter.lipinski_filter
   class: LipinskiFilter
@@ -36,16 +36,16 @@ use_radical_filter: True
 radical_filter:
   module: filter.radical_filter
   class: RadicalFilter
-use_pubchem_filter: True
+use_pubchem_filter: False
 pubchem_filter:
   module: filter.pubchem_filter
   class: PubchemFilter
-use_sascore_filter: True
+use_sascore_filter: False
 sascore_filter:
   module: filter.sascore_filter
   class: SascoreFilter
   threshold: 3.5
-use_ring_size_filter: True
+use_ring_size_filter: False
 ring_size_filter:
   module: filter.ring_size_filter
   class: RingSizeFilter
@@ -65,3 +65,8 @@ fused_ring_filter:
   class: FusedRingFilter
   has_fused_ring: True
 include_filter_result_in_reward: False
+
+# User setting
+sigmoid_steepness: 0.7
+sigmoid_center: 20.0
+sigmoid_linear: 0.005

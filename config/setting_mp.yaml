@@ -1,5 +1,5 @@
 # Basic setting
-c_val: 1.0
+c_val: 0.1
 # threshold_type: [time, generation_num]
 #threshold_type: generation_num
 hours: 0.02
