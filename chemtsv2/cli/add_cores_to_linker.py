@@ -28,6 +28,7 @@ def main():
         return labeled_smiles
 
     def __build_smiles_from_cores_and_linker(linker, cores):
+        linker = Chem.MolToSmiles(Chem.MolFromSmiles(linker))
         if linker.count("*") != len(cores):
             return None
         linker_mol = Chem.MolFromSmiles(__add_atom_index_in_wildcard(linker))
